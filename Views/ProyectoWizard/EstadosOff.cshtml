@@ -1,0 +1,93 @@
+﻿@model Alertas.ViewModels.ProyectoWizard.ProyectoWizardEstadosOffVm
+
+@{
+    ViewData["Title"] = "Wizard de proyecto - Estados off";
+}
+
+<h2>Creación de proyecto</h2>
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <strong>Paso 9 de 10 - Estados off</strong>
+        <div class="text-muted">Proyecto: @Model.nombre_proyecto</div>
+        <div class="text-muted">Grupo: @Model.nombre_grupo_alerta</div>
+    </div>
+
+    <div class="card-body">
+        <form asp-action="EstadosOff" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="id_proyecto" />
+            <input type="hidden" asp-for="id_grupo_alerta" />
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["Error"]
+                </div>
+            }
+
+            <div class="alert alert-info">
+                Seleccione los estados en los que cada alerta no debe enviarse.
+                Si es la primera configuración, el sistema sugiere estados off según el tipo de control.
+            </div>
+
+            <table class="table table-bordered table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Alerta</th>
+                        <th>Rol</th>
+                        <th>Condición</th>
+                        <th>Estados off</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Alertas.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                @Model.Alertas[i].nombre
+                                <input type="hidden" name="Alertas[@i].id_grupo_alerta_dia" value="@Model.Alertas[i].id_grupo_alerta_dia" />
+                            </td>
+
+                            <td>@Model.Alertas[i].rol</td>
+
+                            <td>@Model.Alertas[i].condicion</td>
+
+                            <td>
+                                <div class="d-flex flex-wrap gap-3">
+                                    @foreach (var estado in Model.Estados)
+                                    {
+                                        var checkedEstado = Model.Alertas[i].estados_off_seleccionados.Contains(estado.id_estado);
+
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   name="Alertas[@i].estados_off_seleccionados"
+                                                   value="@estado.id_estado"
+                                                   @(checkedEstado ? "checked" : "") />
+
+                                            <label class="form-check-label">
+                                                @estado.orden. @estado.nombre
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="DependenciasAlertas" asp-route-id="@Model.id_proyecto" class="btn btn-secondary">
+                    Anterior
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    Guardar y continuar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

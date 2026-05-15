@@ -1,0 +1,78 @@
+﻿@model Alertas.Models.UsuarioProyecto
+
+@{
+    ViewData["Title"] = "Eliminar usuario por proyecto";
+    bool puedeEliminar = ViewBag.PuedeEliminar ?? false;
+}
+
+<div class="container mt-4">
+
+    <h3>Eliminar usuario por proyecto</h3>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            @if (!puedeEliminar)
+            {
+                <div class="alert alert-warning">
+                    Esta asignación no puede eliminarse porque tiene registros relacionados.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    ¿Estás seguro de que deseas eliminar esta asignación?
+                </div>
+            }
+
+            <dl class="row">
+                <dt class="col-sm-3">Área</dt>
+                <dd class="col-sm-9">@Model.Proyecto?.Area?.nombre</dd>
+
+                <dt class="col-sm-3">Proyecto</dt>
+                <dd class="col-sm-9">@Model.Proyecto?.nombre</dd>
+
+                <dt class="col-sm-3">Usuario</dt>
+                <dd class="col-sm-9">@Model.Usuario?.nombre</dd>
+
+                <dt class="col-sm-3">Rol</dt>
+                <dd class="col-sm-9">@Model.Rol?.nombre</dd>
+
+                <dt class="col-sm-3">Fecha asignación</dt>
+                <dd class="col-sm-9">@(Model.fecha_asignacion?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</dd>
+
+                <dt class="col-sm-3">Asignado por</dt>
+                <dd class="col-sm-9">@(Model.UsuarioAsignacion?.nombre ?? "Sin registro")</dd>
+
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9">
+                    @if (Model.activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactivo</span>
+                    }
+                </dd>
+            </dl>
+
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_usuario_proyecto" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
+
+                    @if (puedeEliminar)
+                    {
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

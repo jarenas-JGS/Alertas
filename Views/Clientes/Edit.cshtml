@@ -1,0 +1,58 @@
+﻿@model Alertas.Models.Cliente
+
+@{
+    ViewData["Title"] = "Editar cliente";
+}
+
+<div class="container mt-4">
+
+    <h3>Editar cliente</h3>
+    <p class="text-muted">Modifica la información básica del cliente.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_cliente" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="nit" class="form-label">NIT</label>
+                    <input asp-for="nit" class="form-control" maxlength="100" />
+                    <span asp-validation-for="nit" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="dig_verif" class="form-label">DV</label>
+                    <input asp-for="dig_verif" class="form-control" />
+                    <span asp-validation-for="dig_verif" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="nombre" class="form-label">Nombre</label>
+                    <input asp-for="nombre" class="form-control" maxlength="100" />
+                    <span asp-validation-for="nombre" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="activo" class="form-check-input" />
+                    <label asp-for="activo" class="form-check-label">Activo</label>
+                    <span asp-validation-for="activo" class="text-danger d-block"></span>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

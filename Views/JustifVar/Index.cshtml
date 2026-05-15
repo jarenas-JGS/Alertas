@@ -1,0 +1,159 @@
+﻿@model IEnumerable<Alertas.Models.JustifVar>
+
+@{
+    ViewData["Title"] = "Justificaciones de variación";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0">Justificaciones de variación</h3>
+            <small class="text-muted">Administración de justificaciones de variación por área.</small>
+        </div>
+
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nueva justificación
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table id="tablaJustifVar" class="table table-bordered align-middle w-100">
+                <thead class="table-light">
+                    <tr>
+                        <th>Área</th>
+                        <th>Nombre</th>
+                        <th class="text-end" style="width: 280px;">Acciones</th>
+                    </tr>
+                    <tr class="filtros-columnas">
+                        <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Área" /></th>
+                        <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Nombre" /></th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">
+                                No hay justificaciones registradas.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Area?.nombre</td>
+                                <td>@item.nombre</td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2 flex-nowrap">
+                                        <a asp-action="Details" asp-route-id="@item.id_justif_var"
+                                           class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                                            <i class="bi bi-eye"></i>
+                                            <span>Consultar</span>
+                                        </a>
+
+                                        <a asp-action="Edit" asp-route-id="@item.id_justif_var"
+                                           class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1">
+                                            <i class="bi bi-pencil"></i>
+                                            <span>Editar</span>
+                                        </a>
+
+                                        <a asp-action="Delete" asp-route-id="@item.id_justif_var"
+                                           class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1">
+                                            <i class="bi bi-trash"></i>
+                                            <span>Eliminar</span>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    #tablaJustifVar thead .filtros-columnas th {
+        padding: 0.4rem;
+        background-color: #f8f9fa;
+    }
+
+    #tablaJustifVar thead .filtros-columnas input {
+        min-width: 100%;
+    }
+
+    #tablaJustifVar_wrapper .dataTables_filter input {
+        margin-left: 0.5rem;
+    }
+
+    #tablaJustifVar_wrapper .dataTables_length select {
+        margin: 0 0.4rem;
+    }
+
+    #tablaJustifVar_wrapper .dataTables_info,
+    #tablaJustifVar_wrapper .dataTables_paginate {
+        margin-top: 0.75rem;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var tabla = $('#tablaJustifVar').DataTable({
+                pageLength: 10,
+                lengthMenu: [10, 20, 50, 100],
+                orderCellsTop: true,
+                language: {
+                    decimal: "",
+                    emptyTable: "No hay información",
+                    info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                    infoEmpty: "Mostrando 0 a 0 de 0 registros",
+                    infoFiltered: "(filtrado de _MAX_ registros totales)",
+                    lengthMenu: "Mostrar _MENU_ registros",
+                    loadingRecords: "Cargando...",
+                    processing: "Procesando...",
+                    search: "Buscar:",
+                    zeroRecords: "No se encontraron resultados",
+                    paginate: {
+                        first: "Primero",
+                        last: "Último",
+                        next: "Siguiente",
+                        previous: "Anterior"
+                    }
+                },
+                columnDefs: [
+                    { orderable: false, targets: 2 }
+                ]
+            });
+
+            $('#tablaJustifVar thead tr.filtros-columnas th').each(function (i) {
+                var input = $('input', this);
+
+                if (input.length) {
+                    input.on('keyup change clear', function () {
+                        if (tabla.column(i).search() !== this.value) {
+                            tabla.column(i).search(this.value).draw();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

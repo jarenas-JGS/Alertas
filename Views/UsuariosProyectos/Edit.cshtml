@@ -1,0 +1,70 @@
+﻿@model Alertas.ViewModels.UsuarioProyectoViewModel
+
+@{
+    ViewData["Title"] = "Editar usuario por proyecto";
+}
+
+<div class="container mt-4">
+
+    <h3>Editar usuario por proyecto</h3>
+    <p class="text-muted">Modifica la asignación de usuario, proyecto y rol.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_usuario_proyecto" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="id_usuario" class="form-label">Usuario</label>
+                    <select asp-for="id_usuario" asp-items="Model.Usuarios" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_usuario" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="id_proyecto" class="form-label">Proyecto</label>
+                    <select asp-for="id_proyecto" asp-items="Model.Proyectos" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_proyecto" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="id_rol" class="form-label">Rol</label>
+                    <select asp-for="id_rol" asp-items="Model.Roles" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_rol" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="activo" class="form-check-input" />
+                    <label asp-for="activo" class="form-check-label">Activo</label>
+                </div>
+
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <div><strong>Fecha asignación:</strong> @(Model.fecha_asignacion?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</div>
+                        <div><strong>Asignado por:</strong> @(Model.nombre_usuario_asignacion ?? "Sin registro")</div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

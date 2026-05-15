@@ -1,0 +1,128 @@
+﻿@model Alertas.Services.Notificaciones.DTOs.ResultadoNotificacionesDto
+
+@{
+    var idProyecto = Model.Correos.FirstOrDefault()?.IdProyecto;
+}
+
+
+
+<div class="container mt-4">
+    <h3>Resultado Notificaciones</h3>
+
+    @if (TempData["MensajeExito"] != null)
+    {
+        <div class="alert alert-success shadow-sm">
+            <i class="bi bi-check-circle me-1"></i>
+            @TempData["MensajeExito"]
+        </div>
+    }
+
+    @if (Model.Errores.Any())
+    {
+        <div class="alert alert-warning shadow-sm">
+            <strong>Errores de envío:</strong>
+            <ul class="mb-0">
+                @foreach (var error in Model.Errores)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="mb-3">
+        <strong>Proyectos procesados:</strong> @Model.ProyectosProcesados <br />
+        <strong>Alertas generadas:</strong> @Model.AlertasGeneradas <br />
+        <strong>Correos preparados:</strong> @Model.CorreosPreparados
+    </div>
+
+    @await Html.PartialAsync("_BotonEnviarProyecto", idProyecto)
+
+
+    @foreach (var correo in Model.Correos)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                <strong>@correo.NombreUsuario</strong> (@correo.EmailUsuario)
+                <br />
+                Proyecto: @correo.NombreProyecto
+            </div>
+
+            <div class="card-body">
+                @foreach (var grupo in correo.Alertas.GroupBy(a => a.NombreAlerta))
+                {
+                    var primera = grupo.First();
+
+                    <div class="mb-3">
+                        <h5>
+                            @grupo.Key - @primera.NombreMensaje
+                            (Prioridad @primera.Prioridad)
+                        </h5>
+
+                        <p>@primera.TextoMensaje</p>
+
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Obligación</th>
+                                    <th>Empresa</th>
+                                    <th>Autorizador(es)</th>
+                                    <th>F. Venc Obligación</th>
+                                    <th>Días Obl</th>
+                                    <th>F. Seguimiento</th>
+                                    <th>Días Seg</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in grupo)
+                                {
+                                    <tr>
+                                        <td>@item.NombreObligacion</td>
+                                        <td>@item.NombreEmpresa</td>
+                                        <td>@item.Autorizadores</td>
+                                        <td>@item.FechaVencimientoObligacion</td>
+                                        <td>@item.DiasVencimientoObligacion</td>
+                                        <td>@item.FechaVencimientoSeguimiento</td>
+                                        <td>@item.DiasVencimientoSeguimiento</td>
+
+
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+    }
+
+    <div id="overlayProcesoNotificaciones"
+         style="display:none;
+            position:fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,0.45);
+            z-index:9999;
+            align-items:center;
+            justify-content:center;">
+
+        <div class="bg-white rounded shadow p-4 text-center"
+             style="max-width:420px;">
+
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Procesando...</span>
+            </div>
+
+            <h5>Enviando correos</h5>
+
+            <p class="mb-0 text-muted">
+                La transacción está en proceso. Por favor espere, no cierre esta ventana ni actualice la página.
+            </p>
+        </div>
+    </div>
+</div>
+@await Html.PartialAsync("_BotonEnviarProyecto", idProyecto)

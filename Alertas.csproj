@@ -1,0 +1,153 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="bin\Debug\net8.0\Alertas.deps.json" />
+    <Content Include="bin\Debug\net8.0\Alertas.runtimeconfig.json" />
+    <Content Include="bin\Debug\net8.0\Alertas.staticwebassets.endpoints.json" />
+    <Content Include="bin\Debug\net8.0\Alertas.staticwebassets.runtime.json" />
+    <Content Include="bin\Debug\net8.0\appsettings.Development.json" />
+    <Content Include="bin\Debug\net8.0\appsettings.json" />
+    <Content Include="obj\Alertas.csproj.nuget.dgspec.json" />
+    <Content Include="obj\Debug\net8.0\Alertas.csproj.FileListAbsolute.txt" />
+    <Content Include="obj\Debug\net8.0\ApiEndpoints.json" />
+    <Content Include="obj\Debug\net8.0\rjsmcshtml.dswa.cache.json" />
+    <Content Include="obj\Debug\net8.0\rjsmrazor.dswa.cache.json" />
+    <Content Include="obj\Debug\net8.0\rpswa.dswa.cache.json" />
+    <Content Include="obj\Debug\net8.0\staticwebassets.build.endpoints.json" />
+    <Content Include="obj\Debug\net8.0\staticwebassets.build.json" />
+    <Content Include="obj\Debug\net8.0\staticwebassets.development.json" />
+    <Content Include="obj\Debug\net8.0\staticwebassets.references.upToDateCheck.txt" />
+    <Content Include="obj\Debug\net8.0\staticwebassets.removed.txt" />
+    <Content Include="obj\project.assets.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="TimeZoneConverter" Version="7.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="obj\Debug\net8.0\staticwebassets\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="bin\Debug\net8.0\Alertas.dll" />
+    <None Include="bin\Debug\net8.0\Alertas.exe" />
+    <None Include="bin\Debug\net8.0\Alertas.pdb" />
+    <None Include="bin\Debug\net8.0\BCrypt.Net-Next.dll" />
+    <None Include="bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\de\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\de\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\es\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\es\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\Humanizer.dll" />
+    <None Include="bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\it\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\it\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll" />
+    <None Include="bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.dll" />
+    <None Include="bin\Debug\net8.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll" />
+    <None Include="bin\Debug\net8.0\Microsoft.CodeAnalysis.dll" />
+    <None Include="bin\Debug\net8.0\Microsoft.CodeAnalysis.Workspaces.dll" />
+    <None Include="bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll" />
+    <None Include="bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Design.dll" />
+    <None Include="bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll" />
+    <None Include="bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll" />
+    <None Include="bin\Debug\net8.0\Microsoft.Extensions.DependencyModel.dll" />
+    <None Include="bin\Debug\net8.0\Microsoft.OpenApi.dll" />
+    <None Include="bin\Debug\net8.0\Mono.TextTemplating.dll" />
+    <None Include="bin\Debug\net8.0\Npgsql.dll" />
+    <None Include="bin\Debug\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll" />
+    <None Include="bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll" />
+    <None Include="bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll" />
+    <None Include="bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll" />
+    <None Include="bin\Debug\net8.0\System.CodeDom.dll" />
+    <None Include="bin\Debug\net8.0\System.Composition.AttributedModel.dll" />
+    <None Include="bin\Debug\net8.0\System.Composition.Convention.dll" />
+    <None Include="bin\Debug\net8.0\System.Composition.Hosting.dll" />
+    <None Include="bin\Debug\net8.0\System.Composition.Runtime.dll" />
+    <None Include="bin\Debug\net8.0\System.Composition.TypedParts.dll" />
+    <None Include="bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <None Include="bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll" />
+    <None Include="bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll" />
+    <None Include="bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll" />
+    <None Include="obj\Alertas.csproj.nuget.g.props" />
+    <None Include="obj\Alertas.csproj.nuget.g.targets" />
+    <None Include="obj\Debug\net8.0\Alertas.AssemblyInfoInputs.cache" />
+    <None Include="obj\Debug\net8.0\Alertas.assets.cache" />
+    <None Include="obj\Debug\net8.0\Alertas.csproj.AssemblyReference.cache" />
+    <None Include="obj\Debug\net8.0\Alertas.csproj.BuildWithSkipAnalyzers" />
+    <None Include="obj\Debug\net8.0\Alertas.csproj.CoreCompileInputs.cache" />
+    <None Include="obj\Debug\net8.0\Alertas.csproj.Up2Date" />
+    <None Include="obj\Debug\net8.0\Alertas.dll" />
+    <None Include="obj\Debug\net8.0\Alertas.GeneratedMSBuildEditorConfig.editorconfig" />
+    <None Include="obj\Debug\net8.0\Alertas.genruntimeconfig.cache" />
+    <None Include="obj\Debug\net8.0\Alertas.MvcApplicationPartsAssemblyInfo.cache" />
+    <None Include="obj\Debug\net8.0\Alertas.pdb" />
+    <None Include="obj\Debug\net8.0\Alertas.RazorAssemblyInfo.cache" />
+    <None Include="obj\Debug\net8.0\apphost.exe" />
+    <None Include="obj\Debug\net8.0\refint\Alertas.dll" />
+    <None Include="obj\Debug\net8.0\ref\Alertas.dll" />
+    <None Include="obj\Debug\net8.0\staticwebassets.build.json.cache" />
+    <None Include="obj\project.nuget.cache" />
+  </ItemGroup>
+
+</Project>

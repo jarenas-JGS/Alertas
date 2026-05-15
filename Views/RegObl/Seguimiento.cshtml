@@ -1,0 +1,1000 @@
+﻿@model Alertas.ViewModels.RegOblSeguimientoViewModel
+
+@{
+    ViewData["Title"] = "Seguimiento de Obligación";
+}
+
+<div class="container py-4">
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Volver al listado
+        </a>
+    </div>
+
+    @if (TempData["Ok"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Ok"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+   
+
+    <!-- Encabezado -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <h3 class="fw-bold mb-1">@Model.nombre</h3>
+                    <div class="text-muted">
+                        Proyecto: <strong>@Model.nombre_proyecto</strong>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.cod_obligacion))
+                    {
+                        <div class="text-muted">
+                            Código: <strong>@Model.cod_obligacion</strong>
+                        </div>
+                    }
+                </div>
+
+                <div class="text-lg-end">
+                    <div class="mb-2">
+                        <span class="badge text-bg-primary px-3 py-2">@Model.nombre_estado</span>
+
+                        @if (Model.EstaVencida)
+                        {
+                            <span class="badge text-bg-danger px-3 py-2">Vencida</span>
+                        }
+                        else if (Model.EstaPorVencer)
+                        {
+                            <span class="badge text-bg-warning px-3 py-2">Por vencer</span>
+                        }
+                    </div>
+
+                    <div class="small text-muted">
+                        Fecha venc. obligación: <strong>@Model.fecha_venc_obl.ToString("yyyy-MM-dd")</strong>
+                    </div>
+                    <div class="small text-muted">
+                        Fecha venc. seguimiento: <strong>@Model.fecha_venc_seguimiento.ToString("yyyy-MM-dd")</strong>
+                    </div>
+                    <div class="small text-muted">
+                        Fecha seguimiento ejecutada:
+                        <strong>@(Model.fecha_seguimiento_ejecutada?.ToString("yyyy-MM-dd") ?? "-")</strong>
+                    </div>
+                    <div class="small text-muted">
+                        Días atraso seguimiento:
+                        <strong>@(Model.dias_atraso_seguimiento?.ToString() ?? "-")</strong>
+                    </div>
+                    <div class="small text-muted">
+                        Fecha vencimiento ejecutada:
+                        <strong>@(Model.fecha_vencimiento_ejecutada?.ToString("yyyy-MM-dd") ?? "-")</strong>
+                    </div>
+                    <div class="small text-muted">
+                        Días atraso vencimiento:
+                        <strong>@(Model.dias_atraso_vencimiento?.ToString() ?? "-")</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="formSeguimiento"
+          asp-action="ProcesarSeguimiento"
+          method="post"
+          enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <input asp-for="id_reg_obl" type="hidden" />
+        <input asp-for="id_proyecto" type="hidden" />
+        <input asp-for="id_estado" type="hidden" />
+
+        <input type="hidden" name="accion" id="accion" />
+        <input type="hidden" name="idEstadoTransicion" id="idEstadoTransicion" />
+        <input type="hidden" name="idAdjunto" id="idAdjunto" />
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="row g-4">
+
+            <!-- Columna izquierda -->
+            <div class="col-lg-8">
+
+                <!-- Datos generales -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-semibold mb-3">Datos generales</h5>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre</label>
+                                <input asp-for="nombre" class="form-control" readonly="@(!Model.PuedeEditarDatosGenerales)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Código obligación</label>
+                                <input asp-for="cod_obligacion" class="form-control" readonly="@(!Model.PuedeEditarDatosGenerales)" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Cliente</label>
+                                <input class="form-control" value="@Model.nombre_cliente" readonly />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Empresa</label>
+                                <input class="form-control" value="@Model.nombre_empresa" readonly />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Tipo obligación</label>
+                                <input class="form-control" value="@Model.nombre_tipo_obligacion" readonly />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Dominio</label>
+                                <input class="form-control" value="@Model.nombre_dominio" readonly />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Ciudad</label>
+                                <input class="form-control" value="@Model.nombre_ciudad" readonly />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Período</label>
+                                <input class="form-control" value="@Model.nombre_periodo" readonly />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Fecha creación</label>
+                                <input class="form-control" value="@(Model.fecha_creac?.ToString("yyyy-MM-dd") ?? "")" readonly />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Fecha venc. obligación</label>
+                                <input asp-for="fecha_venc_obl" type="date" class="form-control" readonly="@(!Model.PuedeEditarFechasBase)" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Fecha venc. seguimiento</label>
+                                <input asp-for="fecha_venc_seguimiento" type="date" class="form-control" readonly="@(!Model.PuedeEditarFechasBase)" />
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">CC Empleador</label>
+                                <input asp-for="cc_empleador" class="form-control" readonly="@(!Model.PuedeEditarDatosGenerales)" />
+                            </div>
+
+                            <div class="col-md-9">
+                                <label class="form-label">Nombre Empleador</label>
+                                <input asp-for="nombre_empleador" class="form-control" readonly="@(!Model.PuedeEditarDatosGenerales)" />
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">CC Empleado</label>
+                                <input asp-for="cc_empleado" class="form-control" readonly="@(!Model.PuedeEditarDatosGenerales)" />
+                            </div>
+
+                            <div class="col-md-9">
+                                <label class="form-label">Nombre Empleado</label>
+                                <input asp-for="nombre_empleado" class="form-control" readonly="@(!Model.PuedeEditarDatosGenerales)" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Vigencia</label>
+                                <input asp-for="vigencia" class="form-control" readonly="@(!Model.PuedeEditarDatosGenerales)" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Año</label>
+                                <input asp-for="anio" class="form-control" readonly />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Mes</label>
+                                <input asp-for="mes" class="form-control" readonly />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Día</label>
+                                <input asp-for="dia" class="form-control" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Valores -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-semibold mb-3">Valores y justificación</h5>
+
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Valor aproximado</label>
+                                @if (Model.PuedeEditarValores)
+                                {
+                                    <input asp-for="vlr_aprox" type="text" inputmode="numeric" class="form-control" />
+                                }
+                                else
+                                {
+                                    <input type="text"
+                                           class="form-control"
+                                           value="@(Model.vlr_aprox?.ToString("N0") ?? "")"
+                                           readonly />
+                                }
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Valor real</label>
+                                @if (Model.PuedeEditarValores)
+                                {
+                                    <input asp-for="vlr_real" type="text" inputmode="numeric" class="form-control" />
+                                }
+                                else
+                                {
+                                    <input type="text"
+                                           class="form-control"
+                                           value="@(Model.vlr_real?.ToString("N0") ?? "")"
+                                           readonly />
+                                }
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Diferencia</label>
+                                @if (Model.PuedeEditarValores)
+                                {
+                                    <input asp-for="diferencia" type="text" inputmode="numeric" class="form-control" readonly />
+                                }
+                                else
+                                {
+                                    <input type="text"
+                                           class="form-control"
+                                           value="@(Model.diferencia?.ToString("N0") ?? "")"
+                                           readonly />
+                                }
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Variación</label>
+                                @if (Model.PuedeEditarValores)
+                                {
+                                    <input asp-for="variacion" type="text" class="form-control" readonly />
+                                }
+                                else
+                                {
+                                    <input type="text"
+                                           class="form-control"
+                                           value="@(Model.variacion?.ToString("N2") ?? "")"
+                                           readonly />
+                                }
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Saldo a favor</label>
+                                @if (Model.PuedeEditarValores)
+                                {
+                                    <input asp-for="saldo_favor" type="text" inputmode="numeric" class="form-control" />
+                                }
+                                else
+                                {
+                                    <input type="text"
+                                           class="form-control"
+                                           value="@(Model.saldo_favor?.ToString("N0") ?? "")"
+                                           readonly />
+                                }
+                            </div>
+
+                            <div class="col-md-9">
+                                <label class="form-label">Justificación variación</label>
+
+                                @if (Model.PuedeEditarJustificacion)
+                                {
+                                    <select asp-for="id_justif_var"
+                                            asp-items="Model.justificacionesDisponibles"
+                                            class="form-select"
+                                            id="id_justif_var">
+                                        <option value="">Seleccione...</option>
+                                    </select>
+                                }
+                                else
+                                {
+                                    var justificacionTexto = Model.justificacionesDisponibles
+                                    .FirstOrDefault(x => x.Value == Model.id_justif_var?.ToString())?.Text ?? "";
+
+                                    <input type="text" class="form-control" value="@justificacionTexto" readonly />
+                                }
+
+                                <input type="hidden" id="puedeEditarJustificacion" value="@Model.PuedeEditarJustificacion.ToString().ToLower()" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Participantes -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-semibold mb-3">Participantes</h5>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Responsables</label>
+                                @if (Model.PuedeEditarParticipantes)
+                                {
+                                    <select asp-for="ids_responsables" asp-items="Model.responsablesDisponibles" class="form-select" multiple size="5"></select>
+                                }
+                                else
+                                {
+                                    var responsablesSeleccionados = Model.responsablesDisponibles.Where(x => x.Selected).Select(x => x.Text).ToList();
+                                    if (responsablesSeleccionados.Any())
+                                    {
+                                        <ul class="list-group">
+                                            @foreach (var nombre in responsablesSeleccionados)
+                                            {
+                                                <li class="list-group-item">@nombre</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <div class="form-control bg-light">Sin responsables asignados</div>
+                                    }
+                                }
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Elaboradores</label>
+                                @if (Model.PuedeEditarParticipantes)
+                                {
+                                    <select asp-for="ids_elaboradores" asp-items="Model.elaboradoresDisponibles" class="form-select" multiple size="5"></select>
+                                }
+                                else
+                                {
+                                    var elaboradoresSeleccionados = Model.elaboradoresDisponibles.Where(x => x.Selected).Select(x => x.Text).ToList();
+                                    if (elaboradoresSeleccionados.Any())
+                                    {
+                                        <ul class="list-group">
+                                            @foreach (var nombre in elaboradoresSeleccionados)
+                                            {
+                                                <li class="list-group-item">@nombre</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <div class="form-control bg-light">Sin elaboradores asignados</div>
+                                    }
+                                }
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Autorizadores</label>
+                                @if (Model.PuedeEditarParticipantes)
+                                {
+                                    <select asp-for="ids_autorizadores" asp-items="Model.autorizadoresDisponibles" class="form-select" multiple size="5"></select>
+                                }
+                                else
+                                {
+                                    var autorizadoresSeleccionados = Model.autorizadoresDisponibles.Where(x => x.Selected).Select(x => x.Text).ToList();
+                                    if (autorizadoresSeleccionados.Any())
+                                    {
+                                        <ul class="list-group">
+                                            @foreach (var nombre in autorizadoresSeleccionados)
+                                            {
+                                                <li class="list-group-item">@nombre</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <div class="form-control bg-light">Sin autorizadores asignados</div>
+                                    }
+                                }
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Aprobadores</label>
+                                @if (Model.PuedeEditarParticipantes)
+                                {
+                                    <select asp-for="ids_aprobadores" asp-items="Model.aprobadoresDisponibles" class="form-select" multiple size="5"></select>
+                                }
+                                else
+                                {
+                                    var aprobadoresSeleccionados = Model.aprobadoresDisponibles.Where(x => x.Selected).Select(x => x.Text).ToList();
+                                    if (aprobadoresSeleccionados.Any())
+                                    {
+                                        <ul class="list-group">
+                                            @foreach (var nombre in aprobadoresSeleccionados)
+                                            {
+                                                <li class="list-group-item">@nombre</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <div class="form-control bg-light">Sin aprobadores asignados</div>
+                                    }
+                                }
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Usuarios vencimiento</label>
+                                @if (Model.PuedeEditarParticipantes)
+                                {
+                                    <select asp-for="ids_vencimiento" asp-items="Model.vencimientoDisponibles" class="form-select" multiple size="5"></select>
+                                }
+                                else
+                                {
+                                    var vencimientoSeleccionados = Model.vencimientoDisponibles.Where(x => x.Selected).Select(x => x.Text).ToList();
+                                    if (vencimientoSeleccionados.Any())
+                                    {
+                                        <ul class="list-group">
+                                            @foreach (var nombre in vencimientoSeleccionados)
+                                            {
+                                                <li class="list-group-item">@nombre</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <div class="form-control bg-light">Sin usuarios de vencimiento asignados</div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-semibold mb-3">Observaciones</h5>
+                        <textarea asp-for="observaciones" class="form-control" rows="4" readonly="@(!Model.PuedeEditarObservaciones)"></textarea>
+                    </div>
+                </div>
+
+                @if (Model.PuedeEditarDatosGenerales
+                                || Model.PuedeEditarParticipantes
+                                || Model.PuedeEditarFechasBase
+                                || Model.PuedeEditarValores
+                                || Model.PuedeEditarJustificacion
+                                || Model.PuedeEditarObservaciones)
+                {
+                    <div class="mb-4">
+                        <button type="button"
+                                class="btn btn-success"
+                                onclick="setAccion('guardar'); prepararFormularioAntesDeEnviar(); document.getElementById('formSeguimiento').submit();">
+                            Guardar cambios
+                        </button>
+
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Volver al listado
+                        </a>
+                    </div>
+                }
+            </div>
+
+            <!-- Columna derecha -->
+            <div class="col-lg-4">
+                <!-- Acciones -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-semibold mb-3">Acciones</h5>
+
+                        <div id="bloqueObservacionTransicion" class="mb-3" style="display:none;">
+                            <label class="form-label">Observación</label>
+                            <textarea id="observacionTransicion"
+                                      name="observacion"
+                                      class="form-control"
+                                      placeholder="Ingrese observación..."></textarea>
+                            <div id="mensajeObservacionTransicion" class="text-danger small mt-1" style="display:none;">
+                                Debe ingresar una observación para ejecutar esta acción.
+                            </div>
+                        </div>
+
+                        @if (Model.TransicionesDisponibles.Any())
+                        {
+                            @foreach (var t in Model.TransicionesDisponibles)
+                            {
+                                <div class="mb-2">
+                                    <button type="button"
+                                            class="btn w-100
+                                    @(t.es_aprobacion ? "btn-success" :
+                                    t.es_rechazo ? "btn-danger" :
+                                    t.es_anulacion ? "btn-dark" :
+                                    "btn-outline-primary")"
+                                    onclick="ejecutarTransicion(@t.id_estado_transicion, @(t.requiere_observacion.ToString().ToLower()))">
+                                @t.nombre_accion
+                            </button>
+                        </div>
+                                                }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No hay acciones disponibles.</p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Adjuntos -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-semibold mb-3">Soportes</h5>
+
+                        @if (Model.Adjuntos.Any())
+                        {
+                            <ul class="list-group list-group-flush">
+                                @foreach (var adjunto in Model.Adjuntos)
+                                {
+                                    <li class="list-group-item px-0">
+                                        <div class="d-flex justify-content-between align-items-start gap-2">
+                                            @{
+                                                var nombreMostrar = adjunto.nombre_orig?.StartsWith("[POST_CIERRE]") == true
+                                                ? adjunto.nombre_orig.Replace("[POST_CIERRE]", "").Trim()
+                                                : adjunto.nombre_orig;
+                                            }
+
+                                            <div>
+                                                <div class="fw-semibold">@nombreMostrar</div>
+
+                                                <div class="small text-muted">
+                                                    @(adjunto.fecha_carga_local ?? "")
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex gap-2">
+                                                <a asp-action="VerAdjunto"
+                                                   asp-route-idAdjunto="@adjunto.id_obl_adjunto"
+                                                   class="btn btn-sm btn-outline-primary"
+                                                   title="Ver archivo"
+                                                   target="_blank">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+
+                                                @if (Model.PuedeCargarSoporte)
+                                                {
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            title="Eliminar archivo"
+                                                            onclick="return eliminarAdjunto(@adjunto.id_obl_adjunto)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">No hay soportes cargados.</p>
+                        }
+
+                        @if (Model.PuedeCargarSoporte)
+                        {
+                            <hr />
+                            <input type="file" name="archivo" id="archivo" class="form-control mb-2" />
+                            <button type="button"
+                                    class="btn btn-outline-primary w-100"
+                                    onclick="subirAdjunto()">
+                                Cargar soporte
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.MostrarSoportePostCierre)
+                {
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body">
+                            <h5 class="fw-semibold mb-3">Control posterior</h5>
+
+                            <div class="form-check mb-2">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       checked="@Model.SoportePostCierreCumplido"
+                                       disabled />
+                                <label class="form-check-label fw-semibold">
+                                    @Model.NombreSoportePostCierre
+                                </label>
+                            </div>
+
+                            @if (Model.SoportePostCierreCumplido)
+                            {
+                                <div class="small text-muted mb-2">
+                                    Fecha: <strong>@(Model.FechaHoraSoportePostCierreLocal ?? Model.FechaSoportePostCierre?.ToString("yyyy-MM-dd") ?? "-")</strong><br />
+                                    Usuario: <strong>@(Model.NombreUsuarioSoportePostCierre ?? "-")</strong>
+                                </div>
+
+                                @if (Model.IdUltimoSoportePostCierre.HasValue)
+                                {
+                                    <div class="mb-3">
+                                        <a asp-action="VerAdjunto"
+                                           asp-route-idAdjunto="@Model.IdUltimoSoportePostCierre.Value"
+                                           class="btn btn-sm btn-outline-primary"
+                                           target="_blank">
+                                            <i class="bi bi-eye"></i> Ver último soporte
+                                        </a>
+                                    </div>
+                                }
+                            }
+
+                            @if (Model.PuedeCargarSoportePostCierre)
+                            {
+                                <label class="form-label small">
+                                    @(Model.SoportePostCierreCumplido ? "Cargar nuevo soporte" : "Cargar soporte")
+                                </label>
+
+                                <input type="file"
+                                       name="archivoPostCierre"
+                                       id="archivoPostCierre"
+                                       class="form-control mb-2" />
+
+                                <button type="button"
+                                        class="btn btn-outline-primary w-100"
+                                        onclick="subirSoportePostCierre()">
+                                    @(Model.SoportePostCierreCumplido ? "Cargar nuevo soporte" : $"Registrar {Model.NombreSoportePostCierre}")
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+
+
+                <!-- Aprobación -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-semibold mb-3">Aprobación</h5>
+
+                        <div class="small text-muted">Estado aprobación</div>
+                        <div class="fw-semibold mb-2">
+                            @(Model.aprobado == true ? "Aprobada" : "Pendiente")
+                        </div>
+
+                        <div class="small text-muted">Fecha aprobación</div>
+                        <div class="fw-semibold mb-2">
+                            @(Model.fecha_aprobado_final?.ToString("yyyy-MM-dd") ?? "-")
+                        </div>
+
+                        <div class="small text-muted">Aprobado por</div>
+                        <div class="fw-semibold">
+                            @(string.IsNullOrWhiteSpace(Model.nombre_aprobado_por) ? "-" : Model.nombre_aprobado_por)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historial -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="fw-semibold mb-3">Historial</h5>
+
+                        @if (Model.Historial.Any())
+                        {
+                            <div class="timeline-simple">
+                                @foreach (var item in Model.Historial.OrderByDescending(x => x.Fecha))
+                                {
+                                    <div class="border-start ps-3 pb-3 mb-3">
+                                        <div class="small text-muted">@item.Fecha.ToString("yyyy-MM-dd HH:mm")</div>
+                                        <div class="fw-semibold">@item.Titulo</div>
+                                        <div class="small">@item.Usuario - @item.Tipo</div>
+
+                                        @if (!string.IsNullOrWhiteSpace(item.Detalle))
+                                        {
+                                            <div class="text-muted small mt-1">@item.Detalle</div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">No hay historial disponible.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        function limpiarObservacionTransicion() {
+            const bloque = document.getElementById("bloqueObservacionTransicion");
+            const textarea = document.getElementById("observacionTransicion");
+            const mensaje = document.getElementById("mensajeObservacionTransicion");
+
+            if (bloque) bloque.style.display = "none";
+            if (textarea) {
+                textarea.value = "";
+            }
+            if (mensaje) {
+                mensaje.style.display = "none";
+            }
+        }
+
+        function setAccion(tipo) {
+            document.getElementById("accion").value = tipo;
+            document.getElementById("idEstadoTransicion").value = "";
+            document.getElementById("idAdjunto").value = "";
+            limpiarObservacionTransicion();
+        }
+
+        function ejecutarTransicion(idEstadoTransicion, requiereObservacion) {
+            const form = document.getElementById("formSeguimiento");
+            const bloque = document.getElementById("bloqueObservacionTransicion");
+            const textarea = document.getElementById("observacionTransicion");
+            const mensaje = document.getElementById("mensajeObservacionTransicion");
+
+            document.getElementById("accion").value = "transicion";
+            document.getElementById("idEstadoTransicion").value = idEstadoTransicion;
+            document.getElementById("idAdjunto").value = "";
+
+            if (requiereObservacion) {
+                if (bloque) bloque.style.display = "block";
+
+                const valor = textarea ? textarea.value.trim() : "";
+
+                if (!valor) {
+                    if (mensaje) mensaje.style.display = "block";
+                    if (textarea) textarea.focus();
+                    return;
+                } else {
+                    if (mensaje) mensaje.style.display = "none";
+                }
+            } else {
+                if (bloque) bloque.style.display = "none";
+                if (mensaje) mensaje.style.display = "none";
+                if (textarea) textarea.value = "";
+            }
+
+            prepararFormularioAntesDeEnviar();
+            form.submit();
+        }
+
+        function eliminarAdjunto(idAdjunto) {
+            if (!confirm("¿Está seguro de eliminar este adjunto?")) return false;
+
+            document.getElementById("accion").value = "eliminar";
+            document.getElementById("idAdjunto").value = idAdjunto;
+            document.getElementById("idEstadoTransicion").value = "";
+
+            limpiarObservacionTransicion();
+
+            prepararFormularioAntesDeEnviar();
+            document.getElementById("formSeguimiento").submit();
+            return false;
+        }
+
+        function subirAdjunto() {
+            if (archivoSuperaLimite("archivo")) return false;
+
+            document.getElementById("accion").value = "subir";
+            document.getElementById("idAdjunto").value = "";
+            document.getElementById("idEstadoTransicion").value = "";
+
+            limpiarObservacionTransicion();
+
+            prepararFormularioAntesDeEnviar();
+            document.getElementById("formSeguimiento").submit();
+            return false;
+        }
+
+        function prepararFormularioAntesDeEnviar() {
+            const vlrAproxInput = document.getElementById("vlr_aprox");
+            const vlrRealInput = document.getElementById("vlr_real");
+            const saldoFavorInput = document.getElementById("saldo_favor");
+            const diferenciaInput = document.getElementById("diferencia");
+
+            function limpiarFormato(valor) {
+                if (!valor) return "";
+                return valor.toString().replace(/\./g, "").replace(/,/g, "").trim();
+            }
+
+            if (vlrAproxInput) {
+                vlrAproxInput.value = limpiarFormato(vlrAproxInput.value);
+            }
+
+            if (vlrRealInput) {
+                vlrRealInput.value = limpiarFormato(vlrRealInput.value);
+            }
+
+            if (saldoFavorInput) {
+                saldoFavorInput.value = limpiarFormato(saldoFavorInput.value);
+            }
+
+            if (diferenciaInput) {
+                diferenciaInput.value = limpiarFormato(diferenciaInput.value);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const vlrAproxInput = document.getElementById("vlr_aprox");
+            const vlrRealInput = document.getElementById("vlr_real");
+            const saldoFavorInput = document.getElementById("saldo_favor");
+            const diferenciaInput = document.getElementById("diferencia");
+            const variacionInput = document.getElementById("variacion");
+            const justifSelect = document.getElementById("id_justif_var");
+            const formSeguimiento = document.getElementById("formSeguimiento");
+
+            if (!vlrAproxInput || !vlrRealInput || !diferenciaInput || !variacionInput || !justifSelect || !formSeguimiento) {
+                return;
+            }
+
+            function limpiarFormato(valor) {
+                if (!valor) return "";
+                return valor.toString().replace(/\./g, "").replace(/,/g, "").trim();
+            }
+
+            function soloNumeros(valor) {
+                return valor.replace(/\D/g, "");
+            }
+
+            function formatearMiles(valor) {
+                if (!valor && valor !== 0) return "";
+                return Number(valor).toLocaleString("es-CO");
+            }
+
+            function obtenerNumero(input) {
+                const limpio = soloNumeros(limpiarFormato(input.value));
+                return limpio === "" ? null : parseInt(limpio, 10);
+            }
+
+            function aplicarFormatoInput(input) {
+                if (!input) return;
+                const numero = obtenerNumero(input);
+                input.value = numero === null ? "" : formatearMiles(numero);
+            }
+
+            function calcularValores() {
+                const vlrAprox = obtenerNumero(vlrAproxInput);
+                const vlrReal = obtenerNumero(vlrRealInput);
+
+                if (vlrReal === null) {
+                    diferenciaInput.value = "";
+                    variacionInput.value = "";
+                    justifSelect.value = "";
+                    justifSelect.required = false;
+                    justifSelect.disabled = true;
+                    return;
+                }
+
+                const diferencia = vlrReal - (vlrAprox ?? 0);
+                diferenciaInput.value = formatearMiles(diferencia);
+
+                if ((vlrAprox ?? 0) > 0) {
+                    const variacion = ((vlrReal - vlrAprox) / vlrAprox) * 100;
+                    variacionInput.value = variacion.toFixed(2);
+                } else {
+                    variacionInput.value = "";
+                }
+
+                const puedeEditarJustificacion =
+                    document.getElementById("puedeEditarJustificacion")?.value === "true";
+
+                if (diferencia !== 0 && puedeEditarJustificacion) {
+                    justifSelect.disabled = false;
+                    justifSelect.required = true;
+                } else {
+                    justifSelect.value = "";
+                    justifSelect.required = false;
+                    justifSelect.disabled = true;
+                }
+            }
+
+            function manejarEntradaNumerica(input) {
+                if (!input) return;
+
+                input.addEventListener("input", function () {
+                    input.value = soloNumeros(input.value);
+                    calcularValores();
+                });
+
+                input.addEventListener("blur", function () {
+                    aplicarFormatoInput(input);
+                    calcularValores();
+                });
+
+                input.addEventListener("focus", function () {
+                    input.value = soloNumeros(limpiarFormato(input.value));
+                });
+            }
+
+            const fechaVencOblInput = document.getElementById("fecha_venc_obl");
+            const anioInput = document.getElementById("anio");
+            const mesInput = document.getElementById("mes");
+            const diaInput = document.getElementById("dia");
+
+            function actualizarAnioMesDia() {
+                if (!fechaVencOblInput || !anioInput || !mesInput || !diaInput) return;
+
+                const valor = fechaVencOblInput.value;
+
+                if (!valor) {
+                    anioInput.value = "";
+                    mesInput.value = "";
+                    diaInput.value = "";
+                    return;
+                }
+
+                const partes = valor.split("-");
+                if (partes.length !== 3) return;
+
+                anioInput.value = partes[0];
+                mesInput.value = parseInt(partes[1], 10);
+                diaInput.value = parseInt(partes[2], 10);
+            }
+
+            if (fechaVencOblInput) {
+                fechaVencOblInput.addEventListener("change", actualizarAnioMesDia);
+                fechaVencOblInput.addEventListener("input", actualizarAnioMesDia);
+            }
+
+            manejarEntradaNumerica(vlrAproxInput);
+            manejarEntradaNumerica(vlrRealInput);
+            manejarEntradaNumerica(saldoFavorInput);
+
+            aplicarFormatoInput(vlrAproxInput);
+            aplicarFormatoInput(vlrRealInput);
+            aplicarFormatoInput(saldoFavorInput);
+            calcularValores();
+
+            formSeguimiento.addEventListener("submit", function () {
+                vlrAproxInput.value = soloNumeros(limpiarFormato(vlrAproxInput.value));
+                vlrRealInput.value = soloNumeros(limpiarFormato(vlrRealInput.value));
+
+                if (saldoFavorInput) {
+                    saldoFavorInput.value = soloNumeros(limpiarFormato(saldoFavorInput.value));
+                }
+
+                diferenciaInput.value = soloNumeros(limpiarFormato(diferenciaInput.value));
+            });
+        });
+    </script>
+
+    <script>
+
+        function subirSoportePostCierre() {
+            if (archivoSuperaLimite("archivoPostCierre")) return false;
+
+            document.getElementById("accion").value = "post_cierre";
+            document.getElementById("idAdjunto").value = "";
+            document.getElementById("idEstadoTransicion").value = "";
+
+            limpiarObservacionTransicion();
+            prepararFormularioAntesDeEnviar();
+
+            document.getElementById("formSeguimiento").submit();
+            return false;
+        }
+
+        function archivoSuperaLimite(inputId) {
+            const input = document.getElementById(inputId);
+            const maxBytes = 2 * 1024 * 1024;
+
+            if (!input || input.files.length === 0) {
+                alert("Debe seleccionar un archivo.");
+                return true;
+            }
+
+            if (input.files[0].size > maxBytes) {
+                alert("El archivo no puede superar 2 MB.");
+                return true;
+            }
+
+            return false;
+        }
+
+    </script>
+}

@@ -1,0 +1,46 @@
+﻿@model Alertas.ViewModels.JustifVarViewModel
+
+@{
+    ViewData["Title"] = "Crear justificación de variación";
+}
+
+<div class="container mt-4">
+
+    <h3>Crear justificación de variación</h3>
+    <p class="text-muted">Registra una nueva justificación de variación asociada a un área.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="id_area" class="form-label">Área</label>
+                    <select asp-for="id_area" asp-items="Model.Areas" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_area" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="nombre" class="form-label">Nombre</label>
+                    <input asp-for="nombre" class="form-control" maxlength="100" />
+                    <span asp-validation-for="nombre" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,233 @@
+﻿@model Alertas.ViewModels.ProyectoWizard.ProyectoWizardTransicionesVm
+
+@{
+    ViewData["Title"] = "Wizard de proyecto - Transiciones";
+}
+
+<h2>Creación de proyecto</h2>
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <strong>Paso 3 de 10 - Transiciones de estados</strong>
+        <div class="text-muted">Proyecto: @Model.nombre_proyecto</div>
+    </div>
+
+    <div class="card-body">
+        <form asp-action="Transiciones" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="id_proyecto" />
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="agregarTransicion()">
+                    + Agregar transición
+                </button>
+            </div>
+
+            <table class="table table-bordered table-striped align-middle" id="tablaTransiciones">
+                <thead>
+                    <tr>
+                        <th style="width:80px;">Orden</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Acción</th>
+                        <th>Req. obs.</th>
+                        <th>Aprob.</th>
+                        <th>Rechazo</th>
+                        <th>Anulación</th>
+                        <th>Activo</th>
+                        <th style="width:100px;">Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Transiciones.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                <input type="hidden" name="Transiciones[@i].id_estado_transicion" value="@Model.Transiciones[i].id_estado_transicion" />
+                                <input type="hidden" name="Transiciones[@i].eliminar" value="false" class="input-eliminar" />
+
+                                <input name="Transiciones[@i].orden" value="@Model.Transiciones[i].orden" class="form-control" type="number" min="1" />
+                            </td>
+
+                            <td>
+                                <select name="Transiciones[@i].id_estado_origen" class="form-select">
+                                    <option value="">Seleccione...</option>
+                                    @foreach (var estado in Model.Estados)
+                                    {
+                                        <option value="@estado.Value" selected="@(estado.Value == Model.Transiciones[i].id_estado_origen?.ToString())">
+                                            @estado.Text
+                                        </option>
+                                    }
+                                </select>
+                            </td>
+
+                            <td>
+                                <select name="Transiciones[@i].id_estado_destino" class="form-select">
+                                    <option value="">Seleccione...</option>
+                                    @foreach (var estado in Model.Estados)
+                                    {
+                                        <option value="@estado.Value" selected="@(estado.Value == Model.Transiciones[i].id_estado_destino?.ToString())">
+                                            @estado.Text
+                                        </option>
+                                    }
+                                </select>
+                            </td>
+
+                            <td>
+                                <input name="Transiciones[@i].nombre_accion" value="@Model.Transiciones[i].nombre_accion" class="form-control" />
+                            </td>
+
+                            <td class="text-center">
+                                <input name="Transiciones[@i].requiere_observacion" value="true" type="checkbox" class="form-check-input" @(Model.Transiciones[i].requiere_observacion ? "checked" : "") />
+                                <input name="Transiciones[@i].requiere_observacion" value="false" type="hidden" />
+                            </td>
+
+                            <td class="text-center">
+                                <input name="Transiciones[@i].es_aprobacion" value="true" type="checkbox" class="form-check-input" @(Model.Transiciones[i].es_aprobacion ? "checked" : "") />
+                                <input name="Transiciones[@i].es_aprobacion" value="false" type="hidden" />
+                            </td>
+
+                            <td class="text-center">
+                                <input name="Transiciones[@i].es_rechazo" value="true" type="checkbox" class="form-check-input" @(Model.Transiciones[i].es_rechazo ? "checked" : "") />
+                                <input name="Transiciones[@i].es_rechazo" value="false" type="hidden" />
+                            </td>
+
+                            <td class="text-center">
+                                <input name="Transiciones[@i].es_anulacion" value="true" type="checkbox" class="form-check-input" @(Model.Transiciones[i].es_anulacion ? "checked" : "") />
+                                <input name="Transiciones[@i].es_anulacion" value="false" type="hidden" />
+                            </td>
+
+                            <td class="text-center">
+                                <input name="Transiciones[@i].activo" value="true" type="checkbox" class="form-check-input" @(Model.Transiciones[i].activo ? "checked" : "") />
+                                <input name="Transiciones[@i].activo" value="false" type="hidden" />
+                            </td>
+
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="marcarEliminar(this)">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="Estados" asp-route-id="@Model.id_proyecto" class="btn btn-secondary">
+                    Anterior
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    Guardar y continuar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const estadosOptions = `
+            <option value="">Seleccione...</option>
+            @foreach (var estado in Model.Estados)
+            {
+                    <text><option value="@estado.Value">@estado.Text</option></text>
+            }
+        `;
+
+        function agregarTransicion() {
+            const tbody = document.querySelector("#tablaTransiciones tbody");
+            const index = tbody.querySelectorAll("tr").length;
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>
+                    <input type="hidden" name="Transiciones[${index}].id_estado_transicion" value="" />
+                    <input type="hidden" name="Transiciones[${index}].eliminar" value="false" class="input-eliminar" />
+
+                    <input name="Transiciones[${index}].orden" class="form-control" type="number" min="1" value="${index + 1}" />
+                </td>
+
+                <td>
+                    <select name="Transiciones[${index}].id_estado_origen" class="form-select">
+                        ${estadosOptions}
+                    </select>
+                </td>
+
+                <td>
+                    <select name="Transiciones[${index}].id_estado_destino" class="form-select">
+                        ${estadosOptions}
+                    </select>
+                </td>
+
+                <td>
+                    <input name="Transiciones[${index}].nombre_accion" class="form-control" />
+                </td>
+
+                <td class="text-center">
+                    <input name="Transiciones[${index}].requiere_observacion" value="true" type="checkbox" class="form-check-input" />
+                    <input name="Transiciones[${index}].requiere_observacion" value="false" type="hidden" />
+                </td>
+
+                <td class="text-center">
+                    <input name="Transiciones[${index}].es_aprobacion" value="true" type="checkbox" class="form-check-input" />
+                    <input name="Transiciones[${index}].es_aprobacion" value="false" type="hidden" />
+                </td>
+
+                <td class="text-center">
+                    <input name="Transiciones[${index}].es_rechazo" value="true" type="checkbox" class="form-check-input" />
+                    <input name="Transiciones[${index}].es_rechazo" value="false" type="hidden" />
+                </td>
+
+                <td class="text-center">
+                    <input name="Transiciones[${index}].es_anulacion" value="true" type="checkbox" class="form-check-input" />
+                    <input name="Transiciones[${index}].es_anulacion" value="false" type="hidden" />
+                </td>
+
+                <td class="text-center">
+                    <input name="Transiciones[${index}].activo" value="true" type="checkbox" class="form-check-input" checked />
+                    <input name="Transiciones[${index}].activo" value="false" type="hidden" />
+                </td>
+
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="marcarEliminar(this)">
+                        Eliminar
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        }
+
+        function marcarEliminar(btn) {
+            const row = btn.closest("tr");
+            const idTransicion = row.querySelector("input[name$='.id_estado_transicion']").value;
+            const inputEliminar = row.querySelector(".input-eliminar");
+
+            if (!idTransicion) {
+                row.remove();
+                reindexarTransiciones();
+                return;
+            }
+
+            inputEliminar.value = "true";
+            row.style.display = "none";
+        }
+
+        function reindexarTransiciones() {
+            const rows = document.querySelectorAll("#tablaTransiciones tbody tr");
+
+            rows.forEach((row, index) => {
+                row.querySelectorAll("input, select").forEach(input => {
+                    input.name = input.name.replace(/Transiciones\[\d+\]/, `Transiciones[${index}]`);
+                });
+            });
+        }
+    </script>
+}

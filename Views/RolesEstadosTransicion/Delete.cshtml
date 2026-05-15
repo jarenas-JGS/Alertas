@@ -1,0 +1,78 @@
+﻿@model Alertas.Models.RolEstadoTransicion
+
+@{
+    ViewData["Title"] = "Eliminar rol por transición";
+    bool puedeEliminar = ViewBag.PuedeEliminar ?? false;
+}
+
+<div class="container mt-4">
+
+    <h3>Eliminar rol por transición</h3>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            @if (!puedeEliminar)
+            {
+                <div class="alert alert-warning">
+                    Este registro no puede eliminarse porque tiene relaciones asociadas.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    ¿Estás seguro de que deseas eliminar este rol por transición?
+                </div>
+            }
+
+            <dl class="row">
+                <dt class="col-sm-3">Proyecto</dt>
+                <dd class="col-sm-9">@Model.EstadoTransicion?.Proyecto?.nombre</dd>
+
+                <dt class="col-sm-3">Id transición</dt>
+                <dd class="col-sm-9">@Model.id_estado_transicion</dd>
+
+                <dt class="col-sm-3">Estado origen</dt>
+                <dd class="col-sm-9">@Model.EstadoTransicion?.EstadoOrigen?.nombre</dd>
+
+                <dt class="col-sm-3">Estado destino</dt>
+                <dd class="col-sm-9">@Model.EstadoTransicion?.EstadoDestino?.nombre</dd>
+
+                <dt class="col-sm-3">Acción</dt>
+                <dd class="col-sm-9">@Model.EstadoTransicion?.nombre_accion</dd>
+
+                <dt class="col-sm-3">Rol</dt>
+                <dd class="col-sm-9">@Model.Rol?.nombre</dd>
+
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9">
+                    @if (Model.activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactivo</span>
+                    }
+                </dd>
+            </dl>
+
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_rol_estado_transicion" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
+
+                    @if (puedeEliminar)
+                    {
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,101 @@
+﻿@model Alertas.ViewModels.ProyectoWizard.ProyectoWizardRolesTransicionVm
+
+@{
+    ViewData["Title"] = "Wizard de proyecto - Roles por transición";
+}
+
+<h2>Creación de proyecto</h2>
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <strong>Paso 4 de 10 - Roles por transición</strong>
+        <div class="text-muted">Proyecto: @Model.nombre_proyecto</div>
+    </div>
+
+    <div class="card-body">
+        <form asp-action="RolesTransicion" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="id_proyecto" />
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <table class="table table-bordered table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Acción</th>
+                        <th>Tipo</th>
+                        <th>Roles permitidos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Transiciones.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                @Model.Transiciones[i].estado_origen
+                                <input type="hidden" name="Transiciones[@i].id_estado_transicion" value="@Model.Transiciones[i].id_estado_transicion" />
+                            </td>
+
+                            <td>@Model.Transiciones[i].estado_destino</td>
+
+                            <td>@Model.Transiciones[i].nombre_accion</td>
+
+                            <td>
+                                @if (Model.Transiciones[i].es_aprobacion)
+                                {
+                                    <span class="badge bg-success">Aprobación</span>
+                                }
+                                else if (Model.Transiciones[i].es_rechazo)
+                                {
+                                    <span class="badge bg-danger">Rechazo</span>
+                                }
+                                else if (Model.Transiciones[i].es_anulacion)
+                                {
+                                    <span class="badge bg-warning text-dark">Anulación</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Normal</span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="d-flex flex-wrap gap-3">
+                                    @foreach (var rol in Model.Roles)
+                                    {
+                                        var checkedRol = Model.Transiciones[i].roles_seleccionados.Contains(rol.id_rol);
+
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   name="Transiciones[@i].roles_seleccionados"
+                                                   value="@rol.id_rol"
+                                                   @(checkedRol ? "checked" : "") />
+
+                                            <label class="form-check-label">
+                                                @rol.nombre
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="Transiciones" asp-route-id="@Model.id_proyecto" class="btn btn-secondary">
+                    Anterior
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    Guardar y continuar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

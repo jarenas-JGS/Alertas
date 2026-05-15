@@ -1,0 +1,63 @@
+﻿@model Alertas.Models.GrupoAlertaDiaEstadoOff
+
+@{
+    ViewData["Title"] = "Eliminar estado off";
+    bool puedeEliminar = ViewBag.PuedeEliminar ?? false;
+}
+
+<div class="container mt-4">
+
+    <h3>Eliminar estado off</h3>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            @if (!puedeEliminar)
+            {
+                <div class="alert alert-warning">
+                    Este estado off no puede eliminarse porque tiene registros relacionados.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    ¿Estás seguro de que deseas eliminar este estado off?
+                </div>
+            }
+
+            <dl class="row">
+                <dt class="col-sm-3">Proyecto</dt>
+                <dd class="col-sm-9">@Model.GrupoAlertaDia?.GrupoAlerta?.Proyecto?.nombre</dd>
+
+                <dt class="col-sm-3">Grupo de alerta</dt>
+                <dd class="col-sm-9">@Model.GrupoAlertaDia?.GrupoAlerta?.nombre</dd>
+
+                <dt class="col-sm-3">Id alerta</dt>
+                <dd class="col-sm-9">@Model.id_grupo_alerta_dia</dd>
+
+                <dt class="col-sm-3">Alerta por días</dt>
+                <dd class="col-sm-9">@Model.GrupoAlertaDia?.nombre</dd>
+
+                <dt class="col-sm-3">Estado off</dt>
+                <dd class="col-sm-9">@Model.Estado?.nombre</dd>
+            </dl>
+
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_grupo_alerta_dia_estado_off" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
+
+                    @if (puedeEliminar)
+                    {
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

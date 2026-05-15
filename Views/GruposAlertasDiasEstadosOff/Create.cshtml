@@ -1,0 +1,77 @@
+﻿@model Alertas.ViewModels.GrupoAlertaDiaEstadoOffViewModel
+
+@{
+    ViewData["Title"] = "Crear estado off";
+}
+
+<div class="container mt-4">
+
+    <h3>Crear estado off</h3>
+    <p class="text-muted">Registra un estado que desactiva una alerta por días.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="id_grupo_alerta_dia" class="form-label">Alerta por días</label>
+                    <select asp-for="id_grupo_alerta_dia" asp-items="Model.GruposAlertasDias" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_grupo_alerta_dia" class="text-danger"></span>
+                    <small class="text-muted">Se muestra como: Id - Nombre / Proyecto - Grupo.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="id_estado" class="form-label">Estado off</label>
+                    <select asp-for="id_estado" asp-items="Model.Estados" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_estado" class="text-danger"></span>
+                    <small class="text-muted">Solo se muestran estados del proyecto asociado al grupo de alerta.</small>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function () {
+            $('#id_grupo_alerta_dia').on('change', function () {
+                const idGrupoAlertaDia = $(this).val();
+
+                $('#id_estado').empty().append('<option value="">Seleccione...</option>');
+
+                if (!idGrupoAlertaDia) {
+                    return;
+                }
+
+                $.get('@Url.Action("ObtenerEstadosPorGrupoAlertaDia", "GruposAlertasDiasEstadosOff")',
+                    { idGrupoAlertaDia: idGrupoAlertaDia },
+                    function (data) {
+                        $('#id_estado').empty().append('<option value="">Seleccione...</option>');
+
+                        $.each(data, function (i, item) {
+                            $('#id_estado').append($('<option>', {
+                                value: item.value,
+                                text: item.text
+                            }));
+                        });
+                    });
+            });
+        });
+    </script>
+}

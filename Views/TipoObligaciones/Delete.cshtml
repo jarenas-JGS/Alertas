@@ -1,0 +1,72 @@
+﻿@model Alertas.Models.TipoObligacion
+
+@{
+    ViewData["Title"] = "Eliminar tipo de obligación";
+    bool puedeEliminar = ViewBag.PuedeEliminar ?? false;
+}
+
+<div class="container mt-4">
+
+    <h3>Eliminar tipo de obligación</h3>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            @if (!puedeEliminar)
+            {
+                <div class="alert alert-warning">
+                    Este tipo de obligación no puede eliminarse porque tiene obligaciones asociadas.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    ¿Estás seguro de que deseas eliminar este tipo de obligación?
+                </div>
+            }
+
+            <dl class="row">
+                <dt class="col-sm-3">Id</dt>
+                <dd class="col-sm-9">@Model.id_tipo_obligacion</dd>
+
+                <dt class="col-sm-3">Área</dt>
+                <dd class="col-sm-9">@Model.Area?.nombre</dd>
+
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.nombre</dd>
+
+                <dt class="col-sm-3">Orden</dt>
+                <dd class="col-sm-9">@Model.orden</dd>
+
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9">
+                    @if (Model.activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactivo</span>
+                    }
+                </dd>
+            </dl>
+
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_tipo_obligacion" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
+
+                    @if (puedeEliminar)
+                    {
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

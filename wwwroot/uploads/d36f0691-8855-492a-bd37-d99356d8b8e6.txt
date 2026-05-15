@@ -1,0 +1,59 @@
+SELECT 
+    T0."CardCode",
+    T0."CardName",
+    T0."DocNum",
+    T0."DocDate"        AS "FechaFactura",
+    T0."DocDueDate"     AS "FechaVencimiento",
+    T1."PymntGroup"     AS "CondicionPago",
+    T0."DocTotal",
+    T0."PaidToDate"     AS "Pagado",
+    (T0."DocTotal" - T0."PaidToDate") AS "Saldo",
+
+    DAYS_BETWEEN(T0."DocDate", CURRENT_DATE) AS "DiasFactura",
+    DAYS_BETWEEN(T0."DocDueDate", CURRENT_DATE) AS "DiasVencimiento",
+
+    CASE 
+        WHEN DAYS_BETWEEN(T0."DocDueDate", CURRENT_DATE) <= 0
+        THEN (T0."DocTotal" - T0."PaidToDate")
+        ELSE 0
+    END AS "PorVencer",
+
+    CASE 
+        WHEN DAYS_BETWEEN(T0."DocDueDate", CURRENT_DATE) BETWEEN 1 AND 30
+        THEN (T0."DocTotal" - T0."PaidToDate")
+        ELSE 0
+    END AS "Vencido_1_30",
+
+    CASE 
+        WHEN DAYS_BETWEEN(T0."DocDueDate", CURRENT_DATE) BETWEEN 31 AND 60
+        THEN (T0."DocTotal" - T0."PaidToDate")
+        ELSE 0
+    END AS "Vencido_31_60",
+
+    CASE 
+        WHEN DAYS_BETWEEN(T0."DocDueDate", CURRENT_DATE) BETWEEN 61 AND 90
+        THEN (T0."DocTotal" - T0."PaidToDate")
+        ELSE 0
+    END AS "Vencido_61_90",
+
+    CASE 
+        WHEN DAYS_BETWEEN(T0."DocDueDate", CURRENT_DATE) BETWEEN 91 AND 120
+        THEN (T0."DocTotal" - T0."PaidToDate")
+        ELSE 0
+    END AS "Vencido_91_120",
+
+    CASE 
+        WHEN DAYS_BETWEEN(T0."DocDueDate", CURRENT_DATE) > 120
+        THEN (T0."DocTotal" - T0."PaidToDate")
+        ELSE 0
+    END AS "Vencido_Mas_120"
+
+FROM OPCH T0
+LEFT JOIN OCTG T1 
+    ON T0."GroupNum" = T1."GroupNum"
+WHERE 
+    T0."DocStatus" = 'O'
+    AND (T0."DocTotal" - T0."PaidToDate") > 0
+ORDER BY 
+    T0."CardCode",
+    T0."DocDueDate";

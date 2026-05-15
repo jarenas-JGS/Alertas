@@ -1,0 +1,98 @@
+using Alertas.Data;
+using Alertas.Services;
+using Alertas.Services.CargaMasiva;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Alertas.Services.Notificaciones;
+using Alertas.Services.Notificaciones.Config;
+
+
+var builder = WebApplication.CreateBuilder(args);
+
+// DbContext PostgreSQL
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// MVC
+builder.Services.AddControllersWithViews();
+
+// HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
+// Session
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddScoped<IExcelObligacionesReader, ExcelObligacionesReader>();
+
+builder.Services.AddScoped<IValidadorCargaObligacionesService, ValidadorCargaObligacionesService>();
+
+builder.Services.AddScoped<IConfirmadorCargaObligacionesService, ConfirmadorCargaObligacionesService>();
+
+builder.Services.AddScoped<IExcelErroresCargaService, ExcelErroresCargaService>();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(8);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = "Alertas.Session";
+});
+
+// Authentication - Cookies
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Login/Index";
+        options.LogoutPath = "/Login/Logout";
+        options.AccessDeniedPath = "/Login/AccessDenied";
+
+        options.Cookie.Name = "Alertas.Auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
+
+// Authorization
+builder.Services.AddAuthorization();
+
+builder.Services.AddScoped<SeguridadService>();
+
+builder.Services.AddScoped<IPlantillaObligacionesService, PlantillaObligacionesService>();
+
+builder.Services.AddScoped<ICalendarioHabilesService, CalendarioHabilesService>();
+
+builder.Services.AddScoped<INotificacionesAlertasService, NotificacionesAlertasService>();
+
+builder.Services.Configure<SmtpSettings>(
+    builder.Configuration.GetSection("Smtp"));
+
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+builder.Services.AddScoped<IPlantillaCorreoAlertasService, PlantillaCorreoAlertasService>();
+
+
+var app = builder.Build();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseSession();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Login}/{action=Index}/{id?}");
+
+app.Run();

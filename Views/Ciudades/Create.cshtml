@@ -1,0 +1,44 @@
+﻿@model Alertas.Models.Ciudad
+
+@{
+    ViewData["Title"] = "Nueva ciudad";
+}
+
+<div class="container mt-4">
+
+    <h3>Nueva ciudad</h3>
+    <p class="text-muted">Crea una nueva ciudad para usarla en las tablas maestras del sistema.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="nombre" class="form-label">Nombre de la ciudad</label>
+                    <input asp-for="nombre" class="form-control" maxlength="100" />
+                    <span asp-validation-for="nombre" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="cod_ciiu" class="form-label">Código CIIU</label>
+                    <input asp-for="cod_ciiu" class="form-control" />
+                    <span asp-validation-for="cod_ciiu" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

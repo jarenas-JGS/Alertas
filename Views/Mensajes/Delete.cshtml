@@ -1,0 +1,72 @@
+﻿@model Alertas.Models.Mensaje
+
+@{
+    ViewData["Title"] = "Eliminar mensaje";
+    bool puedeEliminar = ViewBag.PuedeEliminar ?? false;
+}
+
+<div class="container mt-4">
+
+    <h3>Eliminar mensaje</h3>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            @if (!puedeEliminar)
+            {
+                <div class="alert alert-warning">
+                    Este mensaje no puede eliminarse porque tiene alertas por días asociadas.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    ¿Estás seguro de que deseas eliminar este mensaje?
+                </div>
+            }
+
+            <dl class="row">
+                <dt class="col-sm-3">Id</dt>
+                <dd class="col-sm-9">@Model.id_mensaje</dd>
+
+                <dt class="col-sm-3">Prioridad</dt>
+                <dd class="col-sm-9">@Model.prioridad</dd>
+
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.nombre</dd>
+
+                <dt class="col-sm-3">Texto</dt>
+                <dd class="col-sm-9">@Model.texto</dd>
+
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9">
+                    @if (Model.activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactivo</span>
+                    }
+                </dd>
+            </dl>
+
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_mensaje" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
+
+                    @if (puedeEliminar)
+                    {
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

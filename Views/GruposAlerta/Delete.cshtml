@@ -1,0 +1,66 @@
+﻿@model Alertas.Models.GrupoAlerta
+
+@{
+    ViewData["Title"] = "Eliminar grupo de alerta";
+    bool puedeEliminar = ViewBag.PuedeEliminar ?? false;
+}
+
+<div class="container mt-4">
+
+    <h3>Eliminar grupo de alerta</h3>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            @if (!puedeEliminar)
+            {
+                <div class="alert alert-warning">
+                    Este grupo de alerta no puede eliminarse porque tiene días de alerta asociados.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    ¿Estás seguro de que deseas eliminar este grupo de alerta?
+                </div>
+            }
+
+            <dl class="row">
+                <dt class="col-sm-3">Proyecto</dt>
+                <dd class="col-sm-9">@Model.Proyecto?.nombre</dd>
+
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.nombre</dd>
+
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9">
+                    @if (Model.activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactivo</span>
+                    }
+                </dd>
+            </dl>
+
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_grupo_alerta" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
+
+                    @if (puedeEliminar)
+                    {
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

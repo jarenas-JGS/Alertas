@@ -1,0 +1,248 @@
+﻿@model Alertas.ViewModels.ProyectoWizard.ProyectoWizardAlertasDiasVm
+
+@{
+    ViewData["Title"] = "Wizard de proyecto - Reglas de alertas";
+}
+
+<h2>Creación de proyecto</h2>
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <strong>Paso 7 de 10 - Reglas de alertas por días</strong>
+        <div class="text-muted">Proyecto: @Model.nombre_proyecto</div>
+        <div class="text-muted">Grupo: @Model.nombre_grupo_alerta</div>
+    </div>
+
+    <div class="card-body">
+        <form asp-action="AlertasDias" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="id_proyecto" />
+            <input type="hidden" asp-for="id_grupo_alerta" />
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="agregarAlertaDia()">
+                    + Agregar regla
+                </button>
+            </div>
+
+            <table class="table table-bordered table-striped align-middle" id="tablaAlertasDias">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th style="width:150px;">Tipo control</th>
+                        <th style="width:90px;">Operador</th>
+                        <th style="width:90px;">Días</th>
+                        <th style="width:160px;">Rol</th>
+                        <th style="width:180px;">Mensaje</th>
+                        <th style="width:90px;">Activo</th>
+                        <th style="width:100px;">Eliminar</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @for (int i = 0; i < Model.AlertasDias.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                <input type="hidden" name="AlertasDias[@i].id_grupo_alerta_dia" value="@Model.AlertasDias[i].id_grupo_alerta_dia" />
+                                <input type="hidden" name="AlertasDias[@i].eliminar" value="false" class="input-eliminar" />
+
+                                <input name="AlertasDias[@i].nombre" value="@Model.AlertasDias[i].nombre" class="form-control" />
+                            </td>
+
+                            <td>
+                                <select name="AlertasDias[@i].tipo_control" class="form-select">
+                                    <option value="">Seleccione...</option>
+                                    <option value="VENCIMIENTO" selected="@(Model.AlertasDias[i].tipo_control == "VENCIMIENTO")">VENCIMIENTO</option>
+                                    <option value="SEGUIMIENTO" selected="@(Model.AlertasDias[i].tipo_control == "SEGUIMIENTO")">SEGUIMIENTO</option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <select name="AlertasDias[@i].operador" class="form-select">
+                                    <option value="">...</option>
+                                    <option value="<" selected="@(Model.AlertasDias[i].operador == "<")">&lt;</option>
+                                    <option value="<=" selected="@(Model.AlertasDias[i].operador == "<=")">&lt;=</option>
+                                    <option value="=" selected="@(Model.AlertasDias[i].operador == "=")">=</option>
+                                    <option value=">=" selected="@(Model.AlertasDias[i].operador == ">=")">&gt;=</option>
+                                    <option value=">" selected="@(Model.AlertasDias[i].operador == ">")">&gt;</option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <input name="AlertasDias[@i].valor_dias" value="@Model.AlertasDias[i].valor_dias" class="form-control" type="number" />
+                            </td>
+
+                            <td>
+                                <select name="AlertasDias[@i].id_rol" class="form-select">
+                                    <option value="">Seleccione...</option>
+                                    @foreach (var rol in Model.Roles)
+                                    {
+                                        <option value="@rol.Value" selected="@(rol.Value == Model.AlertasDias[i].id_rol?.ToString())">
+                                            @rol.Text
+                                        </option>
+                                    }
+                                </select>
+                            </td>
+
+                            <td>
+                                <select name="AlertasDias[@i].id_mensaje" class="form-select">
+                                    <option value="">Seleccione...</option>
+                                    @foreach (var mensaje in Model.Mensajes)
+                                    {
+                                        <option value="@mensaje.Value" selected="@(mensaje.Value == Model.AlertasDias[i].id_mensaje?.ToString())">
+                                            @mensaje.Text
+                                        </option>
+                                    }
+                                </select>
+                            </td>
+
+                            <td class="text-center">
+                                <input name="AlertasDias[@i].activo" value="true" type="checkbox" class="form-check-input" @(Model.AlertasDias[i].activo ? "checked" : "") />
+                                <input name="AlertasDias[@i].activo" value="false" type="hidden" />
+                            </td>
+
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="marcarEliminar(this)">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="GrupoAlertas" asp-route-id="@Model.id_proyecto" class="btn btn-secondary">
+                    Anterior
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    Guardar y continuar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const rolesOptions = `
+            <option value="">Seleccione...</option>
+            @foreach (var rol in Model.Roles)
+            {
+                    <text><option value="@rol.Value">@rol.Text</option></text>
+            }
+        `;
+
+        const mensajesOptions = `
+            <option value="">Seleccione...</option>
+            @foreach (var mensaje in Model.Mensajes)
+            {
+                    <text><option value="@mensaje.Value">@mensaje.Text</option></text>
+            }
+        `;
+
+        const dependenciasOptions = `
+            <option value="">Sin dependencia</option>
+            @foreach (var dependencia in Model.Dependencias)
+            {
+                    <text><option value="@dependencia.Value">@dependencia.Text</option></text>
+            }
+        `;
+
+        function agregarAlertaDia() {
+            const tbody = document.querySelector("#tablaAlertasDias tbody");
+            const index = tbody.querySelectorAll("tr").length;
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>
+                    <input type="hidden" name="AlertasDias[${index}].id_grupo_alerta_dia" value="" />
+                    <input type="hidden" name="AlertasDias[${index}].eliminar" value="false" class="input-eliminar" />
+
+                    <input name="AlertasDias[${index}].nombre" class="form-control" />
+                </td>
+
+                <td>
+                    <select name="AlertasDias[${index}].tipo_control" class="form-select">
+                        <option value="">Seleccione...</option>
+                        <option value="VENCIMIENTO">VENCIMIENTO</option>
+                        <option value="SEGUIMIENTO">SEGUIMIENTO</option>
+                    </select>
+                </td>
+
+                <td>
+                    <select name="AlertasDias[${index}].operador" class="form-select">
+                        <option value="">...</option>
+                        <option value="<">&lt;</option>
+                        <option value="<=">&lt;=</option>
+                        <option value="=">=</option>
+                        <option value=">=">&gt;=</option>
+                        <option value=">">&gt;</option>
+                    </select>
+                </td>
+
+                <td>
+                    <input name="AlertasDias[${index}].valor_dias" class="form-control" type="number" value="0" />
+                </td>
+
+                <td>
+                    <select name="AlertasDias[${index}].id_rol" class="form-select">
+                        ${rolesOptions}
+                    </select>
+                </td>
+
+                <td>
+                    <select name="AlertasDias[${index}].id_mensaje" class="form-select">
+                        ${mensajesOptions}
+                    </select>
+                </td>
+
+                <td class="text-center">
+                    <input name="AlertasDias[${index}].activo" value="true" type="checkbox" class="form-check-input" checked />
+                    <input name="AlertasDias[${index}].activo" value="false" type="hidden" />
+                </td>
+
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="marcarEliminar(this)">
+                        Eliminar
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        }
+
+        function marcarEliminar(btn) {
+            const row = btn.closest("tr");
+            const idAlertaDia = row.querySelector("input[name$='.id_grupo_alerta_dia']").value;
+            const inputEliminar = row.querySelector(".input-eliminar");
+
+            if (!idAlertaDia) {
+                row.remove();
+                reindexarAlertasDias();
+                return;
+            }
+
+            inputEliminar.value = "true";
+            row.style.display = "none";
+        }
+
+        function reindexarAlertasDias() {
+            const rows = document.querySelectorAll("#tablaAlertasDias tbody tr");
+
+            rows.forEach((row, index) => {
+                row.querySelectorAll("input, select").forEach(input => {
+                    input.name = input.name.replace(/AlertasDias\[\d+\]/, `AlertasDias[${index}]`);
+                });
+            });
+        }
+    </script>
+}

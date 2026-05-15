@@ -1,0 +1,69 @@
+﻿@model Alertas.ViewModels.AreaEmpresaViewModel
+
+@{
+    ViewData["Title"] = "Editar Área - Empresa";
+}
+
+<div class="container mt-4">
+
+    <h3>Editar registro</h3>
+    <p class="text-muted">Modifica la asociación entre área y empresa.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_area_empresa" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Área</label>
+                        <select asp-for="id_area" asp-items="Model.Areas" class="form-select"></select>
+                        <span asp-validation-for="id_area" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Empresa</label>
+                        <select asp-for="id_empresa" asp-items="Model.Empresas" class="form-select"></select>
+                        <span asp-validation-for="id_empresa" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Email</label>
+                        <input asp-for="email" class="form-control" />
+                        <span asp-validation-for="email" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3 form-check">
+                        <input asp-for="activo" class="form-check-input" />
+                        <label class="form-check-label">Activo</label>
+                    </div>
+
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Cancelar
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Guardar cambios
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

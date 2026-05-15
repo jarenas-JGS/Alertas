@@ -1,0 +1,76 @@
+﻿@model Alertas.Models.UsuarioProyecto
+
+@{
+    ViewData["Title"] = "Consultar usuario por proyecto";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0">Consultar usuario por proyecto</h3>
+            <small class="text-muted">Detalle de la asignación entre usuario, proyecto y rol.</small>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Información principal
+        </div>
+
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Id</dt>
+                <dd class="col-sm-9">@Model.id_usuario_proyecto</dd>
+
+                <dt class="col-sm-3">Área</dt>
+                <dd class="col-sm-9">@Model.Proyecto?.Area?.nombre</dd>
+
+                <dt class="col-sm-3">Proyecto</dt>
+                <dd class="col-sm-9">@Model.Proyecto?.nombre</dd>
+
+                <dt class="col-sm-3">Usuario</dt>
+                <dd class="col-sm-9">@Model.Usuario?.nombre</dd>
+
+                <dt class="col-sm-3">Rol</dt>
+                <dd class="col-sm-9">@Model.Rol?.nombre</dd>
+
+                <dt class="col-sm-3">Fecha asignación</dt>
+                <dd class="col-sm-9">@(Model.fecha_asignacion?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</dd>
+
+                <dt class="col-sm-3">Asignado por</dt>
+                <dd class="col-sm-9">@(Model.UsuarioAsignacion?.nombre ?? "Sin registro")</dd>
+
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9">
+                    @if (Model.activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactivo</span>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+
+        <a asp-action="Edit" asp-route-id="@Model.id_usuario_proyecto" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+
+        <a asp-action="Delete" asp-route-id="@Model.id_usuario_proyecto" class="btn btn-outline-danger">
+            <i class="bi bi-trash"></i> Eliminar
+        </a>
+    </div>
+</div>

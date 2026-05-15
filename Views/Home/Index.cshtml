@@ -1,0 +1,218 @@
+﻿@model Alertas.ViewModels.HomeViewModel
+
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Bienvenido, @Model.Nombre</h2>
+        <p class="text-muted mb-0">
+            Has iniciado sesión correctamente en el sistema de control de impuestos y alertas.
+        </p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.MensajeInformativo))
+    {
+        <div class="alert alert-warning shadow-sm border-0" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            @Model.MensajeInformativo
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="row g-3">
+                @if (Model.PuedeVerSeguimientoProyecto)
+                {
+                    <div class="col-md-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="mb-3">
+                                    <div class="text-primary fs-3 mb-2">
+                                        <i class="bi bi-kanban"></i>
+                                    </div>
+                                    <h5 class="fw-semibold mb-2">Seguimiento a Proyecto</h5>
+                                    <p class="text-muted small mb-0">
+                                        Ingrese a la selección de proyecto y continúe con el seguimiento de obligaciones.
+                                    </p>
+                                </div>
+
+                                <div class="mt-auto">
+                                    <a asp-controller="Login" asp-action="SeleccionarProyecto" class="btn btn-primary">
+                                        Ingresar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.PuedeVerReportes)
+                {
+                    <div class="col-md-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="mb-3">
+                                    <div class="text-secondary fs-3 mb-2">
+                                        <i class="bi bi-bar-chart-line"></i>
+                                    </div>
+                                    <h5 class="fw-semibold mb-2">Reportes</h5>
+                                    <p class="text-muted small mb-0">
+                                        Consulte reportes operativos y de control del sistema.
+                                    </p>
+                                </div>
+
+                                <div class="mt-auto">
+                                    <a asp-controller="Reportes" asp-action="Index" class="btn btn-outline-secondary">
+                                        Ver módulo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.PuedeVerCreacionProyecto)
+                {
+                    <div class="col-md-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="mb-3">
+                                    <div class="text-success fs-3 mb-2">
+                                        <i class="bi bi-diagram-3"></i>
+                                    </div>
+                                    <h5 class="fw-semibold mb-2">Creación de Proyecto</h5>
+                                    <p class="text-muted small mb-0">
+                                        Configure un nuevo proyecto con estados, alertas y parámetros iniciales.
+                                    </p>
+                                </div>
+
+                                <div class="mt-auto">
+                                    <a asp-controller="ProyectoWizard" asp-action="Index" class="btn btn-outline-secondary">
+                                        Ver módulo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.PuedeVerNotificaciones)
+                {
+                    <div class="col-md-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="mb-3">
+                                    <div class="text-info fs-3 mb-2">
+                                        <i class="bi bi-envelope-exclamation"></i>
+                                    </div>
+                                    <h5 class="fw-semibold mb-2">Notificación de Alertas</h5>
+                                    <p class="text-muted small mb-0">
+                                        Ejecute o previsualice las notificaciones de todos los proyectos activos.
+                                    </p>
+                                </div>
+
+                                <div class="mt-auto">
+                                    <a asp-controller="Notificaciones"
+                                       asp-action="Index"
+                                       asp-route-modo="general"
+                                       class="btn btn-outline-secondary">
+                                        Ver módulo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (!Model.PuedeVerSeguimientoProyecto
+                                && !Model.PuedeVerReportes
+                                && !Model.PuedeVerCreacionProyecto
+                                && !Model.PuedeVerNotificaciones)
+                {
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <h5 class="fw-semibold">Sin opciones disponibles</h5>
+                                <p class="text-muted mb-0">
+                                    Actualmente no tiene módulos disponibles para operar en el sistema.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h5 class="fw-semibold mb-3">Información de sesión</h5>
+
+                    <div class="mb-3">
+                        <div class="text-muted small">Usuario</div>
+                        <div class="fw-semibold">@Model.Usuario</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="text-muted small">Nombre</div>
+                        <div class="fw-semibold">@Model.Nombre</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="text-muted small">Correo</div>
+                        <div class="fw-semibold">@Model.Email</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="text-muted small">Perfil</div>
+                        <div class="fw-semibold">
+                            @(Model.EsSuperAdmin ? "Super Administrador" : "Usuario")
+                        </div>
+                    </div>
+
+                    @if (Model.TieneProyectosDisponibles)
+                    {
+                        <div class="mb-3">
+                            <div class="text-muted small">Accesos operativos</div>
+                            <div class="fw-semibold text-success">Disponibles</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <div class="text-muted small">Accesos operativos</div>
+                            <div class="fw-semibold text-warning">Sin accesos activos</div>
+                        </div>
+                    }
+
+                    @if (Model.TieneProyectosComoAdministrador)
+                    {
+                        <div class="mb-3">
+                            <div class="text-muted small">Administración de proyectos</div>
+                            <div class="fw-semibold text-primary">Habilitada</div>
+                        </div>
+                    }
+
+                    <form asp-controller="Login" asp-action="Logout" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,96 @@
+﻿html {
+    font-size: 14px;
+}
+
+body {
+    background-color: #f4f6f9;
+    color: #212529;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border-radius: 14px;
+}
+
+.form-control,
+.btn,
+.input-group-text {
+    border-radius: 10px;
+}
+
+.info-box {
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    background-color: #f8f9fa;
+    padding: 14px 16px;
+}
+
+    .info-box .label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 4px;
+    }
+
+    .info-box .value {
+        font-weight: 600;
+        color: #212529;
+        word-break: break-word;
+    }
+
+.btn-outline-custom {
+    border: 2px solid #0d6efd;
+    color: #0d6efd;
+    background-color: transparent;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    min-width: 220px;
+    text-align: center;
+}
+
+    .btn-outline-custom:hover {
+        background-color: #0d6efd;
+        color: #fff;
+    }
+
+/* Variante verde */
+.btn-outline-success-custom {
+    border: 2px solid #198754;
+    color: #198754;
+    background-color: transparent;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    min-width: 220px;
+    text-align: center;
+}
+
+    .btn-outline-success-custom:hover {
+        background-color: #198754;
+        color: #fff;
+    }
+
+.btn-notif {
+    border: 1px solid #6c757d;
+    color: #6c757d;
+    background-color: transparent;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    width: 100%; /* 🔥 clave */
+    text-align: center;
+    white-space: normal; /* 🔥 evita que uno se parta raro */
+}
+
+.btn-notif-success {
+    border-color: #198754;
+    color: #198754;
+}
+
+    .btn-notif-success:hover {
+        background-color: #198754;
+        color: #fff;
+    }

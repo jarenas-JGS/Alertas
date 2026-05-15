@@ -1,0 +1,60 @@
+﻿@model Alertas.ViewModels.GrupoAlertaDiaEstadoOffViewModel
+
+@{
+    ViewData["Title"] = "Editar estado off";
+}
+
+<div class="container mt-4">
+
+    <h3>Editar estado off</h3>
+    <p class="text-muted">Modifica el estado off asociado. La alerta por días no puede cambiarse.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_grupo_alerta_dia_estado_off" />
+                <input type="hidden" asp-for="id_grupo_alerta_dia" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label class="form-label">Proyecto</label>
+                    <input value="@Model.nombre_proyecto" class="form-control" disabled />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Grupo de alerta</label>
+                    <input value="@Model.nombre_grupo_alerta" class="form-control" disabled />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Alerta por días</label>
+                    <input value="@Model.nombre_grupo_alerta_dia" class="form-control" disabled />
+                    <small class="text-muted">La alerta por días no se puede cambiar desde edición.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="id_estado" class="form-label">Estado off</label>
+                    <select asp-for="id_estado" asp-items="Model.Estados" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_estado" class="text-danger"></span>
+                    <small class="text-muted">Solo se muestran estados del proyecto asociado al grupo de alerta.</small>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

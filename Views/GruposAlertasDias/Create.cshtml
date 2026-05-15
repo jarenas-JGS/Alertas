@@ -1,0 +1,132 @@
+﻿@model Alertas.ViewModels.GrupoAlertaDiaViewModel
+
+@{
+    ViewData["Title"] = "Crear alerta por días";
+}
+
+<div class="container mt-4">
+
+    <h3>Crear alerta por días</h3>
+    <p class="text-muted">Registra una nueva regla de alerta asociada a un grupo de alerta.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="id_grupo_alerta" class="form-label">Grupo de alerta</label>
+                    <select asp-for="id_grupo_alerta" asp-items="Model.GruposAlertas" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_grupo_alerta" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="nombre" class="form-label">Nombre</label>
+                    <input asp-for="nombre" class="form-control" maxlength="200" />
+                    <span asp-validation-for="nombre" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="tipo_control" class="form-label">Tipo de control</label>
+                    <select asp-for="tipo_control" asp-items="Model.TiposControl" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="tipo_control" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="operador" class="form-label">Operador</label>
+                    <select asp-for="operador" asp-items="Model.Operadores" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="operador" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="valor_dias" class="form-label">Valor días</label>
+                    <input asp-for="valor_dias" class="form-control" type="number" />
+                    <span asp-validation-for="valor_dias" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="id_rol" class="form-label">Rol</label>
+                    <select asp-for="id_rol" asp-items="Model.Roles" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_rol" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="id_mensaje" class="form-label">Mensaje</label>
+                    <select asp-for="id_mensaje" asp-items="Model.Mensajes" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_mensaje" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="id_dependencia" class="form-label">Dependencia</label>
+                    <select asp-for="id_dependencia" asp-items="Model.Dependencias" class="form-select">
+                        <option value="">Sin dependencia</option>
+                    </select>
+                    <span asp-validation-for="id_dependencia" class="text-danger"></span>
+                    <small class="text-muted">Solo se muestran alertas del mismo grupo de alerta.</small>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="activo" class="form-check-input" />
+                    <label asp-for="activo" class="form-check-label">Activo</label>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function () {
+            $('#id_grupo_alerta').on('change', function () {
+                const idGrupo = $(this).val();
+
+                $('#id_dependencia').empty().append('<option value="">Sin dependencia</option>');
+
+                if (!idGrupo) {
+                    return;
+                }
+
+                recargarDependencias(idGrupo);
+            });
+
+            function recargarDependencias(idGrupo) {
+                $.get('@Url.Action("ObtenerDependenciasPorGrupoAlerta", "GruposAlertasDias")',
+                    {
+                        idGrupoAlerta: idGrupo,
+                        idExcluir: null
+                    },
+                    function (data) {
+                        $('#id_dependencia').empty().append('<option value="">Sin dependencia</option>');
+
+                        $.each(data, function (i, item) {
+                            $('#id_dependencia').append($('<option>', {
+                                value: item.value,
+                                text: item.text
+                            }));
+                        });
+                    });
+            }
+        });
+    </script>
+}

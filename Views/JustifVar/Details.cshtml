@@ -1,0 +1,69 @@
+﻿@model Alertas.Models.JustifVar
+
+@{
+    ViewData["Title"] = "Consultar justificación de variación";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0">Consultar justificación de variación</h3>
+            <small class="text-muted">Detalle de la información registrada para la justificación.</small>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Información principal
+        </div>
+
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Id</dt>
+                <dd class="col-sm-9">@Model.id_justif_var</dd>
+
+                <dt class="col-sm-3">Área</dt>
+                <dd class="col-sm-9">@Model.Area?.nombre</dd>
+
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.nombre</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Relaciones asociadas
+        </div>
+
+        <div class="card-body">
+            <p class="text-muted mb-3">
+                Esta justificación está asociada al área indicada y puede ser utilizada en registros de obligaciones.
+            </p>
+
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Área</dt>
+                <dd class="col-sm-8">@Model.Area?.nombre</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+
+        <a asp-action="Edit" asp-route-id="@Model.id_justif_var" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+
+        <a asp-action="Delete" asp-route-id="@Model.id_justif_var" class="btn btn-outline-danger">
+            <i class="bi bi-trash"></i> Eliminar
+        </a>
+    </div>
+</div>

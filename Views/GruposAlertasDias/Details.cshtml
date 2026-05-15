@@ -1,0 +1,122 @@
+﻿@model Alertas.Models.GrupoAlertaDia
+
+@{
+    ViewData["Title"] = "Consultar alerta por días";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0">Consultar alerta por días</h3>
+            <small class="text-muted">Detalle de la información registrada para la alerta.</small>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Información de la alerta
+        </div>
+
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Id</dt>
+                <dd class="col-sm-9">@Model.id_grupo_alerta_dia</dd>
+
+                <dt class="col-sm-3">Proyecto</dt>
+                <dd class="col-sm-9">@Model.GrupoAlerta?.Proyecto?.nombre</dd>
+
+                <dt class="col-sm-3">Grupo de alerta</dt>
+                <dd class="col-sm-9">@Model.GrupoAlerta?.nombre</dd>
+
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.nombre</dd>
+
+                <dt class="col-sm-3">Tipo control</dt>
+                <dd class="col-sm-9">@Model.tipo_control</dd>
+
+                <dt class="col-sm-3">Operador</dt>
+                <dd class="col-sm-9">@Model.operador</dd>
+
+                <dt class="col-sm-3">Valor días</dt>
+                <dd class="col-sm-9">@Model.valor_dias</dd>
+
+                <dt class="col-sm-3">Rol</dt>
+                <dd class="col-sm-9">@Model.Rol?.nombre</dd>
+
+                <dt class="col-sm-3">Mensaje</dt>
+                <dd class="col-sm-9">@Model.Mensaje?.nombre</dd>
+
+                <dt class="col-sm-3">Dependencia</dt>
+                <dd class="col-sm-9">
+                    @(Model.Dependencia != null ? Model.Dependencia.nombre : "Sin dependencia")
+                </dd>
+
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9">
+                    @if (Model.activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactivo</span>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Relaciones asociadas
+        </div>
+
+        <div class="card-body">
+            <p class="text-muted mb-3">
+                Estados off asociados a esta alerta.
+            </p>
+
+            @if (Model.EstadosOff != null && Model.EstadosOff.Any())
+            {
+                <table class="table table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.EstadosOff)
+                        {
+                            <tr>
+                                <td>@item.Estado?.nombre</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No hay estados off asociados.</p>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+
+        <a asp-action="Edit" asp-route-id="@Model.id_grupo_alerta_dia" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+
+        <a asp-action="Delete" asp-route-id="@Model.id_grupo_alerta_dia" class="btn btn-outline-danger">
+            <i class="bi bi-trash"></i> Eliminar
+        </a>
+    </div>
+</div>

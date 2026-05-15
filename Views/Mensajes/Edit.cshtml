@@ -1,0 +1,58 @@
+﻿@model Alertas.ViewModels.MensajeViewModel
+
+@{
+    ViewData["Title"] = "Editar mensaje";
+}
+
+<div class="container mt-4">
+
+    <h3>Editar mensaje</h3>
+    <p class="text-muted">Modifica la información registrada para el mensaje.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_mensaje" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="prioridad" class="form-label">Prioridad</label>
+                    <input asp-for="prioridad" class="form-control" type="number" min="1" max="3" />
+                    <span asp-validation-for="prioridad" class="text-danger"></span>
+                    <small class="text-muted">La prioridad debe estar entre 1 y 3.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="nombre" class="form-label">Nombre</label>
+                    <input asp-for="nombre" class="form-control" maxlength="50" />
+                    <span asp-validation-for="nombre" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="texto" class="form-label">Texto</label>
+                    <textarea asp-for="texto" class="form-control" rows="5"></textarea>
+                    <span asp-validation-for="texto" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="activo" class="form-check-input" />
+                    <label asp-for="activo" class="form-check-label">Activo</label>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,181 @@
+﻿@{
+    ViewData["Title"] = "Notificaciones";
+    int? idProyecto = ViewBag.IdProyecto;
+    bool modoGeneral = ViewBag.ModoGeneral == true;
+}
+
+<div class="container mt-4">
+    <h3>Notificaciones de Alertas</h3>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    @if (idProyecto.HasValue && !modoGeneral)
+    {
+        <p class="text-muted">
+            Desde esta opción se previsualizan las alertas del proyecto seleccionado.
+        </p>
+
+        <div class="d-flex flex-column gap-3 mt-3" style="max-width: 300px;">
+
+            <form asp-controller="Notificaciones"
+                  asp-action="EjecutarManualProyecto"
+                  method="post"
+                  id="formPreviewProyecto">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="idProyecto" value="@idProyecto.Value" />
+
+                <button type="submit" class="btn-notif btn-outline-custom w-100">
+                    <i class="bi bi-eye me-1"></i>
+                    Ejecutar proceso manual
+                </button>
+            </form>
+
+            <form asp-controller="Notificaciones"
+                  asp-action="EnviarManualProyecto"
+                  method="post"
+                  id="formEnviarProyecto">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="idProyecto" value="@idProyecto.Value" />
+
+                <button type="submit" class="btn-notif btn-outline-success-custom w-100">
+                    <i class="bi bi-send me-1"></i>
+                    Enviar correos
+                </button>
+            </form>
+
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">
+            Desde esta opción se previsualizan las alertas de todos los proyectos activos y configurados.
+        </p>
+
+        <div class="d-flex flex-column gap-3 mt-3" style="max-width: 300px;">
+
+            <form asp-controller="Notificaciones"
+                  asp-action="EjecutarManualTodos"
+                  method="post"
+                  id="formPreviewGeneral">
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn-notif btn-outline-custom w-100">
+                    <i class="bi bi-eye me-1"></i>
+                    Ejecutar proceso manual
+                </button>
+            </form>
+
+            <form asp-controller="Notificaciones"
+                  asp-action="EnviarManualTodos"
+                  method="post"
+                  id="formEnviarGeneral">
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn-notif btn-outline-success-custom w-100">
+                    <i class="bi bi-send me-1"></i>
+                    Enviar correos
+                </button>
+            </form>
+
+        </div>
+    }
+
+    <div id="overlayProcesoNotificaciones"
+         style="display:none;
+            position:fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,0.45);
+            z-index:9999;
+            align-items:center;
+            justify-content:center;">
+
+        <div class="bg-white rounded shadow p-4 text-center"
+             style="max-width:420px;">
+
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Procesando...</span>
+            </div>
+
+            <h5 id="tituloOverlay">
+                Procesando notificaciones
+            </h5>
+
+            <p class="mb-0 text-muted" id="mensajeOverlay">
+                Por favor espere. No cierre esta ventana ni actualice la página.
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const overlay = document.getElementById("overlayProcesoNotificaciones");
+            const titulo = document.getElementById("tituloOverlay");
+            const mensaje = document.getElementById("mensajeOverlay");
+
+            configurarFormulario(
+                "formPreviewGeneral",
+                "Generando previsualización",
+                "Se están consolidando las alertas de todos los proyectos.");
+
+            configurarFormulario(
+                "formEnviarGeneral",
+                "Enviando correos",
+                "Se están enviando los correos de todos los proyectos.");
+
+            configurarFormulario(
+                "formPreviewProyecto",
+                "Generando previsualización",
+                "Se están consolidando las alertas del proyecto.");
+
+            configurarFormulario(
+                "formEnviarProyecto",
+                "Enviando correos",
+                "Se están enviando los correos del proyecto.");
+
+            function configurarFormulario(idFormulario, tituloTexto, mensajeTexto) {
+
+                const form = document.getElementById(idFormulario);
+
+                if (!form || !overlay)
+                    return;
+
+                form.addEventListener("submit", function () {
+
+                    overlay.style.display = "flex";
+
+                    titulo.innerText = tituloTexto;
+                    mensaje.innerText = mensajeTexto;
+
+                    const boton = form.querySelector("button[type='submit']");
+
+                    if (boton) {
+                        boton.disabled = true;
+
+                        const textoOriginal = boton.innerHTML;
+
+                        boton.dataset.originalText = textoOriginal;
+
+                        boton.innerHTML = `
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Procesando...
+                        `;
+                    }
+                });
+            }
+        });
+    </script>
+}

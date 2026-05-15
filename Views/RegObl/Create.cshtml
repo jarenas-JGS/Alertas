@@ -1,0 +1,482 @@
+﻿@model Alertas.ViewModels.RegOblViewModel
+
+@{
+    ViewData["Title"] = "Crear Registro de Obligación";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h3 class="fw-bold mb-3">Crear Registro de Obligación</h3>
+            <p class="text-muted">Ingrese la información principal del registro.</p>
+
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <input asp-for="id_proyecto" type="hidden" />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="nombre" class="form-label"></label>
+                        <input asp-for="nombre" class="form-control" />
+                        <span asp-validation-for="nombre" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="cod_obligacion" class="form-label"></label>
+                        <input asp-for="cod_obligacion" class="form-control" />
+                        <span asp-validation-for="cod_obligacion" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="id_cliente" class="form-label"></label>
+                        <select asp-for="id_cliente" asp-items="ViewBag.Clientes" class="form-select">
+                            <option value="">Seleccione...</option>
+                        </select>
+                        <span asp-validation-for="id_cliente" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="id_empresa" class="form-label"></label>
+                        <select asp-for="id_empresa" asp-items="ViewBag.Empresas" class="form-select">
+                            <option value="">Seleccione...</option>
+                        </select>
+                        <span asp-validation-for="id_empresa" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="id_tipo_obligacion" class="form-label"></label>
+                        <select asp-for="id_tipo_obligacion" asp-items="ViewBag.TiposObligaciones" class="form-select">
+                            <option value="">Seleccione...</option>
+                        </select>
+                        <span asp-validation-for="id_tipo_obligacion" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="id_dominio" class="form-label"></label>
+                        <select asp-for="id_dominio" asp-items="ViewBag.Dominios" class="form-select">
+                            <option value="">Seleccione...</option>
+                        </select>
+                        <span asp-validation-for="id_dominio" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="id_ciudad" class="form-label"></label>
+                        <select asp-for="id_ciudad" asp-items="ViewBag.Ciudades" class="form-select">
+                            <option value="">Seleccione...</option>
+                        </select>
+                        <span asp-validation-for="id_ciudad" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="id_periodo" class="form-label"></label>
+                        <select asp-for="id_periodo" asp-items="ViewBag.Periodos" class="form-select">
+                            <option value="">Seleccione...</option>
+                        </select>
+                        <span asp-validation-for="id_periodo" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="fecha_creac" class="form-label"></label>
+                        <input asp-for="fecha_creac" type="date" class="form-control" readonly/>
+                        <span asp-validation-for="fecha_creac" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="fecha_venc_obl" class="form-label"></label>
+                        <input asp-for="fecha_venc_obl" type="date" class="form-control" />
+                        <span asp-validation-for="fecha_venc_obl" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="fecha_venc_seguimiento" class="form-label"></label>
+                        <input asp-for="fecha_venc_seguimiento" type="date" class="form-control" />
+                        <span asp-validation-for="fecha_venc_seguimiento" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="cc_empleador" class="form-label"></label>
+                        <input asp-for="cc_empleador" class="form-control" maxlength="30" />
+                        <span asp-validation-for="cc_empleador" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="nombre_empleador" class="form-label"></label>
+                        <input asp-for="nombre_empleador" class="form-control" maxlength="150" />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="cc_empleado" class="form-label"></label>
+                        <input asp-for="cc_empleado" class="form-control" maxlength="30" />
+                        <span asp-validation-for="cc_empleado" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="nombre_empleado" class="form-label"></label>
+                        <input asp-for="nombre_empleado" class="form-control" maxlength="150" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Estado inicial</label>
+                        <input type="text" class="form-control" value="Se asigna automáticamente según el proyecto" readonly />
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="vigencia" class="form-label"></label>
+                        <input asp-for="vigencia" class="form-control" />
+                        <span asp-validation-for="vigencia" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="anio" class="form-label"></label>
+                        <input asp-for="anio" class="form-control" readonly />
+                        <span asp-validation-for="anio" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="mes" class="form-label"></label>
+                        <input asp-for="mes" class="form-control" readonly />
+                        <span asp-validation-for="mes" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="dia" class="form-label"></label>
+                        <input asp-for="dia" class="form-control" readonly />
+                        <span asp-validation-for="dia" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="vlr_aprox" class="form-label"></label>
+                        <input asp-for="vlr_aprox" type="text" inputmode="numeric" class="form-control" />
+                        <span asp-validation-for="vlr_aprox" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="vlr_real" class="form-label"></label>
+                        <input asp-for="vlr_real" type="text" inputmode="numeric" class="form-control" />
+                        <span asp-validation-for="vlr_real" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="diferencia" class="form-label"></label>
+                        <input asp-for="diferencia" type="text" inputmode="numeric" class="form-control" readonly />
+                        <span asp-validation-for="diferencia" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="variacion" class="form-label"></label>
+                        <input asp-for="variacion" type="text" class="form-control" readonly />
+                        <span asp-validation-for="variacion" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="id_justif_var" class="form-label"></label>
+                        <select asp-for="id_justif_var" asp-items="ViewBag.Justificaciones" class="form-select">
+                            <option value="">Seleccione...</option>
+                        </select>
+                        <span asp-validation-for="id_justif_var" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="saldo_favor" class="form-label"></label>
+                        <input asp-for="saldo_favor" type="text" inputmode="numeric" class="form-control" />
+                        <span asp-validation-for="saldo_favor" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ids_responsables" class="form-label"></label>
+                        <select asp-for="ids_responsables" asp-items="ViewBag.Responsables" class="form-select" multiple size="6"></select>
+                        <span asp-validation-for="ids_responsables" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ids_elaboradores" class="form-label"></label>
+                        <select asp-for="ids_elaboradores" asp-items="ViewBag.Elaboradores" class="form-select" multiple size="6"></select>
+                        <span asp-validation-for="ids_elaboradores" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ids_autorizadores" class="form-label"></label>
+                        <select asp-for="ids_autorizadores" asp-items="ViewBag.Autorizadores" class="form-select" multiple size="6"></select>
+                        <span asp-validation-for="ids_autorizadores" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ids_aprobadores" class="form-label"></label>
+                        <select asp-for="ids_aprobadores" asp-items="ViewBag.Aprobadores" class="form-select" multiple size="6"></select>
+                        <span asp-validation-for="ids_aprobadores" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ids_vencimiento" class="form-label"></label>
+                        <select asp-for="ids_vencimiento" asp-items="ViewBag.UsuariosVencimiento" class="form-select" multiple size="6"></select>
+                        <span asp-validation-for="ids_vencimiento" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <small class="text-muted">Use Ctrl + clic para seleccionar varios usuarios.</small>
+                    </div>
+
+
+                    <div class="col-12">
+                        <label asp-for="observaciones" class="form-label"></label>
+                        <textarea asp-for="observaciones" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="observaciones" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const clienteSelect = document.getElementById("id_cliente");
+            const empresaSelect = document.getElementById("id_empresa");
+
+            async function cargarEmpresasPorCliente() {
+                const idCliente = clienteSelect.value;
+
+                empresaSelect.innerHTML = "";
+
+                if (!idCliente) {
+                    const option = document.createElement("option");
+                    option.value = "";
+                    option.text = "Seleccione un cliente primero...";
+                    empresaSelect.appendChild(option);
+                    return;
+                }
+
+                const optionLoading = document.createElement("option");
+                optionLoading.value = "";
+                optionLoading.text = "Cargando empresas...";
+                empresaSelect.appendChild(optionLoading);
+
+                try {
+                    const response = await fetch(`/RegObl/ObtenerEmpresasPorCliente?idCliente=${idCliente}`);
+
+                    if (!response.ok) {
+                        throw new Error("No fue posible cargar las empresas.");
+                    }
+
+                    const data = await response.json();
+
+                    empresaSelect.innerHTML = "";
+
+                    const defaultOption = document.createElement("option");
+                    defaultOption.value = "";
+                    defaultOption.text = data.length > 0
+                        ? "Seleccione..."
+                        : "No hay empresas para este cliente";
+                    empresaSelect.appendChild(defaultOption);
+
+                    data.forEach(item => {
+                        const option = document.createElement("option");
+                        option.value = item.value;
+                        option.text = item.text;
+                        empresaSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    empresaSelect.innerHTML = "";
+                    const errorOption = document.createElement("option");
+                    errorOption.value = "";
+                    errorOption.text = "Error al cargar empresas";
+                    empresaSelect.appendChild(errorOption);
+                    console.error(error);
+                }
+            }
+
+            clienteSelect.addEventListener("change", cargarEmpresasPorCliente);
+        });
+
+           
+        const fechaInput = document.getElementById("fecha_venc_obl");
+
+        function actualizarFecha() {
+            if (!fechaInput.value) return;
+
+            const fecha = new Date(fechaInput.value);
+
+            document.getElementById("anio").value = fecha.getFullYear();
+            document.getElementById("mes").value = fecha.getMonth() + 1;
+            document.getElementById("dia").value = fecha.getDate() + 1;
+        }
+
+        fechaInput.addEventListener("change", actualizarFecha);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const vlrAproxInput = document.getElementById("vlr_aprox");
+            const vlrRealInput = document.getElementById("vlr_real");
+            const saldoFavorInput = document.getElementById("saldo_favor");
+            const diferenciaInput = document.getElementById("diferencia");
+            const variacionInput = document.getElementById("variacion");
+            const justifSelect = document.getElementById("id_justif_var");
+
+            if (!vlrAproxInput || !vlrRealInput || !diferenciaInput || !variacionInput || !justifSelect) {
+                return;
+            }
+
+            function limpiarFormato(valor) {
+                if (!valor) return "";
+                return valor.toString().replace(/\./g, "").replace(/,/g, "").trim();
+            }
+
+            function soloNumeros(valor) {
+                return valor.replace(/\D/g, "");
+            }
+
+            function formatearMiles(valor) {
+                if (!valor && valor !== 0) return "";
+                return Number(valor).toLocaleString("es-CO");
+            }
+
+            function obtenerNumero(input) {
+                const limpio = soloNumeros(limpiarFormato(input.value));
+                return limpio === "" ? null : parseInt(limpio, 10);
+            }
+
+            function aplicarFormatoInput(input) {
+                if (!input) return;
+                const numero = obtenerNumero(input);
+                input.value = numero === null ? "" : formatearMiles(numero);
+            }
+
+            function calcularValores() {
+                const vlrAprox = obtenerNumero(vlrAproxInput);
+                const vlrReal = obtenerNumero(vlrRealInput);
+
+                // Si no hay valor real, no calcular nada ni pedir justificación
+                if (vlrReal === null) {
+                    diferenciaInput.value = "";
+                    variacionInput.value = "";
+                    justifSelect.value = "";
+                    justifSelect.required = false;
+                    justifSelect.disabled = true;
+                    return;
+                }
+
+                const diferencia = vlrReal - (vlrAprox ?? 0);
+                diferenciaInput.value = formatearMiles(diferencia);
+
+                if ((vlrAprox ?? 0) > 0) {
+                    const variacion = ((vlrReal - vlrAprox) / vlrAprox) * 100;
+                    variacionInput.value = variacion.toFixed(2);
+                } else {
+                    variacionInput.value = "";
+                }
+
+                if (diferencia !== 0) {
+                    justifSelect.disabled = false;
+                    justifSelect.required = true;
+                } else {
+                    justifSelect.value = "";
+                    justifSelect.required = false;
+                    justifSelect.disabled = true;
+                }
+            }
+
+            function manejarEntradaNumerica(input) {
+                if (!input) return;
+
+                input.addEventListener("input", function () {
+                    input.value = soloNumeros(input.value);
+                    calcularValores();
+                });
+
+                input.addEventListener("blur", function () {
+                    aplicarFormatoInput(input);
+                    calcularValores();
+                });
+
+                input.addEventListener("focus", function () {
+                    input.value = soloNumeros(limpiarFormato(input.value));
+                });
+            }
+
+            manejarEntradaNumerica(vlrAproxInput);
+            manejarEntradaNumerica(vlrRealInput);
+            manejarEntradaNumerica(saldoFavorInput);
+
+            aplicarFormatoInput(vlrAproxInput);
+            aplicarFormatoInput(vlrRealInput);
+            aplicarFormatoInput(saldoFavorInput);
+            calcularValores();
+
+            const formCreate = vlrAproxInput.closest("form");
+            if (formCreate) {
+                formCreate.addEventListener("submit", function () {
+                    vlrAproxInput.value = soloNumeros(limpiarFormato(vlrAproxInput.value));
+                    vlrRealInput.value = soloNumeros(limpiarFormato(vlrRealInput.value));
+                    if (saldoFavorInput) {
+                        saldoFavorInput.value = soloNumeros(limpiarFormato(saldoFavorInput.value));
+                    }
+                    diferenciaInput.value = soloNumeros(limpiarFormato(diferenciaInput.value));
+                });
+            }
+        });
+
+        const fechaSeguimientoInput = document.getElementById("fecha_venc_seguimiento");
+        const fechaObligacionInput = document.getElementById("fecha_venc_obl");
+
+        function validarFechas() {
+            const fechaSeg = fechaSeguimientoInput.value;
+            const fechaObl = fechaObligacionInput.value;
+
+            if (!fechaSeg || !fechaObl) return;
+
+            if (fechaSeg > fechaObl) {
+                alert("La Fecha de vencimiento de seguimiento no puede ser mayor a la Fecha de vencimiento de la obligación.");
+
+                // opción 1: limpiar
+                fechaSeguimientoInput.value = "";
+
+                // opción 2 (alternativa mejor UX): ajustar automáticamente
+                // fechaSeguimientoInput.value = fechaObl;
+            }
+        }
+
+        fechaSeguimientoInput.addEventListener("change", validarFechas);
+        fechaObligacionInput.addEventListener("change", function () {
+            fechaSeguimientoInput.max = fechaObligacionInput.value;
+        });
+
+                document.querySelector("form").addEventListener("submit", function (e) {
+            const validaciones = [
+                { id: "ids_responsables", nombre: "Responsables" },
+                { id: "ids_elaboradores", nombre: "Elaboradores" },
+                { id: "ids_autorizadores", nombre: "Autorizadores" },
+                { id: "ids_aprobadores", nombre: "Aprobadores" },
+                { id: "ids_vencimiento", nombre: "Usuarios vencimiento" }
+            ];
+
+            let faltantes = [];
+
+            validaciones.forEach(item => {
+                const select = document.getElementById(item.id);
+                const seleccionados = Array.from(select.selectedOptions);
+
+                if (seleccionados.length === 0) {
+                    faltantes.push(item.nombre);
+                }
+            });
+
+            if (faltantes.length > 0) {
+                e.preventDefault();
+                alert("Debe seleccionar al menos un usuario en: " + faltantes.join(", "));
+            }
+        });
+
+    </script>
+}

@@ -1,0 +1,139 @@
+﻿@using System.Security.Claims
+
+@{
+    var esAutenticado = User.Identity?.IsAuthenticated ?? false;
+    var esSuperAdmin = User.HasClaim("EsSuperAdmin", "true");
+    var nombre = User.FindFirst("NombreCompleto")?.Value ?? User.Identity?.Name ?? "";
+    var idProyectoActivo = Context.Session.GetString("id_proyecto_activo");
+    var nombreProyectoActivo = Context.Session.GetString("nombre_proyecto_activo");
+    var tipoAccesoProyectoActivo = Context.Session.GetString("tipo_acceso_proyecto_activo");
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Alertas</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" />
+</head>
+<body class="bg-light">
+    @if (esAutenticado)
+    {
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+            <div class="container-fluid px-4">
+                <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index">
+                    Alertas
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPrincipal"
+                        aria-controls="navbarPrincipal" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarPrincipal">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door me-1"></i> Inicio
+                            </a>
+                        </li>
+
+                        @if (esSuperAdmin)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="mantenimientoDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-gear me-1"></i> Mantenimiento
+                                </a>
+                                <ul class="dropdown-menu shadow-sm" aria-labelledby="mantenimientoDropdown">
+                                    <li>
+                                        <h6 class="dropdown-header">Maestros de seguridad</h6>
+                                    </li>
+                                    <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index">Usuarios</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Permisos" asp-action="Index">Permisos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="PermisosCampos" asp-action="Index">Permisos Campos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Roles" asp-action="Index">Roles</a></li>
+                                    <li><a class="dropdown-item" asp-controller="RolesPermisos" asp-action="Index">Roles Permisos</a></li>
+
+                                    <li><hr class="dropdown-divider"></li>
+
+                                    <li>
+                                        <h6 class="dropdown-header">Maestros de operación</h6>
+                                    </li>
+                                    <li><a class="dropdown-item" asp-controller="Areas" asp-action="Index">Áreas</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Ciudades" asp-action="Index">Ciudades</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Clientes" asp-action="Index">Clientes</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Dominios" asp-action="Index">Dominios</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Empresas" asp-action="Index">Empresas</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Estados" asp-action="Index">Estados</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Festivos" asp-action="Index">Festivos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="GruposAlerta" asp-action="Index">Grupos de Alertas</a></li>
+                                    <li><a class="dropdown-item" asp-controller="GruposAlertasDias" asp-action="Index">Grupos de Alertas Días</a></li>
+                                    <li><a class="dropdown-item" asp-controller="GruposAlertasDiasEstadosOff" asp-action="Index">Grupos de Alertas Estados Off</a></li>
+                                    <li><a class="dropdown-item" asp-controller="JustifVar" asp-action="Index">Justif. Variaciones</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Mensajes" asp-action="Index">Mensajes</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Periodos" asp-action="Index">Periodos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Proyectos" asp-action="Index">Proyectos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="AreasEmpresas" asp-action="Index">Relación Área Empresa</a></li>
+                                    <li><a class="dropdown-item" asp-controller="EstadosTransicion" asp-action="Index">Relación Estados Transición</a></li>
+                                    <li><a class="dropdown-item" asp-controller="RolesEstadosTransicion" asp-action="Index">Relación Roles Estados Transición</a></li>
+                                    <li><a class="dropdown-item" asp-controller="UsuariosAreas" asp-action="Index">Relación Usuario Área</a></li>
+                                    <li><a class="dropdown-item" asp-controller="UsuariosObligaciones" asp-action="Index">Relación Usuario Obligación</a></li>
+                                    <li><a class="dropdown-item" asp-controller="UsuariosProyectos" asp-action="Index">Relación Usuario Proyecto</a></li>
+                                    <li><a class="dropdown-item" asp-controller="TipoObligaciones" asp-action="Index">Tipo de Obligaciones</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Roles" asp-action="Index">Roles</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Usuarios" asp-action="Index">Usuarios</a></li>
+
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+
+                    <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 text-white">
+                        <div class="text-lg-end small">
+                            <div class="fw-semibold">@nombre</div>
+
+                            @if (!string.IsNullOrWhiteSpace(nombreProyectoActivo))
+                            {
+                                <div class="opacity-75">
+                                    Proyecto: @nombreProyectoActivo
+                                    @if (!string.IsNullOrWhiteSpace(tipoAccesoProyectoActivo))
+                                    {
+                                        <span>- @tipoAccesoProyectoActivo</span>
+                                    }
+                                </div>
+                            }
+                            else if (esSuperAdmin)
+                            {
+                                <div class="opacity-75">Super Administrador</div>
+                            }
+                        </div>
+
+                        <form asp-controller="Login" asp-action="Logout" method="post" class="ms-lg-3">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-light">
+                                <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    }
+
+    <main role="main" class="py-4">
+        @RenderBody()
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,161 @@
+WITH Compras AS (
+    SELECT
+        T1."ItemCode",
+        T1."Dscription",
+        T1."WhsCode",
+        T0."DocEntry",
+        T0."DocNum",
+        T0."DocDate",
+        T0."CardName",
+        IFNULL(T0."DiscPrcnt", 0) AS "DescuentoDocumentoCompra",
+        T1."LineNum",
+        T1."Quantity",
+        T1."LineTotal",
+
+        CASE 
+            WHEN T1."Quantity" <> 0 
+            THEN T1."LineTotal" / T1."Quantity"
+            ELSE 0
+        END AS "ValorUnitarioCompraAntesDescDoc",
+
+        CASE 
+            WHEN T1."Quantity" <> 0 
+            THEN (T1."LineTotal" * (1 - (IFNULL(T0."DiscPrcnt", 0) / 100))) / T1."Quantity"
+            ELSE 0
+        END AS "ValorUnitarioCompra",
+
+        T1."LineTotal" * (1 - (IFNULL(T0."DiscPrcnt", 0) / 100)) AS "TotalCompra",
+
+        ROW_NUMBER() OVER (
+            PARTITION BY T1."ItemCode"
+            ORDER BY T0."DocDate" DESC, T0."DocEntry" DESC, T1."LineNum" DESC
+        ) AS "RN"
+    FROM "OPCH" T0
+    INNER JOIN "PCH1" T1 
+        ON T0."DocEntry" = T1."DocEntry"
+    WHERE T0."CANCELED" = 'N'
+      AND T0."DocDate" >= DATE '2025-01-01'
+      AND T1."Quantity" > 0
+      AND T1."WhsCode" = '0001'
+),
+
+Ventas AS (
+    SELECT
+        T1."ItemCode",
+        T1."Dscription",
+        T1."WhsCode",
+        T0."DocEntry",
+        T0."DocNum",
+        T0."DocDate",
+        T0."CardName",
+        IFNULL(T0."DiscPrcnt", 0) AS "DescuentoDocumentoVenta",
+        T1."LineNum",
+        T1."Quantity",
+        T1."LineTotal",
+
+        CASE 
+            WHEN T1."Quantity" <> 0 
+            THEN T1."LineTotal" / T1."Quantity"
+            ELSE 0
+        END AS "ValorUnitarioVentaAntesDescDoc",
+
+        CASE 
+            WHEN T1."Quantity" <> 0 
+            THEN (T1."LineTotal" * (1 - (IFNULL(T0."DiscPrcnt", 0) / 100))) / T1."Quantity"
+            ELSE 0
+        END AS "ValorUnitarioVenta",
+
+        T1."LineTotal" * (1 - (IFNULL(T0."DiscPrcnt", 0) / 100)) AS "TotalVenta",
+
+        ROW_NUMBER() OVER (
+            PARTITION BY T1."ItemCode"
+            ORDER BY T0."DocDate" DESC, T0."DocEntry" DESC, T1."LineNum" DESC
+        ) AS "RN"
+    FROM "OINV" T0
+    INNER JOIN "INV1" T1 
+        ON T0."DocEntry" = T1."DocEntry"
+    WHERE T0."CANCELED" = 'N'
+      AND T0."DocDate" >= DATE '2025-01-01'
+      AND T1."Quantity" > 0
+      AND T1."WhsCode" = '0001'
+),
+
+ArticulosCriticos AS (
+    SELECT
+        C."ItemCode",
+        COALESCE(V."Dscription", C."Dscription") AS "Descripcion",
+        '0001' AS "WhsCodeBase",
+        C."ValorUnitarioCompra" AS "UltimoValorCompra",
+        V."ValorUnitarioVenta" AS "UltimoValorVenta"
+    FROM Compras C
+    INNER JOIN Ventas V 
+        ON C."ItemCode" = V."ItemCode"
+    WHERE C."RN" = 1
+      AND V."RN" = 1
+      AND C."ValorUnitarioCompra" >= V."ValorUnitarioVenta"
+)
+
+SELECT
+    AC."ItemCode" AS "CodigoArticulo",
+    AC."Descripcion",
+
+    OITW."AvgPrice" AS "CostoPromedio",
+    LP1."Price" AS "ListaPrecio1",
+    LP4."Price" AS "ListaPrecio4",
+
+    COALESCE(C."RN", V."RN") AS "Fila",
+
+    C."DocNum" AS "FacturaCompra",
+    C."DocDate" AS "FechaCompra",
+    C."CardName" AS "Proveedor",
+    C."WhsCode" AS "AlmacenCompra",
+    C."Quantity" AS "CantidadCompra",
+    C."DescuentoDocumentoCompra",
+    C."ValorUnitarioCompraAntesDescDoc",
+    C."ValorUnitarioCompra",
+    C."TotalCompra",
+
+    V."DocNum" AS "FacturaVenta",
+    V."DocDate" AS "FechaVenta",
+    V."CardName" AS "Cliente",
+    V."WhsCode" AS "AlmacenVenta",
+    V."Quantity" AS "CantidadVenta",
+    V."DescuentoDocumentoVenta",
+    V."ValorUnitarioVentaAntesDescDoc",
+    V."ValorUnitarioVenta",
+    V."TotalVenta",
+
+    C."ValorUnitarioCompra" - V."ValorUnitarioVenta" AS "DiferenciaValorFila",
+
+    CASE 
+        WHEN V."ValorUnitarioVenta" <> 0
+        THEN ((C."ValorUnitarioCompra" - V."ValorUnitarioVenta") / V."ValorUnitarioVenta") * 100
+        ELSE 0
+    END AS "DiferenciaPorcentajeFila"
+
+FROM ArticulosCriticos AC
+
+LEFT JOIN Compras C
+    ON AC."ItemCode" = C."ItemCode"
+   AND C."RN" <= 5
+
+LEFT JOIN Ventas V
+    ON AC."ItemCode" = V."ItemCode"
+   AND V."RN" = C."RN"
+   AND V."RN" <= 5
+
+LEFT JOIN "OITW" OITW
+    ON AC."ItemCode" = OITW."ItemCode"
+   AND AC."WhsCodeBase" = OITW."WhsCode"
+
+LEFT JOIN "ITM1" LP1
+    ON AC."ItemCode" = LP1."ItemCode"
+   AND LP1."PriceList" = 1
+
+LEFT JOIN "ITM1" LP4
+    ON AC."ItemCode" = LP4."ItemCode"
+   AND LP4."PriceList" = 4
+
+ORDER BY
+    AC."ItemCode",
+    "Fila";

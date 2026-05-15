@@ -1,0 +1,90 @@
+﻿@model Alertas.Models.Estado
+
+@{
+    ViewData["Title"] = "Consultar estado";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0">Consultar estado</h3>
+            <small class="text-muted">Detalle de la información registrada para el estado.</small>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Información del estado
+        </div>
+
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Id</dt>
+                <dd class="col-sm-9">@Model.id_estado</dd>
+
+                <dt class="col-sm-3">Proyecto</dt>
+                <dd class="col-sm-9">@Model.Proyecto?.nombre</dd>
+
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.nombre</dd>
+
+                <dt class="col-sm-3">Orden</dt>
+                <dd class="col-sm-9">@Model.orden</dd>
+
+                <dt class="col-sm-3">Bloquea</dt>
+                <dd class="col-sm-9">@(Model.bloquea ? "Sí" : "No")</dd>
+
+                <dt class="col-sm-3">Control vencimiento</dt>
+                <dd class="col-sm-9">@(Model.control_vencimiento ? "Sí" : "No")</dd>
+
+                <dt class="col-sm-3">Control seguimiento</dt>
+                <dd class="col-sm-9">@(Model.control_seguimiento ? "Sí" : "No")</dd>
+
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9">
+                    @if (Model.activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactivo</span>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Relaciones asociadas
+        </div>
+
+        <div class="card-body">
+            <p class="text-muted mb-3">
+                Esta información muestra si el estado está relacionado con otras tablas del sistema.
+            </p>
+
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Proyecto</dt>
+                <dd class="col-sm-8">@Model.Proyecto?.nombre</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+
+        <a asp-action="Edit" asp-route-id="@Model.id_estado" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+
+    </div>
+</div>

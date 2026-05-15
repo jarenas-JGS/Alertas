@@ -1,0 +1,52 @@
+﻿@model Alertas.Models.Ciudad
+
+@{
+    ViewData["Title"] = "Consultar ciudad";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0">Consultar ciudad</h3>
+            <small class="text-muted">Detalle de la información registrada para la ciudad.</small>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Información de la ciudad
+        </div>
+
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Id</dt>
+                <dd class="col-sm-9">@Model.id_ciudad</dd>
+
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.nombre</dd>
+
+                <dt class="col-sm-3">Código CIIU</dt>
+                <dd class="col-sm-9">@Model.cod_ciiu</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+
+        <a asp-action="Edit" asp-route-id="@Model.id_ciudad" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+
+        <a asp-action="Delete" asp-route-id="@Model.id_ciudad" class="btn btn-outline-danger">
+            <i class="bi bi-trash"></i> Eliminar
+        </a>
+    </div>
+</div>

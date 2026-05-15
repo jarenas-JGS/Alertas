@@ -1,0 +1,80 @@
+﻿@model Alertas.ViewModels.EstadoEditNombreViewModel
+
+@{
+    ViewData["Title"] = "Editar estado";
+}
+
+<div class="container mt-4">
+
+    <h3>Editar estado</h3>
+    <p class="text-muted">Solo se permite modificar el nombre del estado. Los cambios estructurales deben hacerse desde el Wizard.</p>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_estado" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label class="form-label">Proyecto</label>
+                    <input value="@Model.nombre_proyecto" class="form-control" disabled />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="nombre" class="form-label">Nombre</label>
+                    <input asp-for="nombre" class="form-control" maxlength="100" />
+                    <span asp-validation-for="nombre" class="text-danger"></span>
+                </div>
+
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <div><strong>Orden:</strong> @Model.orden</div>
+                        <div><strong>Bloquea:</strong> @(Model.bloquea ? "Sí" : "No")</div>
+                        <div><strong>Control vencimiento:</strong> @(Model.control_vencimiento ? "Sí" : "No")</div>
+                        <div><strong>Control seguimiento:</strong> @(Model.control_seguimiento ? "Sí" : "No")</div>
+                        <div><strong>Activo:</strong> @(Model.activo ? "Sí" : "No")</div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.puedeReabrirWizard)
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-light fw-semibold">
+                Configuración estructural
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Este proyecto aún no tiene obligaciones creadas. Puedes pasarlo a configuración incompleta para modificar estados, transiciones y reglas desde el Wizard.
+                </p>
+
+                <form asp-action="ReabrirConfiguracionProyecto" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="idProyecto" value="@Model.id_proyecto" />
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-outline-warning">
+                            Pasar proyecto a configuración incompleta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

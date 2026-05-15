@@ -1,0 +1,98 @@
+﻿@model List<Alertas.ViewModels.ProyectoWizard.ProyectoWizardIndexItemVm>
+
+@{
+    ViewData["Title"] = "Proyectos en configuración";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+<h2>Proyectos en configuración</h2>
+
+<div class="mb-3">
+    <a asp-action="DatosGenerales" class="btn btn-primary">
+        + Crear nuevo proyecto
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                No hay proyectos pendientes de configuración.
+            </div>
+        }
+        else
+        {
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Área</th>
+                        <th>Paso actual</th>
+                        <th>Fecha creación</th>
+                        <th>Creado por</th>
+                        <th>Estado</th>
+                        <th style="width:200px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td>@p.nombre</td>
+                            <td>@p.area</td>
+                            <td>
+                                <span class="badge bg-info text-dark">
+                                    @p.paso_actual
+                                </span>
+                            </td>
+                            <td>@p.fecha_creacion.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@p.creado_por</td>
+                            <td>
+                                <span class="badge bg-warning text-dark">
+                                    En configuración
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="Continuar"
+                                   asp-route-id="@p.id_proyecto"
+                                   class="btn btn-primary btn-sm">
+                                    Continuar
+                                </a>
+
+                                <a asp-action="DatosGenerales" asp-route-id="@p.id_proyecto"
+                                   class="btn btn-sm btn-secondary">
+                                    Editar
+                                </a>
+
+                                <form asp-action="EliminarProyecto" asp-route-id="@p.id_proyecto" method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Está seguro de eliminar este proyecto en configuración? Esta acción no se puede deshacer.');">
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+    </div>
+</div>

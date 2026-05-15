@@ -1,0 +1,19 @@
+﻿@model int?
+
+@if (Model.HasValue)
+{
+    <form asp-controller="Notificaciones"
+          asp-action="EnviarManualProyecto"
+          method="post"
+          id="formEnviarProyectoResultado"
+          class="mb-3">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" name="idProyecto" value="@Model.Value" />
+
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-send me-1"></i>
+            Enviar correos del proyecto
+        </button>
+    </form>
+}

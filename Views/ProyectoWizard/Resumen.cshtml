@@ -1,0 +1,107 @@
+﻿@model Alertas.ViewModels.ProyectoWizard.ProyectoWizardResumenVm
+
+@{
+    ViewData["Title"] = "Wizard de proyecto - Resumen";
+}
+
+<h2>Creación de proyecto</h2>
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <strong>Paso 10 de 10 - Resumen final</strong>
+        <div class="text-muted">Proyecto: @Model.nombre_proyecto</div>
+    </div>
+
+    <div class="card-body">
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["Error"]
+            </div>
+        }
+
+        <h5>Datos generales</h5>
+
+        <table class="table table-bordered">
+            <tr>
+                <th>Proyecto</th>
+                <td>@Model.nombre_proyecto</td>
+            </tr>
+            <tr>
+                <th>Área</th>
+                <td>@Model.area</td>
+            </tr>
+            <tr>
+                <th>Nombre seguimiento</th>
+                <td>@Model.nombre_seguimiento</td>
+            </tr>
+        </table>
+
+        <h5>Configuración</h5>
+
+        <table class="table table-bordered table-striped">
+            <tr>
+                <th>Estados activos</th>
+                <td>@Model.total_estados</td>
+            </tr>
+            <tr>
+                <th>Transiciones activas</th>
+                <td>@Model.total_transiciones</td>
+            </tr>
+            <tr>
+                <th>Roles por transición</th>
+                <td>@Model.total_roles_transicion</td>
+            </tr>
+            <tr>
+                <th>Grupo de alertas activo</th>
+                <td>@Model.total_grupos_alertas</td>
+            </tr>
+            <tr>
+                <th>Reglas de alertas</th>
+                <td>@Model.total_alertas_dias</td>
+            </tr>
+            <tr>
+                <th>Dependencias entre alertas</th>
+                <td>@Model.total_dependencias</td>
+            </tr>
+            <tr>
+                <th>Estados off configurados</th>
+                <td>@Model.total_estados_off</td>
+            </tr>
+        </table>
+
+        @if (Model.Errores.Any())
+        {
+            <div class="alert alert-danger">
+                <strong>Faltan ajustes antes de finalizar:</strong>
+                <ul class="mb-0">
+                    @foreach (var error in Model.Errores)
+                    {
+                        <li>@error</li>
+                    }
+                </ul>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-success">
+                La configuración mínima del proyecto está completa. Ya puede finalizar la creación.
+            </div>
+        }
+
+        <form asp-action="Finalizar" asp-route-id="@Model.id_proyecto" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="EstadosOff" asp-route-id="@Model.id_proyecto" class="btn btn-secondary">
+                    Anterior
+                </a>
+
+                <button type="submit" class="btn btn-success" @(Model.configuracion_valida ? "" : "disabled")>
+                    Finalizar creación
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

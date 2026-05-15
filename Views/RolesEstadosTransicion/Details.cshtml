@@ -1,0 +1,74 @@
+﻿@model Alertas.Models.RolEstadoTransicion
+
+@{
+    ViewData["Title"] = "Consultar rol por transición";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0">Consultar rol por transición</h3>
+            <small class="text-muted">Detalle de la relación entre rol y transición de estado.</small>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Información principal
+        </div>
+
+        <div class="card-body">
+            <dl class="row mb-0">
+
+                <dt class="col-sm-3">Proyecto</dt>
+                <dd class="col-sm-9">@Model.EstadoTransicion?.Proyecto?.nombre</dd>
+
+                <dt class="col-sm-3">Id transición</dt>
+                <dd class="col-sm-9">@Model.id_rol_estado_transicion</dd>
+
+                <dt class="col-sm-3">Estado origen</dt>
+                <dd class="col-sm-9">@Model.EstadoTransicion?.EstadoOrigen?.nombre</dd>
+
+                <dt class="col-sm-3">Estado destino</dt>
+                <dd class="col-sm-9">@Model.EstadoTransicion?.EstadoDestino?.nombre</dd>
+
+                <dt class="col-sm-3">Acción</dt>
+                <dd class="col-sm-9">@Model.EstadoTransicion?.nombre_accion</dd>
+
+                <dt class="col-sm-3">Rol</dt>
+                <dd class="col-sm-9">@Model.Rol?.nombre</dd>
+
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9">
+                    @if (Model.activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactivo</span>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+
+        <a asp-action="Edit" asp-route-id="@Model.id_rol_estado_transicion" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+
+        <a asp-action="Delete" asp-route-id="@Model.id_rol_estado_transicion" class="btn btn-outline-danger">
+            <i class="bi bi-trash"></i> Eliminar
+        </a>
+    </div>
+</div>

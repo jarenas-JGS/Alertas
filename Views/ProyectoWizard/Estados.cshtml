@@ -1,0 +1,178 @@
+﻿@model Alertas.ViewModels.ProyectoWizard.ProyectoWizardEstadosVm
+
+@{
+    ViewData["Title"] = "Wizard de proyecto - Estados";
+}
+
+<h2>Creación de proyecto</h2>
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <strong>Paso 2 de 10 - Configuración de estados</strong>
+        <div class="text-muted">Proyecto: @Model.nombre_proyecto</div>
+    </div>
+
+    <div class="card-body">
+        <form asp-action="Estados" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="id_proyecto" />
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="agregarEstado()">
+                    + Agregar estado
+                </button>
+            </div>
+
+            <table class="table table-bordered table-striped align-middle" id="tablaEstados">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th style="width:90px;">Orden</th>
+                        <th>Bloquea</th>
+                        <th>Control vencimiento</th>
+                        <th>Control seguimiento</th>
+                        <th>Activo</th>
+                        <th style="width:110px;">Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Estados.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                <input type="hidden" name="Estados[@i].id_estado" value="@Model.Estados[i].id_estado" />
+                                <input type="hidden" name="Estados[@i].eliminar" value="false" class="input-eliminar" />
+
+                                <input name="Estados[@i].nombre" value="@Model.Estados[i].nombre" class="form-control" />
+                            </td>
+                            <td>
+                                <input name="Estados[@i].orden" value="@Model.Estados[i].orden" class="form-control" type="number" min="1" />
+                            </td>
+                            <td class="text-center">
+                                <input name="Estados[@i].bloquea" value="true" type="checkbox" class="form-check-input" @(Model.Estados[i].bloquea ? "checked" : "") />
+                                <input name="Estados[@i].bloquea" value="false" type="hidden" />
+                            </td>
+                            <td class="text-center">
+                                <input name="Estados[@i].control_vencimiento" value="true" type="checkbox" class="form-check-input" @(Model.Estados[i].control_vencimiento ? "checked" : "") />
+                                <input name="Estados[@i].control_vencimiento" value="false" type="hidden" />
+                            </td>
+                            <td class="text-center">
+                                <input name="Estados[@i].control_seguimiento" value="true" type="checkbox" class="form-check-input" @(Model.Estados[i].control_seguimiento ? "checked" : "") />
+                                <input name="Estados[@i].control_seguimiento" value="false" type="hidden" />
+                            </td>
+                            <td class="text-center">
+                                <input name="Estados[@i].activo" value="true" type="checkbox" class="form-check-input" @(Model.Estados[i].activo ? "checked" : "") />
+                                <input name="Estados[@i].activo" value="false" type="hidden" />
+                            </td>
+                            <td class="text-center">
+                                @{
+                                    var nombreEstado = Model.Estados[i].nombre?.Trim().ToLower();
+                                    var esNoEliminable = nombreEstado == "creada"
+                                    || nombreEstado == "cerrada"
+                                    || nombreEstado == "anulada";
+                                }
+
+                                @if (esNoEliminable)
+                                {
+                                    <span class="badge bg-secondary">Base</span>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="marcarEliminar(this)">
+                                        Eliminar
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="DatosGenerales" asp-route-id="@Model.id_proyecto" class="btn btn-secondary">
+                    Anterior
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    Guardar y continuar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function agregarEstado() {
+            const tbody = document.querySelector("#tablaEstados tbody");
+            const index = tbody.querySelectorAll("tr").length;
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>
+                    <input type="hidden" name="Estados[${index}].id_estado" value="" />
+                    <input type="hidden" name="Estados[${index}].eliminar" value="false" class="input-eliminar" />
+
+                    <input name="Estados[${index}].nombre" class="form-control" />
+                </td>
+                <td>
+                    <input name="Estados[${index}].orden" class="form-control" type="number" min="1" value="${index + 1}" />
+                </td>
+                <td class="text-center">
+                    <input name="Estados[${index}].bloquea" value="true" type="checkbox" class="form-check-input" />
+                    <input name="Estados[${index}].bloquea" value="false" type="hidden" />
+                </td>
+                <td class="text-center">
+                    <input name="Estados[${index}].control_vencimiento" value="true" type="checkbox" class="form-check-input" />
+                    <input name="Estados[${index}].control_vencimiento" value="false" type="hidden" />
+                </td>
+                <td class="text-center">
+                    <input name="Estados[${index}].control_seguimiento" value="true" type="checkbox" class="form-check-input" />
+                    <input name="Estados[${index}].control_seguimiento" value="false" type="hidden" />
+                </td>
+                <td class="text-center">
+                    <input name="Estados[${index}].activo" value="true" type="checkbox" class="form-check-input" checked />
+                    <input name="Estados[${index}].activo" value="false" type="hidden" />
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="marcarEliminar(this)">
+                        Eliminar
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        }
+
+        function marcarEliminar(btn) {
+            const row = btn.closest("tr");
+            const idEstado = row.querySelector("input[name$='.id_estado']").value;
+            const inputEliminar = row.querySelector(".input-eliminar");
+
+            if (!idEstado) {
+                row.remove();
+                reindexarEstados();
+                return;
+            }
+
+            inputEliminar.value = "true";
+            row.style.display = "none";
+        }
+
+        function reindexarEstados() {
+            const rows = document.querySelectorAll("#tablaEstados tbody tr");
+
+            rows.forEach((row, index) => {
+                row.querySelectorAll("input").forEach(input => {
+                    input.name = input.name.replace(/Estados\[\d+\]/, `Estados[${index}]`);
+                });
+            });
+        }
+    </script>
+}

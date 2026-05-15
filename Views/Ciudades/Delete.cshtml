@@ -1,0 +1,58 @@
+﻿@model Alertas.Models.Ciudad
+
+@{
+    ViewData["Title"] = "Eliminar ciudad";
+    bool tieneRelaciones = ViewBag.TieneRelaciones ?? false;
+}
+
+
+<div class="container mt-4">
+
+    <h3>Eliminar ciudad</h3>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            @if (tieneRelaciones)
+            {
+                <div class="alert alert-warning">
+                    Esta ciudad no puede eliminarse porque tiene registros asociados.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    ¿Estás seguro de que deseas eliminar esta ciudad?
+                </div>
+            }
+
+            <dl class="row">
+                <dt class="col-sm-3">Id</dt>
+                <dd class="col-sm-9">@Model.id_ciudad</dd>
+
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.nombre</dd>
+
+                <dt class="col-sm-3">Código CIIU</dt>
+                <dd class="col-sm-9">@Model.cod_ciiu</dd>
+            </dl>
+
+            <form asp-action="Delete" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_ciudad" />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
+
+                    @if (!tieneRelaciones)
+                    {
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,55 @@
+﻿@model Alertas.ViewModels.RolEstadoTransicionViewModel
+
+@{
+    ViewData["Title"] = "Editar rol por transición";
+}
+
+<div class="container mt-4">
+
+    <h3>Editar rol por transición</h3>
+    <p class="text-muted">Modifica la relación entre rol y transición de estado.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_rol_estado_transicion" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="id_estado_transicion" class="form-label">Transición</label>
+                    <select asp-for="id_estado_transicion" asp-items="Model.EstadosTransicion" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_estado_transicion" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="id_rol" class="form-label">Rol</label>
+                    <select asp-for="id_rol" asp-items="Model.Roles" class="form-select">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <span asp-validation-for="id_rol" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="activo" class="form-check-input" />
+                    <label asp-for="activo" class="form-check-label">Activo</label>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

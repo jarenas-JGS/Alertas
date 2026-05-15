@@ -1,0 +1,84 @@
+﻿@model Alertas.ViewModels.UsuarioEditViewModel
+
+@{
+    ViewData["Title"] = "Editar usuario";
+}
+
+<div class="container mt-4">
+
+    <h3>Editar usuario</h3>
+    <p class="text-muted">Modifica la información del usuario. Si cambias la clave, el usuario deberá cambiarla en el próximo inicio de sesión.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_usuario" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="usuario" class="form-label">Usuario</label>
+                    <input asp-for="usuario" class="form-control" maxlength="30" />
+                    <span asp-validation-for="usuario" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="nombre" class="form-label">Nombre</label>
+                    <input asp-for="nombre" class="form-control" maxlength="100" />
+                    <span asp-validation-for="nombre" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="email" class="form-label">Email</label>
+                    <input asp-for="email" class="form-control" maxlength="70" />
+                    <span asp-validation-for="email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="nueva_clave" class="form-label">Nueva clave</label>
+                    <input asp-for="nueva_clave" class="form-control" />
+                    <span asp-validation-for="nueva_clave" class="text-danger"></span>
+                    <small class="text-muted">Déjalo vacío si no deseas cambiar la clave.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="confirmar_nueva_clave" class="form-label">Confirmar nueva clave</label>
+                    <input asp-for="confirmar_nueva_clave" class="form-control" />
+                    <span asp-validation-for="confirmar_nueva_clave" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="activo" class="form-check-input" />
+                    <label asp-for="activo" class="form-check-label">Activo</label>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="es_super_admin" class="form-check-input" />
+                    <label asp-for="es_super_admin" class="form-check-label">Es super admin</label>
+                </div>
+
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <div><strong>Fecha creación:</strong> @(Model.fecha_creacion?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</div>
+                        <div><strong>Último login:</strong> @(Model.ultimo_login?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</div>
+                        <div><strong>Debe cambiar password:</strong> @(Model.must_change_password ? "Sí" : "No")</div>
+                        <div><strong>Último cambio de password:</strong> @(Model.last_password_change_at?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

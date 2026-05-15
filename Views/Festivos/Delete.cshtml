@@ -1,0 +1,72 @@
+﻿@model Alertas.Models.Festivo
+
+@{
+    ViewData["Title"] = "Eliminar festivo";
+    bool puedeEliminar = ViewBag.PuedeEliminar ?? false;
+    string mensajeNoEliminar = ViewBag.MensajeNoEliminar ?? "No es posible eliminar este registro porque tiene relaciones asociadas.";
+}
+
+<div class="container mt-4">
+
+    <div class="mb-3">
+        <h3 class="mb-0">Eliminar festivo</h3>
+        <small class="text-muted">Confirma la eliminación del día festivo seleccionado.</small>
+    </div>
+
+    @if (!puedeEliminar)
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            @mensajeNoEliminar
+        </div>
+    }
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Información del festivo
+        </div>
+
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Id</dt>
+                <dd class="col-sm-9">@Model.id_festivo</dd>
+
+                <dt class="col-sm-3">Fecha</dt>
+                <dd class="col-sm-9">@Model.fecha.ToString("yyyy-MM-dd")</dd>
+
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.nombre</dd>
+
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9">
+                    @if (Model.activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactivo</span>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <form asp-action="Delete" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="id_festivo" />
+
+        <div class="d-flex justify-content-end gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+
+            @if (puedeEliminar)
+            {
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            }
+        </div>
+    </form>
+</div>

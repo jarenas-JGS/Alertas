@@ -1,0 +1,24 @@
+1. Es decir:
+
+archivo real → carpeta wwwroot/uploads
+referencia → tabla obl_adjuntos
+
+Eso sirve bien para arrancar. Más adelante, si quieres, lo movemos a bucket/S3/Railway object storage, pero por ahora local es lo más simple para probar.
+
+2. Más adelante lo ideal sería determinar la etapa lógica así:
+
+estado inicial → el de menor orden
+seguimiento → el que tenga control_seguimiento = true
+presentada → el que tenga control_vencimiento = true
+cerrada/anulada → por nombre final o alguna marca adicional
+
+Pero para no frenarte ahorita, el ajuste de PROGRAMADO es el correcto.
+
+3. Ajustar seguridades de usuarios por proyecto. Ej, consulta, deja cambiar todo
+
+4. Como ahora Seguimiento(int id) y Index() comparten la misma lógica de acceso, más adelante convendría sacar eso a un método auxiliar o al SeguridadService, algo como:
+
+UsuarioPuedeVerObligacionAsync(idRegObl)
+
+Pero por ahora está bien dejarlo aquí para avanzar.
+

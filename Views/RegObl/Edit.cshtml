@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "Crear RegImp";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h3 class="fw-bold mb-3">Crear RegImp</h3>
+            <p class="text-muted">Vista temporal de creación.</p>
+
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-success">Guardar</button>
+                <a asp-action="Index" class="btn btn-secondary">Volver</a>
+            </form>
+        </div>
+    </div>
+</div>

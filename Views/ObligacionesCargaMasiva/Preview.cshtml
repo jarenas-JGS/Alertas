@@ -1,0 +1,230 @@
+﻿@model Alertas.ViewModels.CargaMasiva.CargaObligacionesPreviewViewModel
+
+@{
+    ViewData["Title"] = "Preview cargue masivo";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h4 class="mb-0">Previsualización del cargue masivo</h4>
+        </div>
+
+        <div class="card-body">
+
+            <div class="alert alert-info">
+                <strong>Proyecto:</strong> @Model.nombre_proyecto <br />
+                <strong>Total filas leídas:</strong> @Model.total_filas
+            </div>
+
+            @if (!Model.filas.Any())
+            {
+                <div class="alert alert-warning">
+                    No se encontraron filas para cargar.
+                </div>
+            }
+            else
+            {
+                @if (Model.tiene_errores)
+                {
+                    <h5>Errores encontrados</h5>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm table-bordered table-danger">
+                            <thead>
+                                <tr>
+                                    <th>Fila</th>
+                                    <th>Columna</th>
+                                    <th>Error</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var error in Model.errores.OrderBy(e => e.numero_fila))
+                                {
+                                    <tr>
+                                        <td>@error.numero_fila</td>
+                                        <td>@error.columna</td>
+                                        <td>@error.mensaje</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Fila</th>
+                                <th>Nombre</th>
+                                <th>Código</th>
+                                <th>Cliente</th>
+                                <th>Empresa</th>
+                                <th>Ciudad</th>
+                                <th>Periodo</th>
+                                <th>Dominio</th>
+                                <th>Tipo</th>
+                                <th>Fec. Venc.</th>
+                                <th>Fec. Seg.</th>
+                                <th>Vigencia</th>
+                                <th>Valor Aprox.</th>
+                                <th>CC Empleador</th>
+                                <th>Empleador</th>
+                                <th>CC Empleado</th>
+                                <th>Empleado</th>
+                                <th>Responsable</th>
+                                <th>Elaborador</th>
+                                <th>Autorizador</th>
+                                <th>Aprobador</th>
+                                <th>Usuario Venc.</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var fila in Model.filas)
+                            {
+                                <tr class="@(fila.es_valida ? "" : "table-danger")">
+                                    <td>@fila.numero_fila</td>
+                                    <td>@fila.nombre</td>
+                                    <td>@fila.codigo_obligacion</td>
+                                    <td>@fila.cliente</td>
+                                    <td>@fila.empresa</td>
+                                    <td>@fila.ciudad</td>
+                                    <td>@fila.periodo</td>
+                                    <td>@fila.dominio</td>
+                                    <td>@fila.tipo_obligacion</td>
+                                    <td>@fila.fecha_vencimiento_obligacion?.ToString("yyyy-MM-dd")</td>
+                                    <td>@fila.fecha_vencimiento_seguimiento?.ToString("yyyy-MM-dd")</td>
+                                    <td>@fila.vigencia</td>
+                                    <td>@fila.valor_aproximado?.ToString("N2")</td>
+                                    <td>@fila.cc_empleador</td>
+                                    <td>@fila.empleador</td>
+                                    <td>@fila.cc_empleado</td>
+                                    <td>@fila.empleado</td>
+                                    <td>@fila.responsable</td>
+                                    <td>@fila.elaborador</td>
+                                    <td>@fila.autorizador</td>
+                                    <td>@fila.aprobador</td>
+                                    <td>@fila.usuario_vencimiento</td>
+                                    <td>@fila.observaciones</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* MENSAJES *@
+                @if (Model.tiene_errores)
+                {
+                    <div class="alert alert-danger">
+                        <strong>El archivo contiene errores.</strong><br />
+                        No se cargará ninguna obligación hasta corregir todos los errores.
+                        <br />
+                        <strong>Total errores:</strong> @Model.total_errores
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-success">
+                        El archivo fue validado correctamente. Puede continuar con la confirmación del cargue.
+                    </div>
+                }
+
+                @* BOTONES *@
+                <div class="d-flex gap-2 mt-3">
+
+                    @if (Model.tiene_errores)
+                    {
+                        <a asp-controller="ObligacionesCargaMasiva"
+                           asp-action="DescargarErrores"
+                           asp-route-idCarga="@Model.id_carga"
+                           class="btn btn-outline-danger">
+                            Descargar errores en Excel
+                        </a>
+                    }
+
+                    @if (!Model.tiene_errores && Model.filas.Any())
+                    {
+                        <form asp-action="Confirmar"
+                              asp-controller="ObligacionesCargaMasiva"
+                              method="post"
+                              id="formConfirmarCargue"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="idCarga" value="@Model.id_carga" />
+
+                            <button type="submit" class="btn btn-success">
+                                Confirmar cargue
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <button class="btn btn-success" disabled>
+                            Confirmar cargue
+                        </button>
+                    }
+
+                    <a asp-action="Upload"
+                       asp-controller="ObligacionesCargaMasiva"
+                       asp-route-idProyecto="@Model.id_proyecto"
+                       class="btn btn-secondary">
+                        Volver
+                    </a>
+
+                </div>
+
+            }
+
+        </div>
+
+    </div>
+
+    <div id="overlayCargue"
+         style="display:none;
+            position:fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,0.45);
+            z-index:9999;
+            align-items:center;
+            justify-content:center;">
+
+        <div class="bg-white rounded shadow p-4 text-center" style="max-width:420px;">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Procesando...</span>
+            </div>
+
+            <h5>La transacción está en proceso</h5>
+            <p class="mb-0 text-muted">
+                Por favor espere. No cierre esta ventana ni actualice la página.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("formConfirmarCargue");
+            const overlay = document.getElementById("overlayCargue");
+
+            if (form && overlay) {
+                form.addEventListener("submit", function () {
+                    overlay.style.display = "flex";
+
+                    const boton = form.querySelector("button[type='submit']");
+                    if (boton) {
+                        boton.disabled = true;
+                        boton.innerText = "Procesando...";
+                    }
+                });
+            }
+        });
+    </script>
+}

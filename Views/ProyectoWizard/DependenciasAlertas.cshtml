@@ -1,0 +1,95 @@
+﻿@model Alertas.ViewModels.ProyectoWizard.ProyectoWizardDependenciasAlertasVm
+
+@{
+    ViewData["Title"] = "Wizard de proyecto - Dependencias entre alertas";
+}
+
+<h2>Creación de proyecto</h2>
+
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <strong>Paso 8 de 10 - Dependencias entre alertas</strong>
+        <div class="text-muted">Proyecto: @Model.nombre_proyecto</div>
+        <div class="text-muted">Grupo: @Model.nombre_grupo_alerta</div>
+    </div>
+
+    <div class="card-body">
+        <form asp-action="DependenciasAlertas" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="id_proyecto" />
+            <input type="hidden" asp-for="id_grupo_alerta" />
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">
+                    @Html.Raw(TempData["Error"])
+                </div>
+            }
+
+            <div class="alert alert-info">
+                El sistema sugiere dependencias para <strong>Presentación de la obligación</strong>
+                y <strong>Vencimiento cumplimiento de la obligación</strong>, tomando como base
+                <strong>Vencimiento envío del seguimiento</strong> del mismo rol.
+            </div>
+
+            <table class="table table-bordered table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Alerta</th>
+                        <th>Rol</th>
+                        <th>Condición</th>
+                        <th>Depende de</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @for (int i = 0; i < Model.Alertas.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                @Model.Alertas[i].nombre
+                                <input type="hidden" name="Alertas[@i].id_grupo_alerta_dia" value="@Model.Alertas[i].id_grupo_alerta_dia" />
+                            </td>
+
+                            <td>@Model.Alertas[i].rol</td>
+
+                            <td>@Model.Alertas[i].condicion</td>
+
+                            <td>
+                                <select name="Alertas[@i].id_dependencia" class="form-select">
+                                    @foreach (var dep in Model.Alertas[i].DependenciasDisponibles)
+                                    {
+                                        var seleccionado = dep.Value == Model.Alertas[i].id_dependencia?.ToString();
+
+                                        if (seleccionado)
+                                        {
+                                            <option value="@dep.Value" selected>@dep.Text</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@dep.Value">@dep.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="AlertasDias" asp-route-id="@Model.id_proyecto" class="btn btn-secondary">
+                    Anterior
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    Guardar y continuar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

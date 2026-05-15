@@ -1,0 +1,107 @@
+﻿@model Alertas.Models.Usuario
+
+@{
+    ViewData["Title"] = "Consultar usuario";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0">Consultar usuario</h3>
+            <small class="text-muted">Detalle de la información registrada para el usuario.</small>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Información del usuario
+        </div>
+
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Id</dt>
+                <dd class="col-sm-9">@Model.id_usuario</dd>
+
+                <dt class="col-sm-3">Usuario</dt>
+                <dd class="col-sm-9">@Model.usuario</dd>
+
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9">@Model.nombre</dd>
+
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9">@Model.email</dd>
+
+                <dt class="col-sm-3">Fecha creación</dt>
+                <dd class="col-sm-9">@(Model.fecha_creacion?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</dd>
+
+                <dt class="col-sm-3">Último login</dt>
+                <dd class="col-sm-9">@(Model.ultimo_login?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</dd>
+
+                <dt class="col-sm-3">Debe cambiar password</dt>
+                <dd class="col-sm-9">@(Model.must_change_password ? "Sí" : "No")</dd>
+
+                <dt class="col-sm-3">Último cambio password</dt>
+                <dd class="col-sm-9">@(Model.last_password_change_at?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</dd>
+
+                <dt class="col-sm-3">Super admin</dt>
+                <dd class="col-sm-9">@(Model.es_super_admin ? "Sí" : "No")</dd>
+
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9">
+                    @if (Model.activo)
+                    {
+                        <span class="badge bg-success">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactivo</span>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light fw-semibold">
+            Relaciones asociadas
+        </div>
+
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Obligaciones autorizadas</dt>
+                <dd class="col-sm-8">@Model.RegImpsComoAutorizador.Count</dd>
+
+                <dt class="col-sm-4">Obligaciones aprobadas</dt>
+                <dd class="col-sm-8">@Model.RegImpsComoAprobador.Count</dd>
+
+                <dt class="col-sm-4">Proyectos creados</dt>
+                <dd class="col-sm-8">@Model.ProyectosCreados.Count</dd>
+
+                <dt class="col-sm-4">Usuarios obligaciones</dt>
+                <dd class="col-sm-8">@Model.UsuariosObligaciones.Count</dd>
+
+                <dt class="col-sm-4">Usuarios proyectos</dt>
+                <dd class="col-sm-8">@Model.UsuariosProyectos.Count</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+
+        <a asp-action="Edit" asp-route-id="@Model.id_usuario" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+
+        <a asp-action="Delete" asp-route-id="@Model.id_usuario" class="btn btn-outline-danger">
+            <i class="bi bi-trash"></i> Eliminar
+        </a>
+    </div>
+</div>

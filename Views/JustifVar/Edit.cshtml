@@ -1,0 +1,67 @@
+﻿@model Alertas.ViewModels.JustifVarViewModel
+
+@{
+    ViewData["Title"] = "Editar justificación de variación";
+}
+
+<div class="container mt-4">
+
+    <h3>Editar justificación de variación</h3>
+    <p class="text-muted">Modifica la información registrada para la justificación de variación.</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="id_justif_var" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                @{
+                    bool bloquearArea = ViewBag.BloquearArea ?? false;
+                }
+
+                @if (bloquearArea)
+                {
+                    <input type="hidden" asp-for="id_area" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Área</label>
+                        <input value="@Model.nombre_area" class="form-control" disabled />
+                        <small class="text-muted">
+                            No se puede cambiar el área porque esta justificación ya tiene obligaciones asociadas.
+                        </small>
+                    </div>
+                }
+                else
+                {
+                    <div class="mb-3">
+                        <label asp-for="id_area" class="form-label">Área</label>
+                        <select asp-for="id_area" asp-items="Model.Areas" class="form-select">
+                            <option value="">Seleccione...</option>
+                        </select>
+                        <span asp-validation-for="id_area" class="text-danger"></span>
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label asp-for="nombre" class="form-label">Nombre</label>
+                    <input asp-for="nombre" class="form-control" maxlength="100" />
+                    <span asp-validation-for="nombre" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

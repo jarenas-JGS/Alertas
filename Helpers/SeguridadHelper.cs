@@ -1,0 +1,17 @@
+﻿using BCrypt.Net;
+
+namespace Alertas.Helpers
+{
+    public static class SeguridadHelper
+    {
+        public static string HashPassword(string password)
+        {
+            return BCrypt.Net.BCrypt.HashPassword(password);
+        }
+
+        public static bool VerificarPassword(string password, string hash)
+        {
+            return BCrypt.Net.BCrypt.Verify(password, hash);
+        }
+    }
+}
