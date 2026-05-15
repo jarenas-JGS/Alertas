@@ -9,5 +9,8 @@
         public string FromEmail { get; set; } = string.Empty;
         public string FromName { get; set; } = "Sistema de Alertas";
         public bool EnableSsl { get; set; } = true;
+
+        // Solo se usa en Staging para redirigir correos a un buzón de pruebas
+        public string? RedirectAllTo { get; set; }
     }
 }
