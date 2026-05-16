@@ -98,6 +98,8 @@
 
     }
 
+    @await Html.PartialAsync("_BotonEnviarProyecto", idProyecto)
+
     <div id="overlayProcesoNotificaciones"
          style="display:none;
             position:fixed;
@@ -125,4 +127,27 @@
         </div>
     </div>
 </div>
-@await Html.PartialAsync("_BotonEnviarProyecto", idProyecto)
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const overlay = document.getElementById("overlayProcesoNotificaciones");
+
+        document.querySelectorAll(".form-proceso-notificaciones").forEach(function (form) {
+            form.addEventListener("submit", function () {
+                if (overlay) {
+                    overlay.style.display = "flex";
+                }
+
+                const boton = form.querySelector("button[type='submit']");
+                if (boton) {
+                    boton.disabled = true;
+                    boton.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        Procesando...
+                    `;
+                }
+            });
+        });
+    });
+</script>
