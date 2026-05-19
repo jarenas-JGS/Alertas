@@ -65,7 +65,7 @@ namespace Alertas.Controllers
             var empresa = new Empresa
             {
                 nit = vm.nit.Trim(),
-                dig_verif = vm.dig_verif,
+                ult_dig = ObtenerUltimoDigitoNit(vm.nit),
                 nombre = vm.nombre.Trim(),
                 email = vm.email?.Trim(),
                 activo = vm.activo,
@@ -90,7 +90,7 @@ namespace Alertas.Controllers
             {
                 id_empresa = empresa.id_empresa,
                 nit = empresa.nit,
-                dig_verif = empresa.dig_verif,
+                ult_dig = empresa.ult_dig,
                 nombre = empresa.nombre,
                 email = empresa.email,
                 activo = empresa.activo,
@@ -125,7 +125,7 @@ namespace Alertas.Controllers
                 return NotFound();
 
             empresa.nit = vm.nit.Trim();
-            empresa.dig_verif = vm.dig_verif;
+            empresa.ult_dig = ObtenerUltimoDigitoNit(vm.nit);
             empresa.nombre = vm.nombre.Trim();
             empresa.email = vm.email?.Trim();
             empresa.activo = vm.activo;
@@ -205,6 +205,19 @@ namespace Alertas.Controllers
                     _context.AreasEmpresas,
                     x => x.id_empresa == idEmpresa
                 );
+        }
+
+        private int ObtenerUltimoDigitoNit(string nit)
+        {
+            if (string.IsNullOrWhiteSpace(nit))
+                return 0;
+
+            var soloDigitos = new string(nit.Where(char.IsDigit).ToArray());
+
+            if (string.IsNullOrWhiteSpace(soloDigitos))
+                return 0;
+
+            return int.Parse(soloDigitos[^1].ToString());
         }
     }
 }

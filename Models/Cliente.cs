@@ -20,10 +20,6 @@ namespace Alertas.Models
         [Display(Name = "Nombre")]
         public string nombre { get; set; }
 
-        [Required(ErrorMessage = "El dígito de verificación es obligatorio")]
-        [Display(Name = "DV")]
-        public int dig_verif { get; set; }
-
         [Required(ErrorMessage = "Debe indicar si el empleado está activo")]
         [Display(Name = "Activo S/N")]
         public Boolean activo { get; set; }

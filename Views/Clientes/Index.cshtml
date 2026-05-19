@@ -33,14 +33,12 @@
                 <thead class="table-light">
                     <tr>
                         <th>NIT</th>
-                        <th>DV</th>
                         <th>Nombre</th>
                         <th>Estado</th>
                         <th class="text-end" style="width: 280px;">Acciones</th>
                     </tr>
                     <tr class="filtros-columnas">
                         <th><input type="text" class="form-control form-control-sm" placeholder="Buscar NIT" /></th>
-                        <th><input type="text" class="form-control form-control-sm" placeholder="Buscar DV" /></th>
                         <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Nombre" /></th>
                         <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Estado" /></th>
                         <th></th>
@@ -51,7 +49,7 @@
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="5" class="text-center text-muted">
+                            <td colspan="4" class="text-center text-muted">
                                 No hay clientes registrados.
                             </td>
                         </tr>
@@ -62,7 +60,6 @@
                         {
                             <tr>
                                 <td>@item.nit</td>
-                                <td>@item.dig_verif</td>
                                 <td>@item.nombre</td>
                                 <td>
                                     @if (item.activo)

@@ -33,7 +33,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>NIT</th>
-                        <th>DV</th>
+                        <th>Ult Dig</th>
                         <th>Nombre</th>
                         <th>Cliente</th>
                         <th>Estado</th>
@@ -41,7 +41,7 @@
                     </tr>
                     <tr class="filtros-columnas">
                         <th><input type="text" class="form-control form-control-sm" placeholder="Buscar NIT" /></th>
-                        <th><input type="text" class="form-control form-control-sm" placeholder="Buscar DV" /></th>
+                        <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Ult Dig" /></th>
                         <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Nombre" /></th>
                         <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Cliente" /></th>
                         <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Estado" /></th>
@@ -64,7 +64,7 @@
                         {
                             <tr>
                                 <td>@item.nit</td>
-                                <td>@item.dig_verif</td>
+                                <td>@item.ult_dig</td>
                                 <td>@item.nombre</td>
                                 <td>@item.Cliente?.nombre</td>
                                 <td>
@@ -158,7 +158,7 @@
                     }
                 },
                 columnDefs: [
-                    { orderable: false, targets: 5 }
+                    { orderable: false, targets: 6 }
                 ]
             });
 

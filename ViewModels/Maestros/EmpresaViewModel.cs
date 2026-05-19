@@ -11,8 +11,7 @@ namespace Alertas.ViewModels
         [MaxLength(30, ErrorMessage = "El nit no puede tener más de 30 caracteres.")]
         public string nit { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El dígito de verificación es obligatorio")]
-        public int dig_verif { get; set; }
+        public int ult_dig { get; set; }
 
         [Required(ErrorMessage = "El nombre de la empresa es obligatorio.")]
         [MaxLength(100, ErrorMessage = "La empresa no puede tener más de 100 caracteres.")]

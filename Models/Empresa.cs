@@ -16,9 +16,8 @@ namespace Alertas.Models
         [Display(Name = "Nit")]
         public string nit { get; set; }
 
-        [Required(ErrorMessage = "El dígito de verificación es obligatorio")]
-        [Display(Name = "DV")]
-        public int dig_verif { get; set; }
+        [Display(Name = "Ult Dig")]
+        public int ult_dig { get; set; }
 
         [Required(ErrorMessage = "El nombre de la empresa es obligatorio.")]
         [MaxLength(100, ErrorMessage = "La empresa no puede tener más de 100 caracteres.")]
