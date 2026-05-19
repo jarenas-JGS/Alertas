@@ -48,17 +48,8 @@
                 </thead>
 
                 <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr>
-                            <td colspan="5" class="text-center text-muted">
-                                No hay registros de áreas por empresa.
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        foreach (var item in Model)
+
+                        @foreach (var item in Model)
                         {
                             <tr>
                                 <td>@item.Area?.nombre</td>
@@ -99,7 +90,7 @@
                                 </td>
                             </tr>
                         }
-                    }
+                    
                 </tbody>
             </table>
         </div>
@@ -158,7 +149,7 @@
                     }
                 },
                 columnDefs: [
-                    { orderable: false, targets: 5 }
+                    { orderable: false, targets: 4 }
                 ]
             });
 

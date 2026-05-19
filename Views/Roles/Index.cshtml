@@ -42,17 +42,7 @@
                 </thead>
 
                 <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr>
-                            <td colspan="4" class="text-center text-muted">
-                                No hay roles registrados.
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        foreach (var item in Model)
+                        @foreach (var item in Model)
                         {
                             <tr>
                                 <td>@item.id_rol</td>
@@ -90,7 +80,7 @@
                                 </td>
                             </tr>
                         }
-                    }
+                    
                 </tbody>
             </table>
         </div>
@@ -147,7 +137,7 @@
                     }
                 },
                 columnDefs: [
-                    { orderable: false, targets: 4 }
+                    { orderable: false, targets: 3 }
                 ]
             });
 

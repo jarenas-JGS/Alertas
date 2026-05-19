@@ -52,17 +52,7 @@
                 </thead>
 
                 <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr>
-                            <td colspan="7" class="text-center text-muted">
-                                No hay usuarios registrados.
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        foreach (var item in Model)
+                        @foreach (var item in Model)
                         {
                             <tr>
                                 <td>@item.usuario</td>
@@ -103,7 +93,7 @@
                                 </td>
                             </tr>
                         }
-                    }
+                    
                 </tbody>
             </table>
         </div>
@@ -160,7 +150,7 @@
                     }
                 },
                 columnDefs: [
-                    { orderable: false, targets: 7 }
+                    { orderable: false, targets: 6 }
                 ]
             });
 

@@ -44,17 +44,7 @@
                 </thead>
 
                 <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr>
-                            <td colspan="3" class="text-center text-muted">
-                                No hay periodos registrados.
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        foreach (var item in Model)
+                        @foreach (var item in Model)
                         {
                             <tr>
                                 <td>@item.id_periodo</td>
@@ -82,7 +72,7 @@
                                 </td>
                             </tr>
                         }
-                    }
+                    
                 </tbody>
             </table>
         </div>
@@ -139,7 +129,7 @@
                     }
                 },
                 columnDefs: [
-                    { orderable: false, targets: 3 }
+                    { orderable: false, targets: 2 }
                 ]
             });
 

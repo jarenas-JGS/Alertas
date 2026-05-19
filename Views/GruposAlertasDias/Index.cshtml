@@ -62,17 +62,7 @@
                 </thead>
 
                 <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr>
-                            <td colspan="11" class="text-center text-muted">
-                                No hay alertas por días registradas.
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        foreach (var item in Model)
+                        @foreach (var item in Model)
                         {
                             <tr>
                                 <td>@item.id_grupo_alerta_dia</td>
@@ -118,7 +108,7 @@
                                 </td>
                             </tr>
                         }
-                    }
+                    
                 </tbody>
             </table>
         </div>
@@ -175,7 +165,7 @@
                     }
                 },
                 columnDefs: [
-                    { orderable: false, targets: 12 }
+                    { orderable: false, targets: 11 }
                 ]
             });
 

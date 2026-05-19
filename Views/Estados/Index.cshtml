@@ -51,17 +51,7 @@
                 </thead>
 
                 <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr>
-                            <td colspan="8" class="text-center text-muted">
-                                No hay estados registrados.
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        foreach (var item in Model)
+                        @foreach (var item in Model)
                         {
                             <tr>
                                 <td>@item.Proyecto?.nombre</td>
@@ -98,7 +88,7 @@
                                 </td>
                             </tr>
                         }
-                    }
+                    
                 </tbody>
             </table>
         </div>
@@ -157,7 +147,7 @@
                     }
                 },
                 columnDefs: [
-                    { orderable: false, targets: 8 }
+                    { orderable: false, targets: 7 }
                 ]
             });
 

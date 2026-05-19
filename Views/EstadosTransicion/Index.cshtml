@@ -58,17 +58,7 @@
                 </thead>
 
                 <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr>
-                            <td colspan="12" class="text-center text-muted">
-                                No hay transiciones de estado registradas.
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        foreach (var item in Model)
+                        @foreach (var item in Model)
                         {
                             <tr>
                                 <td>@item.id_estado_transicion</td>
@@ -108,7 +98,7 @@
                                 </td>
                             </tr>
                         }
-                    }
+                    
                 </tbody>
             </table>
         </div>
@@ -165,7 +155,7 @@
                     }
                 },
                 columnDefs: [
-                    { orderable: false, targets: 12 }
+                    { orderable: false, targets: 11 }
                 ]
             });
 

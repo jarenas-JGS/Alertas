@@ -50,17 +50,7 @@
                 </thead>
 
                 <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr>
-                            <td colspan="6" class="text-center text-muted">
-                                No hay estados off registrados.
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        foreach (var item in Model)
+                        @foreach (var item in Model)
                         {
                             <tr>
                                 <td>@item.GrupoAlertaDia?.GrupoAlerta?.Proyecto?.nombre</td>
@@ -91,7 +81,7 @@
                                 </td>
                             </tr>
                         }
-                    }
+                    
                 </tbody>
             </table>
         </div>
@@ -148,7 +138,7 @@
                     }
                 },
                 columnDefs: [
-                    { orderable: false, targets: 6 }
+                    { orderable: false, targets: 5 }
                 ]
             });
 
