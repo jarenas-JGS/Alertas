@@ -46,17 +46,7 @@
                 </thead>
 
                 <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr>
-                            <td colspan="4" class="text-center text-muted">
-                                No hay clientes registrados.
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        foreach (var item in Model)
+                    @foreach (var item in Model)
                         {
                             <tr>
                                 <td>@item.nit</td>
@@ -94,7 +84,7 @@
                                 </td>
                             </tr>
                         }
-                    }
+                    
                 </tbody>
             </table>
         </div>
