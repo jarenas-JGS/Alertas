@@ -9,7 +9,6 @@ namespace Alertas.Services.Notificaciones
     public class EmailService : IEmailService
     {
         private readonly SmtpSettings _settings;
-        private readonly IWebHostEnvironment _env;
 
         public EmailService(
             IOptions<SmtpSettings> options,
@@ -34,6 +33,7 @@ namespace Alertas.Services.Notificaciones
             if (!string.IsNullOrWhiteSpace(_settings.RedirectAllTo))
             {
                 asunto = $"[STAGING - REDIRIGIDO] {asunto}";
+
                 htmlBody = $@"
                 <div style='padding:10px;background:#fff3cd;border:1px solid #ffeeba;margin-bottom:15px;'>
                     <strong>Correo redirigido desde ambiente de pruebas.</strong><br/>
@@ -41,7 +41,7 @@ namespace Alertas.Services.Notificaciones
                 </div>
                 {htmlBody}";
 
-                destinatario = _settings.RedirectAllTo;
+                destinatarioFinal = _settings.RedirectAllTo;
             }
 
             using var message = new MailMessage();
