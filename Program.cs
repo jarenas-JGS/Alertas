@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Alertas.Services.Notificaciones;
 using Alertas.Services.Notificaciones.Config;
+using System.IO;
+using Microsoft.AspNetCore.DataProtection;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +31,10 @@ builder.Services.AddScoped<IValidadorCargaObligacionesService, ValidadorCargaObl
 builder.Services.AddScoped<IConfirmadorCargaObligacionesService, ConfirmadorCargaObligacionesService>();
 
 builder.Services.AddScoped<IExcelErroresCargaService, ExcelErroresCargaService>();
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"))
+    .SetApplicationName("Alertas");
 
 builder.Services.AddSession(options =>
 {
