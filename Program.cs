@@ -32,9 +32,14 @@ builder.Services.AddScoped<IConfirmadorCargaObligacionesService, ConfirmadorCarg
 
 builder.Services.AddScoped<IExcelErroresCargaService, ExcelErroresCargaService>();
 
-builder.Services.AddDataProtection()
+/*builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"))
-    .SetApplicationName("Alertas");
+    .SetApplicationName("Alertas");*/
+
+builder.Services.AddHttpClient();
+
+builder.Services.Configure<ResendSettings>(
+    builder.Configuration.GetSection("Resend"));
 
 builder.Services.AddSession(options =>
 {
