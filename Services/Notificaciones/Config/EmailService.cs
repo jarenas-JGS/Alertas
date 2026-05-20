@@ -1,5 +1,4 @@
 ﻿using Alertas.Services.Notificaciones.Config;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
@@ -9,6 +8,7 @@ namespace Alertas.Services.Notificaciones
     public class EmailService : IEmailService
     {
         private readonly SmtpSettings _settings;
+        private readonly ILogger<EmailService> _logger;
 
         public EmailService(
             IOptions<SmtpSettings> options,
@@ -23,12 +23,12 @@ namespace Alertas.Services.Notificaciones
             string asunto,
             string htmlBody)
         {
-            _logger.LogInformation(
-            "SMTP RedirectAllTo: {RedirectAllTo}. Destinatario original: {Destinatario}",
-            _settings.RedirectAllTo,
-            destinatario);
-
             var destinatarioFinal = destinatario;
+
+            _logger.LogInformation(
+                "SMTP RedirectAllTo: {RedirectAllTo}. Destinatario original: {Destinatario}",
+                _settings.RedirectAllTo,
+                destinatario);
 
             if (!string.IsNullOrWhiteSpace(_settings.RedirectAllTo))
             {
@@ -51,7 +51,6 @@ namespace Alertas.Services.Notificaciones
                 _settings.FromName);
 
             message.To.Add(destinatarioFinal);
-
             message.Subject = asunto;
             message.Body = htmlBody;
             message.IsBodyHtml = true;
@@ -61,13 +60,39 @@ namespace Alertas.Services.Notificaciones
                 EnableSsl = _settings.EnableSsl,
                 Credentials = new NetworkCredential(
                     _settings.User,
-                    _settings.Password)
+                    _settings.Password),
+                Timeout = 30000
             };
 
-            await smtp.SendMailAsync(message);
+            try
+            {
+                _logger.LogInformation(
+                    "SMTP enviando. Host={Host}, Port={Port}, User={User}, FromEmail={FromEmail}, To={To}",
+                    _settings.Host,
+                    _settings.Port,
+                    _settings.User,
+                    _settings.FromEmail,
+                    destinatarioFinal);
+
+                await smtp.SendMailAsync(message);
+
+                _logger.LogInformation(
+                    "SMTP enviado correctamente a {To}",
+                    destinatarioFinal);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "SMTP error enviando. Host={Host}, Port={Port}, User={User}, FromEmail={FromEmail}, To={To}",
+                    _settings.Host,
+                    _settings.Port,
+                    _settings.User,
+                    _settings.FromEmail,
+                    destinatarioFinal);
+
+                throw;
+            }
         }
-
-        private readonly ILogger<EmailService> _logger;
-
     }
 }
