@@ -74,7 +74,18 @@ namespace Alertas.Services.Notificaciones
                     _settings.FromEmail,
                     destinatarioFinal);
 
-                await smtp.SendMailAsync(message);
+                var envioTask = smtp.SendMailAsync(message);
+                var timeoutTask = Task.Delay(TimeSpan.FromSeconds(30));
+
+                var completedTask = await Task.WhenAny(envioTask, timeoutTask);
+
+                if (completedTask == timeoutTask)
+                {
+                    throw new TimeoutException(
+                        $"Timeout enviando correo SMTP. Host={_settings.Host}, Port={_settings.Port}, To={destinatarioFinal}");
+                }
+
+                await envioTask;
 
                 _logger.LogInformation(
                     "SMTP enviado correctamente a {To}",
