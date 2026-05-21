@@ -25,7 +25,9 @@ namespace Alertas.Services.Storage.R2
             {
                 ServiceURL = _settings.ServiceUrl,
                 ForcePathStyle = true,
-                AuthenticationRegion = "auto"
+                AuthenticationRegion = "auto",
+                UseHttp = false,
+                DisableMultiregionAccessPoints = true
             };
 
             _s3Client = new AmazonS3Client(credentials, config);
@@ -54,7 +56,8 @@ namespace Alertas.Services.Storage.R2
                 BucketName = _settings.BucketName,
                 Key = objectKey,
                 InputStream = stream,
-                ContentType = file.ContentType
+                ContentType = file.ContentType,
+                DisablePayloadSigning = true
             };
 
             await _s3Client.PutObjectAsync(request);
