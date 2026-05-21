@@ -1,13 +1,16 @@
 ﻿using Alertas.Data;
 using Alertas.Models;
 using Alertas.Services;
+using Alertas.Services.Storage;
+using Alertas.Services.Storage.Interfaces;
+using Alertas.Services.Storage.Models;
 using Alertas.ViewModels;
+using Amazon.S3;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TimeZoneConverter;
-using Alertas.Services.Storage.Interfaces;
 
 namespace Alertas.Controllers
 {
@@ -18,15 +21,18 @@ namespace Alertas.Controllers
         private readonly SeguridadService _seguridadService;
         private const long MaxArchivoBytes = 2 * 1024 * 1024; // 2 MB
         private readonly IFileStorageService _fileStorageService;
+        private readonly FileUploadValidator _fileUploadValidator;
 
         public RegOblController(
             ApplicationDbContext context,
             SeguridadService seguridadService,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService,
+            FileUploadValidator fileUploadValidator)
         {
             _context = context;
             _seguridadService = seguridadService;
             _fileStorageService = fileStorageService;
+            _fileUploadValidator = fileUploadValidator;
         }
 
         [Authorize]
@@ -1415,7 +1421,18 @@ namespace Alertas.Controllers
             }
             catch (FileNotFoundException)
             {
-                return NotFound();
+                TempData["Error"] = "El archivo no fue encontrado en el repositorio.";
+                return RedirectToAction(nameof(Seguimiento), new { id = adjunto.id_reg_obl });
+            }
+            catch (AmazonS3Exception)
+            {
+                TempData["Error"] = "No fue posible descargar el archivo desde el repositorio.";
+                return RedirectToAction(nameof(Seguimiento), new { id = adjunto.id_reg_obl });
+            }
+            catch
+            {
+                TempData["Error"] = "Ocurrió un error al descargar el archivo.";
+                return RedirectToAction(nameof(Seguimiento), new { id = adjunto.id_reg_obl });
             }
 
             var mimeType = string.IsNullOrWhiteSpace(adjunto.mime_type)
@@ -1565,7 +1582,13 @@ namespace Alertas.Controllers
                         return RedirectToAction(nameof(Seguimiento), new { id = entidad.id_reg_obl });
                     }
 
-                    await SubirAdjuntoInterno(entidad, archivo, idUsuario.Value);
+                    var errorAdjunto = await SubirAdjuntoInterno(entidad, archivo, idUsuario.Value);
+
+                    if (!string.IsNullOrWhiteSpace(errorAdjunto))
+                    {
+                        TempData["Error"] = errorAdjunto;
+                        return RedirectToAction(nameof(Seguimiento), new { id = entidad.id_reg_obl });
+                    }
                     TempData["Ok"] = "Soporte cargado correctamente.";
                     break;
 
@@ -1612,11 +1635,10 @@ namespace Alertas.Controllers
             IFormFile archivo,
             int idUsuario)
         {
-            if (archivo == null || archivo.Length == 0)
-                return "Debe seleccionar un archivo.";
+            var validacion = _fileUploadValidator.Validate(archivo);
 
-            if (archivo.Length > 2 * 1024 * 1024)
-                return "El archivo no puede superar 2 MB.";
+            if (!validacion.IsValid)
+                return validacion.ErrorMessage;
 
             var folder = $"proyectos/{entidad.id_proyecto}/obligaciones/{entidad.id_reg_obl}/post-cierre/{DateTime.UtcNow:yyyy/MM}";
 
@@ -1781,17 +1803,29 @@ namespace Alertas.Controllers
             });
         }
 
-        private async Task SubirAdjuntoInterno(RegObl entidad, IFormFile archivo, int idUsuario)
+        private async Task<string?> SubirAdjuntoInterno(RegObl entidad, IFormFile archivo, int idUsuario)
         {
-            if (archivo == null || archivo.Length == 0)
-                return;
+            var validacion = _fileUploadValidator.Validate(archivo);
 
-            if (archivo.Length > 2 * 1024 * 1024)
-                throw new Exception("El archivo no puede superar 2 MB.");
+            if (!validacion.IsValid)
+                return validacion.ErrorMessage;
 
             var folder = $"proyectos/{entidad.id_proyecto}/obligaciones/{entidad.id_reg_obl}/soportes/{DateTime.UtcNow:yyyy/MM}";
 
-            var resultado = await _fileStorageService.UploadAsync(archivo, folder);
+            FileUploadResult resultado;
+
+            try
+            {
+                resultado = await _fileStorageService.UploadAsync(archivo, folder);
+            }
+            catch (AmazonS3Exception ex)
+            {
+                return $"No fue posible cargar el soporte post cierre en el repositorio. Detalle: {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                return $"No fue posible cargar el soporte post cierre. Detalle: {ex.Message}";
+            }
 
             var fechaHoraUtc = ObtenerFechaHoraUtc();
 
@@ -1822,6 +1856,8 @@ namespace Alertas.Controllers
                 id_estado_en_momento = entidad.id_estado,
                 tipo_cambio = "SOPORTE"
             });
+
+            return null;
         }
 
         private async Task EliminarAdjuntoInterno(RegObl entidad, int idAdjunto, int idUsuario)

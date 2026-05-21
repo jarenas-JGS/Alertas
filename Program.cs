@@ -11,6 +11,7 @@ using Alertas.Services.Storage.Interfaces;
 using Alertas.Services.Storage.Local;
 using Alertas.Services.Storage.Models;
 using Alertas.Services.Storage.R2;
+using Alertas.Services.Storage;
 using System.IO;
 using Microsoft.AspNetCore.DataProtection;
 
@@ -26,6 +27,8 @@ builder.Services.Configure<StorageSettings>(
 // DbContext PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<FileUploadValidator>();
 
 // MVC
 builder.Services.AddControllersWithViews();
