@@ -55,9 +55,29 @@ namespace Alertas.Models
         [NotMapped]
         public string? fecha_carga_local { get; set; }
 
+        [Display(Name = "Activo")]
+        public bool activo { get; set; } = true;
 
+        [Display(Name = "Eliminado")]
+        public bool eliminado { get; set; } = false;
 
-        // Propiedades de navegación opcionales para no romper la validación
+        [Display(Name = "Fecha eliminación")]
+        public DateTime? fecha_eliminacion { get; set; }
+
+        [Display(Name = "Usuario eliminación")]
+        public int? id_usuario_eliminacion { get; set; }
+
+        [MaxLength(500)]
+        [Display(Name = "Motivo eliminación")]
+        public string? motivo_eliminacion { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        [Display(Name = "Tipo soporte")]
+        public string tipo_soporte { get; set; } = "NORMAL";
+
+        [ForeignKey("id_usuario_eliminacion")]
+        public Usuario? UsuarioEliminacion { get; set; }
 
         [ForeignKey("id_reg_obl")]
         public RegObl? RegObl { get; set; }

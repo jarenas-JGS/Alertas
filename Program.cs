@@ -5,11 +5,23 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Alertas.Services.Notificaciones;
 using Alertas.Services.Notificaciones.Config;
+using Alertas.Services.Storage.Interfaces;
+using Alertas.Services.Storage.Local;
+using Alertas.Services.Storage.Interfaces;
+using Alertas.Services.Storage.Local;
+using Alertas.Services.Storage.Models;
+using Alertas.Services.Storage.R2;
 using System.IO;
 using Microsoft.AspNetCore.DataProtection;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<IFileStorageService,
+    LocalFileStorageService>();
+
+builder.Services.Configure<StorageSettings>(
+    builder.Configuration.GetSection("StorageSettings"));
 
 // DbContext PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -82,6 +94,17 @@ builder.Services.Configure<SmtpSettings>(
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<IPlantillaCorreoAlertasService, PlantillaCorreoAlertasService>();
+
+var storageProvider = builder.Configuration["StorageSettings:Provider"];
+
+if (storageProvider == "R2")
+{
+    builder.Services.AddScoped<IFileStorageService, R2StorageService>();
+}
+else
+{
+    builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+}
 
 
 var app = builder.Build();

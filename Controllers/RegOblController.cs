@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TimeZoneConverter;
+using Alertas.Services.Storage.Interfaces;
 
 namespace Alertas.Controllers
 {
@@ -16,13 +17,16 @@ namespace Alertas.Controllers
         private readonly ApplicationDbContext _context;
         private readonly SeguridadService _seguridadService;
         private const long MaxArchivoBytes = 2 * 1024 * 1024; // 2 MB
+        private readonly IFileStorageService _fileStorageService;
 
         public RegOblController(
             ApplicationDbContext context,
-            SeguridadService seguridadService)
+            SeguridadService seguridadService,
+            IFileStorageService fileStorageService)
         {
             _context = context;
             _seguridadService = seguridadService;
+            _fileStorageService = fileStorageService;
         }
 
         [Authorize]
@@ -1130,10 +1134,11 @@ namespace Alertas.Controllers
                 yaPasoControlVencimiento &&
                 !estaAnulada;
 
-            string prefijoPostCierre = "[POST_CIERRE]";
-
             var ultimoSoportePostCierre = entidad.Adjuntos
-                .Where(a => a.nombre_orig != null && a.nombre_orig.StartsWith(prefijoPostCierre))
+                .Where(a =>
+                    a.tipo_soporte == "POST_CIERRE" &&
+                    a.activo &&
+                    !a.eliminado)
                 .OrderByDescending(a => a.fecha_carga)
                 .FirstOrDefault();
 
@@ -1223,7 +1228,8 @@ namespace Alertas.Controllers
                 ids_vencimiento = vencimiento,
 
                 Adjuntos = entidad.Adjuntos
-                .OrderByDescending(a => a.fecha_carga)
+                    .Where(a => a.activo && !a.eliminado)
+                    .OrderByDescending(a => a.fecha_carga)
                 .Select(a => new OblAdjunto
                 {
                     id_obl_adjunto = a.id_obl_adjunto,
@@ -1360,7 +1366,6 @@ namespace Alertas.Controllers
         }
 
 
-
         [HttpGet]
         public async Task<IActionResult> VerAdjunto(int idAdjunto)
         {
@@ -1377,7 +1382,11 @@ namespace Alertas.Controllers
 
             var adjunto = await _context.OblAdjuntos
                 .Include(a => a.RegObl)
-                .FirstOrDefaultAsync(a => a.id_obl_adjunto == idAdjunto);
+                    .ThenInclude(o => o.UsuariosObligaciones)
+                .FirstOrDefaultAsync(a =>
+                    a.id_obl_adjunto == idAdjunto &&
+                    a.activo &&
+                    !a.eliminado);
 
             if (adjunto == null)
                 return NotFound();
@@ -1385,26 +1394,42 @@ namespace Alertas.Controllers
             if (adjunto.RegObl == null || adjunto.RegObl.id_proyecto != idProyecto)
                 return RedirectToAction("AccessDenied", "Login");
 
-            var carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-            var ruta = Path.Combine(carpeta, adjunto.object_key);
+            bool esSuperAdmin = User.HasClaim("EsSuperAdmin", "true");
+            bool accesoPorProyecto = _seguridadService.EsAccesoProyectoActivoPorProyecto();
 
-            if (!System.IO.File.Exists(ruta))
+            if (!esSuperAdmin && !accesoPorProyecto)
+            {
+                bool participa = adjunto.RegObl.UsuariosObligaciones.Any(uo =>
+                    uo.id_usuario == idUsuario.Value &&
+                    uo.activo);
+
+                if (!participa)
+                    return RedirectToAction("AccessDenied", "Login");
+            }
+
+            byte[] bytes;
+
+            try
+            {
+                bytes = await _fileStorageService.DownloadAsync(adjunto.object_key);
+            }
+            catch (FileNotFoundException)
+            {
                 return NotFound();
+            }
 
             var mimeType = string.IsNullOrWhiteSpace(adjunto.mime_type)
                 ? "application/octet-stream"
                 : adjunto.mime_type;
 
             var nombreDescarga = string.IsNullOrWhiteSpace(adjunto.nombre_orig)
-                ? Path.GetFileName(ruta)
+                ? Path.GetFileName(adjunto.object_key)
                 : adjunto.nombre_orig;
-
-            var bytes = await System.IO.File.ReadAllBytesAsync(ruta);
 
             return File(bytes, mimeType, nombreDescarga);
         }
 
-    
+
 
         private async Task<List<TransicionDisponibleViewModel>> ObtenerTransicionesDisponiblesAsync(
             RegObl entidad,
@@ -1582,7 +1607,7 @@ namespace Alertas.Controllers
             return RedirectToAction(nameof(Seguimiento), new { id = entidad.id_reg_obl });
         }
 
-    private async Task<string?> SubirSoportePostCierreInterno(
+        private async Task<string?> SubirSoportePostCierreInterno(
             RegObl entidad,
             IFormFile archivo,
             int idUsuario)
@@ -1593,23 +1618,9 @@ namespace Alertas.Controllers
             if (archivo.Length > 2 * 1024 * 1024)
                 return "El archivo no puede superar 2 MB.";
 
-            var carpeta = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "uploads");
+            var folder = $"proyectos/{entidad.id_proyecto}/obligaciones/{entidad.id_reg_obl}/post-cierre/{DateTime.UtcNow:yyyy/MM}";
 
-            if (!Directory.Exists(carpeta))
-                Directory.CreateDirectory(carpeta);
-
-            var nombreArchivoFisico =
-                Guid.NewGuid().ToString() + Path.GetExtension(archivo.FileName);
-
-            var ruta = Path.Combine(carpeta, nombreArchivoFisico);
-
-            using (var stream = new FileStream(ruta, FileMode.Create))
-            {
-                await archivo.CopyToAsync(stream);
-            }
+            var resultado = await _fileStorageService.UploadAsync(archivo, folder);
 
             var fechaHoraUtc = ObtenerFechaHoraUtc();
             var fechaBogota = ObtenerFechaBogota();
@@ -1620,25 +1631,26 @@ namespace Alertas.Controllers
 
             var soporteAnterior = entidad.Adjuntos
                 .Where(a =>
-                    a.nombre_orig != null &&
-                    a.nombre_orig.StartsWith("[POST_CIERRE]"))
+                    a.tipo_soporte == "POST_CIERRE" &&
+                    a.activo &&
+                    !a.eliminado)
                 .OrderByDescending(a => a.fecha_carga)
                 .FirstOrDefault();
-
-            string nombreOrigPostCierre =
-                $"[POST_CIERRE] {nombreControl} - {archivo.FileName}";
 
             _context.OblAdjuntos.Add(new OblAdjunto
             {
                 id_reg_obl = entidad.id_reg_obl,
-                nombre_orig = nombreOrigPostCierre,
-                object_key = nombreArchivoFisico,
-                bucket_name = "local",
-                mime_type = archivo.ContentType,
-                extension = Path.GetExtension(archivo.FileName),
-                tamano_bytes = archivo.Length,
+                nombre_orig = resultado.OriginalFileName,
+                object_key = resultado.ObjectKey,
+                bucket_name = resultado.BucketName,
+                mime_type = resultado.MimeType,
+                extension = resultado.Extension,
+                tamano_bytes = resultado.FileSize,
                 fecha_carga = fechaHoraUtc,
-                id_usuario = idUsuario
+                id_usuario = idUsuario,
+                tipo_soporte = "POST_CIERRE",
+                activo = true,
+                eliminado = false
             });
 
             bool valorAnteriorCheck =
@@ -1654,9 +1666,7 @@ namespace Alertas.Controllers
             {
                 id_reg_obl = entidad.id_reg_obl,
                 campo = nombreControl,
-                valor_anterior = valorAnteriorCheck
-                    ? "Cumplido"
-                    : "No cumplido",
+                valor_anterior = valorAnteriorCheck ? "Cumplido" : "No cumplido",
                 valor_nuevo = "Cumplido",
                 id_usuario = idUsuario,
                 fecha = fechaHoraUtc,
@@ -1669,7 +1679,7 @@ namespace Alertas.Controllers
                 id_reg_obl = entidad.id_reg_obl,
                 campo = "Soporte post cierre",
                 valor_anterior = soporteAnterior?.nombre_orig,
-                valor_nuevo = nombreOrigPostCierre,
+                valor_nuevo = resultado.OriginalFileName,
                 id_usuario = idUsuario,
                 fecha = fechaHoraUtc,
                 id_estado_en_momento = entidad.id_estado,
@@ -1773,32 +1783,32 @@ namespace Alertas.Controllers
 
         private async Task SubirAdjuntoInterno(RegObl entidad, IFormFile archivo, int idUsuario)
         {
-            var carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (archivo == null || archivo.Length == 0)
+                return;
 
-            if (!Directory.Exists(carpeta))
-                Directory.CreateDirectory(carpeta);
+            if (archivo.Length > 2 * 1024 * 1024)
+                throw new Exception("El archivo no puede superar 2 MB.");
 
-            var nombreArchivo = Guid.NewGuid() + Path.GetExtension(archivo.FileName);
-            var ruta = Path.Combine(carpeta, nombreArchivo);
+            var folder = $"proyectos/{entidad.id_proyecto}/obligaciones/{entidad.id_reg_obl}/soportes/{DateTime.UtcNow:yyyy/MM}";
 
-            using (var stream = new FileStream(ruta, FileMode.Create))
-            {
-                await archivo.CopyToAsync(stream);
-            }
+            var resultado = await _fileStorageService.UploadAsync(archivo, folder);
 
             var fechaHoraUtc = ObtenerFechaHoraUtc();
 
             _context.OblAdjuntos.Add(new OblAdjunto
             {
                 id_reg_obl = entidad.id_reg_obl,
-                nombre_orig = archivo.FileName,
-                object_key = nombreArchivo,
-                bucket_name = "local",
-                mime_type = archivo.ContentType,
-                extension = Path.GetExtension(archivo.FileName),
-                tamano_bytes = archivo.Length,
+                nombre_orig = resultado.OriginalFileName,
+                object_key = resultado.ObjectKey,
+                bucket_name = resultado.BucketName,
+                mime_type = resultado.MimeType,
+                extension = resultado.Extension,
+                tamano_bytes = resultado.FileSize,
                 fecha_carga = fechaHoraUtc,
-                id_usuario = idUsuario
+                id_usuario = idUsuario,
+                tipo_soporte = "NORMAL",
+                activo = true,
+                eliminado = false
             });
 
             _context.HistOblCampos.Add(new HistOblCampo
@@ -1806,7 +1816,7 @@ namespace Alertas.Controllers
                 id_reg_obl = entidad.id_reg_obl,
                 campo = "Adjunto",
                 valor_anterior = null,
-                valor_nuevo = archivo.FileName,
+                valor_nuevo = resultado.OriginalFileName,
                 id_usuario = idUsuario,
                 fecha = fechaHoraUtc,
                 id_estado_en_momento = entidad.id_estado,
@@ -1817,31 +1827,37 @@ namespace Alertas.Controllers
         private async Task EliminarAdjuntoInterno(RegObl entidad, int idAdjunto, int idUsuario)
         {
             var adjunto = await _context.OblAdjuntos
-                .FirstOrDefaultAsync(a => a.id_obl_adjunto == idAdjunto && a.id_reg_obl == entidad.id_reg_obl);
+                .FirstOrDefaultAsync(a =>
+                    a.id_obl_adjunto == idAdjunto &&
+                    a.id_reg_obl == entidad.id_reg_obl &&
+                    a.activo &&
+                    !a.eliminado);
 
             if (adjunto == null)
                 return;
 
-            var carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-            var ruta = Path.Combine(carpeta, adjunto.object_key);
-
-            if (System.IO.File.Exists(ruta))
-                System.IO.File.Delete(ruta);
-
             var fechaHoraUtc = ObtenerFechaHoraUtc();
 
-            _context.OblAdjuntos.Remove(adjunto);
+            adjunto.activo = false;
+            adjunto.eliminado = true;
+            adjunto.fecha_eliminacion = fechaHoraUtc;
+            adjunto.id_usuario_eliminacion = idUsuario;
+            adjunto.motivo_eliminacion = "Eliminado desde seguimiento de obligación";
 
             _context.HistOblCampos.Add(new HistOblCampo
             {
                 id_reg_obl = entidad.id_reg_obl,
-                campo = "Adjunto",
+                campo = adjunto.tipo_soporte == "POST_CIERRE"
+                    ? "Soporte post cierre"
+                    : "Adjunto",
                 valor_anterior = adjunto.nombre_orig,
                 valor_nuevo = null,
                 id_usuario = idUsuario,
                 fecha = fechaHoraUtc,
                 id_estado_en_momento = entidad.id_estado,
-                tipo_cambio = "ELIMINACION_SOPORTE"
+                tipo_cambio = adjunto.tipo_soporte == "POST_CIERRE"
+                    ? "ELIMINACION_SOPORTE_POST_CIERRE"
+                    : "ELIMINACION_SOPORTE"
             });
         }
 

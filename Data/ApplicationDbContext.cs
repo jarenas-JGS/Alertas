@@ -125,8 +125,27 @@ namespace Alertas.Data
             modelBuilder.Entity<OblAdjunto>(entity =>
             {
                 entity.HasKey(e => e.id_obl_adjunto).HasName("imp_adjuntos_pkey");
-                entity.Property(e => e.id_obl_adjunto).UseIdentityAlwaysColumn();
-                entity.Property(e => e.fecha_carga).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.Property(e => e.id_obl_adjunto)
+                    .UseIdentityAlwaysColumn();
+
+                entity.Property(e => e.fecha_carga)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.Property(e => e.activo)
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.eliminado)
+                    .HasDefaultValue(false);
+
+                entity.Property(e => e.tipo_soporte)
+                    .HasMaxLength(50)
+                    .HasDefaultValue("NORMAL");
+
+                entity.HasOne(e => e.UsuarioEliminacion)
+                    .WithMany()
+                    .HasForeignKey(e => e.id_usuario_eliminacion)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<JustifVar>(entity =>
