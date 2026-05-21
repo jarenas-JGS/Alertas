@@ -113,6 +113,12 @@ namespace Alertas.Services.Notificaciones
                     resultado.CorreosError++;
                     resultado.Errores.Add($"{correo.EmailUsuario}: {ex.Message}");
                 }
+                finally
+                {
+                    // Resend permite 5 correos por segundo.
+                    // Con 250 ms entre envíos quedamos aprox. en 4 por segundo.
+                    await Task.Delay(250);
+                }
 
                 _context.NotificacionesEnvios.Add(envio);
                 await _context.SaveChangesAsync();
