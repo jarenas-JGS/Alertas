@@ -45,6 +45,8 @@ namespace Alertas.Data
         public virtual DbSet<NotificacionEnvio> NotificacionesEnvios { get; set; }
         public virtual DbSet<NotificacionEnvioDetalle> NotificacionesEnviosDetalle { get; set; }
         public virtual DbSet<NotificacionLog> NotificacionesLog { get; set; }
+        public DbSet<JobsEjecucion> JobsEjecuciones { get; set; }
+        public DbSet<JobsLock> JobsLocks { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -56,6 +58,18 @@ namespace Alertas.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<JobsEjecucion>(entity =>
+            {
+                entity.ToTable("jobs_ejecuciones");
+                entity.HasKey(e => e.id_job_ejecucion);
+            });
+
+            modelBuilder.Entity<JobsLock>(entity =>
+            {
+                entity.ToTable("jobs_locks");
+                entity.HasKey(e => e.nombre_job);
+            });
 
             modelBuilder.Entity<Ciudad>(entity =>
             {

@@ -13,5 +13,9 @@ namespace Alertas.Services.Notificaciones
             string tipoEjecucion,
             int? idUsuarioEjecucion = null,
             int? idProyecto = null);
+
+        Task<ResultadoEnvioAutomaticoDto> EnviarAlertasAutomaticasAsync(
+            SolicitudEnvioAutomaticoDto solicitud,
+            CancellationToken cancellationToken);
     }
 }

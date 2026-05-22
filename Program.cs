@@ -23,6 +23,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHostedService<AlertasBackgroundService>();
 
+builder.Services.AddScoped<IJobLockService, JobLockService>();
+
 builder.Services.Configure<AlertasJobOptions>(
     builder.Configuration.GetSection("AlertasJob"));
 

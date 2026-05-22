@@ -7,6 +7,7 @@
         public int CorreosPreparados { get; set; }
         public int CorreosEnviados { get; set; }
         public int CorreosError { get; set; }
+        public int CorreosOmitidosDuplicados { get; set; }
 
         public List<GrupoAlertasUsuarioDto> Correos { get; set; } = new();
 
