@@ -1,23 +1,30 @@
 using Alertas.Data;
 using Alertas.Services;
 using Alertas.Services.CargaMasiva;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.EntityFrameworkCore;
+using Alertas.Services.Jobs;
+using Alertas.Services.Jobs.Options;
 using Alertas.Services.Notificaciones;
 using Alertas.Services.Notificaciones.Config;
+using Alertas.Services.Storage;
+using Alertas.Services.Storage.Cleanup;
+using Alertas.Services.Storage.Interfaces;
 using Alertas.Services.Storage.Interfaces;
 using Alertas.Services.Storage.Local;
-using Alertas.Services.Storage.Interfaces;
 using Alertas.Services.Storage.Local;
 using Alertas.Services.Storage.Models;
 using Alertas.Services.Storage.R2;
-using Alertas.Services.Storage;
-using Alertas.Services.Storage.Cleanup;
-using System.IO;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHostedService<AlertasBackgroundService>();
+
+builder.Services.Configure<AlertasJobOptions>(
+    builder.Configuration.GetSection("AlertasJob"));
 
 builder.Services.AddHostedService<StorageCleanupBackgroundService>();
 
