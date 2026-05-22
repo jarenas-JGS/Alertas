@@ -85,5 +85,11 @@ namespace Alertas.Models
         [ForeignKey("id_usuario")]
         public Usuario? Usuario { get; set; }
 
+        [Display(Name = "Eliminado físicamente")]
+        public bool eliminado_fisicamente { get; set; } = false;
+
+        [Display(Name = "Fecha eliminación física")]
+        public DateTime? fecha_eliminacion_fisica { get; set; }
+
     }
 }

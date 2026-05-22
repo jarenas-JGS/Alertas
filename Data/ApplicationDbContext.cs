@@ -56,6 +56,7 @@ namespace Alertas.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             modelBuilder.Entity<Ciudad>(entity =>
             {
                 entity.HasKey(e => e.id_ciudad).HasName("ciudades_pkey");
@@ -146,6 +147,9 @@ namespace Alertas.Data
                     .WithMany()
                     .HasForeignKey(e => e.id_usuario_eliminacion)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.Property(e => e.eliminado_fisicamente)
+                    .HasDefaultValue(false);
             });
 
             modelBuilder.Entity<JustifVar>(entity =>

@@ -12,11 +12,14 @@ using Alertas.Services.Storage.Local;
 using Alertas.Services.Storage.Models;
 using Alertas.Services.Storage.R2;
 using Alertas.Services.Storage;
+using Alertas.Services.Storage.Cleanup;
 using System.IO;
 using Microsoft.AspNetCore.DataProtection;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHostedService<StorageCleanupBackgroundService>();
 
 builder.Services.AddScoped<IFileStorageService,
     LocalFileStorageService>();
