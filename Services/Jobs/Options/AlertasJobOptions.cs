@@ -22,5 +22,6 @@
         public int MinutoEjecucion { get; set; } = 0;
         public string ZonaHoraria { get; set; } = "America/Bogota";
         public bool OmitirFestivos { get; set; } = true;
+        public int TimeoutMinutos { get; set; } = 30;
     }
 }

@@ -105,6 +105,8 @@ namespace Alertas.Services.Jobs
 
             using var scope = _serviceProvider.CreateScope();
 
+
+
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var lockService = scope.ServiceProvider.GetRequiredService<IJobLockService>();
 
@@ -148,6 +150,10 @@ namespace Alertas.Services.Jobs
                 var notificacionesService = scope.ServiceProvider
                     .GetRequiredService<INotificacionesAlertasService>();
 
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+
+                cts.CancelAfter(TimeSpan.FromMinutes(options.TimeoutMinutos));
+
                 var resultado = await notificacionesService.EnviarAlertasAutomaticasAsync(
                     new SolicitudEnvioAutomaticoDto
                     {
@@ -157,10 +163,10 @@ namespace Alertas.Services.Jobs
                         PermitirEnvioReal = options.PermitirEnvioReal,
                         Ambiente = _environment.EnvironmentName,
                         BloquearEnviosFueraDeProduccion = options.BloquearEnviosFueraDeProduccion,
-                        SimularEjecucion = options.SimularEjecucion,
-                        EmailDestinoPruebas = options.EmailDestinoPruebas
+                        EmailDestinoPruebas = options.EmailDestinoPruebas,
+                        SimularEjecucion = options.SimularEjecucion
                     },
-                    stoppingToken);
+                    cts.Token);
 
                 ejecucion.total_generadas = resultado.TotalGeneradas;
                 ejecucion.total_enviadas = resultado.TotalEnviadas;
@@ -184,11 +190,25 @@ namespace Alertas.Services.Jobs
                 ejecucion.estado = "FINALIZADO";
                 ejecucion.fecha_fin = DateTime.UtcNow;
 
-                await context.SaveChangesAsync(stoppingToken);
+                await context.SaveChangesAsync(cts.Token);
 
                 _logger.LogInformation("Finalizó ejecución automática de alertas. EjecucionId: {Id}",
                     ejecucion.id_job_ejecucion);
             }
+
+            catch (OperationCanceledException ex) when (!stoppingToken.IsCancellationRequested)
+            {
+                ejecucion.estado = "ERROR";
+                ejecucion.fecha_fin = DateTime.UtcNow;
+                ejecucion.mensaje_error = $"La ejecución superó el timeout configurado de {options.TimeoutMinutos} minutos.";
+
+                await context.SaveChangesAsync(CancellationToken.None);
+
+                _logger.LogError(ex,
+                    "Timeout ejecutando job automático de alertas. EjecucionId: {Id}",
+                    ejecucion.id_job_ejecucion);
+            }
+
             catch (Exception ex)
             {
                 ejecucion.estado = "ERROR";

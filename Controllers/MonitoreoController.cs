@@ -110,8 +110,48 @@ namespace Alertas.Controllers
             if (model.CorreosErrorHoy > 0)
                 model.Advertencias.Add($"Hoy hay {model.CorreosErrorHoy} correos con error.");
 
-            if (model.LockHasta.HasValue && model.LockHasta.Value > DateTime.Now.AddMinutes(30))
-                model.Advertencias.Add("Existe un lock activo con vencimiento futuro. Validar si el job quedó bloqueado.");
+            var ahoraLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, userTimeZone);
+
+            if (model.LockHasta.HasValue &&
+                model.LockHasta.Value > ahoraLocal.AddMinutes(30))
+            {
+                model.Advertencias.Add(
+                    "Existe un lock activo con vencimiento futuro. Validar si el job quedó bloqueado.");
+            }
+
+            var jobsEnProceso = await _context.JobsEjecuciones
+                .AsNoTracking()
+                .Where(x => x.estado == "EN_PROCESO")
+                .ToListAsync();
+
+            foreach (var job in jobsEnProceso)
+            {
+                var inicioLocal = TimeZoneInfo.ConvertTimeFromUtc(
+                    DateTime.SpecifyKind(job.fecha_inicio, DateTimeKind.Utc),
+                    userTimeZone);
+
+                var duracion = ahoraLocal - inicioLocal;
+
+                if (duracion.TotalMinutes > 60)
+                {
+                    model.Advertencias.Add(
+                        $"El job '{job.nombre_job}' lleva más de 60 minutos en ejecución.");
+                }
+            }
+
+            var hoySemana = ahoraLocal.DayOfWeek;
+
+            bool esDiaHabil =
+                hoySemana != DayOfWeek.Saturday &&
+                hoySemana != DayOfWeek.Sunday;
+
+            if (esDiaHabil &&
+                ahoraLocal.Hour >= 9 &&
+                model.JobsFinalizadosHoy == 0)
+            {
+                model.Advertencias.Add(
+                    "No existen ejecuciones finalizadas hoy después de las 9:00 AM.");
+            }
 
             return View(model);
         }

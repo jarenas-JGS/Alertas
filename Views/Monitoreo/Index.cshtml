@@ -21,6 +21,10 @@
         <small class="text-muted">
             Resumen de ejecución de jobs, envío de alertas y estado operativo del sistema.
         </small>
+        <div class="small text-muted mt-1">
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            Esta pantalla se actualiza automáticamente cada 60 segundos.
+        </div>
     </div>
 
     @if (Model.Advertencias.Any())
@@ -189,3 +193,11 @@
     </div>
 
 </div>
+
+@section Scripts {
+    <script>
+        setTimeout(function () {
+            window.location.reload();
+        }, 60000);
+    </script>
+}
