@@ -1,0 +1,191 @@
+﻿@model Alertas.ViewModels.Monitoreo.MonitoreoDashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard Operacional";
+
+    var estadoClass = Model.UltimaEjecucionEstado switch
+    {
+        "FINALIZADO" => "text-success",
+        "ERROR" => "text-danger",
+        "EN_PROCESO" => "text-warning",
+        _ => "text-secondary"
+    };
+}
+
+<div class="container mt-4">
+
+    <div class="mb-4">
+        <h3 class="mb-1">
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard Operacional
+        </h3>
+        <small class="text-muted">
+            Resumen de ejecución de jobs, envío de alertas y estado operativo del sistema.
+        </small>
+    </div>
+
+    @if (Model.Advertencias.Any())
+    {
+        <div class="alert alert-warning shadow-sm">
+            <h6 class="mb-2">
+                <i class="bi bi-exclamation-triangle me-1"></i>Advertencias operativas
+            </h6>
+            <ul class="mb-0">
+                @foreach (var advertencia in Model.Advertencias)
+                {
+                    <li>@advertencia</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Alertas generadas hoy</div>
+                    <div class="fs-3 fw-bold">@Model.AlertasGeneradasHoy</div>
+                    <div class="small text-muted">Total calculado por jobs del día.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Correos enviados hoy</div>
+                    <div class="fs-3 fw-bold text-success">@Model.CorreosEnviadosHoy</div>
+                    <div class="small text-muted">Correos registrados como enviados.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Correos con error hoy</div>
+                    <div class="fs-3 fw-bold @(Model.CorreosErrorHoy > 0 ? "text-danger" : "text-success")">
+                        @Model.CorreosErrorHoy
+                    </div>
+                    <div class="small text-muted">Errores registrados en envíos.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">Jobs finalizados hoy</div>
+                    <div class="fs-3 fw-bold">@Model.JobsFinalizadosHoy</div>
+                    <div class="small text-muted">
+                        Errores de job: <strong>@Model.JobsErrorHoy</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3">
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <strong>Última ejecución</strong>
+                </div>
+                <div class="card-body">
+                    @if (Model.UltimaEjecucionInicio.HasValue)
+                    {
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Estado</dt>
+                            <dd class="col-sm-8">
+                                <span class="fw-bold @estadoClass">@Model.UltimaEjecucionEstado</span>
+                            </dd>
+
+                            <dt class="col-sm-4">Ambiente</dt>
+                            <dd class="col-sm-8">@Model.UltimaEjecucionAmbiente</dd>
+
+                            <dt class="col-sm-4">Inicio</dt>
+                            <dd class="col-sm-8">@Model.UltimaEjecucionInicio.Value.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+
+                            <dt class="col-sm-4">Fin</dt>
+                            <dd class="col-sm-8">
+                                @(Model.UltimaEjecucionFin.HasValue
+                                                            ? Model.UltimaEjecucionFin.Value.ToString("dd/MM/yyyy HH:mm:ss")
+                                                            : "-")
+                        </dd>
+
+                            <dt class="col-sm-4">Duración</dt>
+                            <dd class="col-sm-8">
+                            @if (Model.UltimaEjecucionFin.HasValue)
+                                {
+                                    var duracion = Model.UltimaEjecucionFin.Value - Model.UltimaEjecucionInicio.Value;
+                                    <span>@Math.Round(duracion.TotalSeconds, 0) segundos</span>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </dd>
+                        </dl>
+                    }
+                    else
+                    {
+                        <div class="text-muted">
+                            No hay ejecuciones registradas.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <strong>Lock del job</strong>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrWhiteSpace(Model.LockNombreJob))
+                    {
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Job</dt>
+                            <dd class="col-sm-8">@Model.LockNombreJob</dd>
+
+                            <dt class="col-sm-4">Bloqueado hasta</dt>
+                            <dd class="col-sm-8">
+                                @(Model.LockHasta.HasValue
+                                                            ? Model.LockHasta.Value.ToString("dd/MM/yyyy HH:mm:ss")
+                                                            : "-")
+                                                              </dd>
+
+                            <dt class="col-sm-4">Última ejecución</dt>
+                            <dd class="col-sm-8">
+                                @(Model.LockUltimaEjecucion.HasValue
+                                                            ? Model.LockUltimaEjecucion.Value.ToString("dd/MM/yyyy HH:mm:ss")
+                                                            : "-")
+                        </dd>
+                    </dl>
+                                        }
+                    else
+                    {
+                        <div class="text-muted">
+                            No hay locks registrados.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <a asp-controller="JobsMonitoreo" asp-action="Index" class="btn btn-outline-primary">
+            <i class="bi bi-activity me-1"></i> Ver jobs
+        </a>
+
+        <a asp-controller="HistorialCorreos" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-envelope-paper me-1"></i> Ver historial de correos
+        </a>
+    </div>
+
+</div>
