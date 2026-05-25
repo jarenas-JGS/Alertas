@@ -24,37 +24,70 @@ namespace Alertas.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var ejecuciones = await _context.JobsEjecuciones
+
+            var tzIana = Request.Cookies["tzIana"] ?? "America/Bogota";
+            TimeZoneInfo userTimeZone;
+
+            try
+            {
+                userTimeZone = TimeZoneInfo.FindSystemTimeZoneById(tzIana);
+            }
+            catch
+            {
+                userTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Bogota");
+            }
+
+            var ejecucionesRaw = await _context.JobsEjecuciones
                 .AsNoTracking()
                 .OrderByDescending(x => x.fecha_inicio)
                 .Take(100)
+                .ToListAsync();
+
+            var ejecuciones = ejecucionesRaw
                 .Select(x => new JobEjecucionItemViewModel
                 {
                     IdJobEjecucion = x.id_job_ejecucion,
                     NombreJob = x.nombre_job,
                     Ambiente = x.ambiente,
-                    FechaInicio = x.fecha_inicio,
-                    FechaFin = x.fecha_fin,
+                    FechaInicio = TimeZoneInfo.ConvertTimeFromUtc(
+                        DateTime.SpecifyKind(x.fecha_inicio, DateTimeKind.Utc),
+                        userTimeZone),
+                    FechaFin = x.fecha_fin.HasValue
+                        ? TimeZoneInfo.ConvertTimeFromUtc(
+                            DateTime.SpecifyKind(x.fecha_fin.Value, DateTimeKind.Utc),
+                            userTimeZone)
+                        : null,
                     Estado = x.estado,
                     TotalGeneradas = x.total_generadas,
                     TotalEnviadas = x.total_enviadas,
                     TotalError = x.total_error,
                     MensajeError = x.mensaje_error
                 })
-                .ToListAsync();
+                .ToList();
 
-            var locks = await _context.JobsLocks
+            var locksRaw = await _context.JobsLocks
                 .AsNoTracking()
                 .OrderBy(x => x.nombre_job)
+                .ToListAsync();
+
+            var locks = locksRaw
                 .Select(x => new JobLockItemViewModel
                 {
                     NombreJob = x.nombre_job,
-                    LockedUntil = x.locked_until,
+                    LockedUntil = TimeZoneInfo.ConvertTimeFromUtc(
+                        DateTime.SpecifyKind(x.locked_until, DateTimeKind.Utc),
+                        userTimeZone),
                     LockedBy = x.locked_by,
-                    FechaUltEjecucion = x.fecha_ult_ejecucion,
-                    FechaActualizacion = x.fecha_actualizacion
+                    FechaUltEjecucion = x.fecha_ult_ejecucion.HasValue
+                        ? TimeZoneInfo.ConvertTimeFromUtc(
+                            DateTime.SpecifyKind(x.fecha_ult_ejecucion.Value, DateTimeKind.Utc),
+                            userTimeZone)
+                        : null,
+                    FechaActualizacion = TimeZoneInfo.ConvertTimeFromUtc(
+                        DateTime.SpecifyKind(x.fecha_actualizacion, DateTimeKind.Utc),
+                        userTimeZone)
                 })
-                .ToListAsync();
+                .ToList();
 
             var model = new JobsMonitoreoIndexViewModel
             {
