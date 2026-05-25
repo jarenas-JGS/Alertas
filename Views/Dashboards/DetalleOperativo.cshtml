@@ -1,0 +1,193 @@
+﻿@model Alertas.ViewModels.Dashboards.DetalleDashboardOperativoVm
+
+@{
+    ViewData["Title"] = Model.Titulo;
+}
+
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="mb-1">
+                <i class="bi bi-list-ul me-2"></i>
+                @Model.Titulo
+            </h3>
+            <div class="text-muted">
+                Proyecto: <strong>@Model.NombreProyecto</strong>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            @{
+                var returnUrl = Context.Request.Query["returnUrl"].ToString();
+
+                if (string.IsNullOrWhiteSpace(returnUrl))
+                {
+                    returnUrl = Url.Action("OperativoProyecto", "Dashboards")!;
+                }
+            }
+
+            <a href="@returnUrl" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                Volver al dashboard
+            </a>
+            <a asp-controller="Dashboards"
+               asp-action="ExportarDetalleOperativo"
+               asp-route-tipo="@Context.Request.Query["tipo"]"
+               asp-route-idEstadoDetalle="@Context.Request.Query["idEstadoDetalle"]"
+               asp-route-idCliente="@Context.Request.Query["idCliente"]"
+               asp-route-idEmpresa="@Context.Request.Query["idEmpresa"]"
+               asp-route-idCiudad="@Context.Request.Query["idCiudad"]"
+               asp-route-idEstado="@Context.Request.Query["idEstado"]"
+               asp-route-idTipoObligacion="@Context.Request.Query["idTipoObligacion"]"
+               asp-route-anio="@Context.Request.Query["anio"]"
+               asp-route-mes="@Context.Request.Query["mes"]"
+               asp-route-idResponsable="@Context.Request.Query["idResponsable"]"
+               asp-route-idElaborador="@Context.Request.Query["idElaborador"]"
+               asp-route-idAutorizador="@Context.Request.Query["idAutorizador"]"
+               asp-route-idAprobador="@Context.Request.Query["idAprobador"]"
+               asp-route-idUsuarioVencimiento="@Context.Request.Query["idUsuarioVencimiento"]"
+               class="btn btn-success">
+                <i class="bi bi-file-earmark-excel me-1"></i>
+                Exportar Excel
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h6 class="fw-bold mb-0">Obligaciones</h6>
+                <small class="text-muted">
+                    Total registros: @Model.Obligaciones.Count
+                </small>
+            </div>
+        </div>
+
+        <div class="card-body">
+            @if (Model.Obligaciones.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="tablaDetalleDashboard">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Obligación</th>
+                                <th>Código</th>
+                                <th>Cliente</th>
+                                <th>Empresa</th>
+                                <th>Tipo</th>
+                                <th>Estado</th>
+                                <th>Vencimiento</th>
+                                <th>Seguimiento</th>
+                                <th>Aprobada</th>
+                                <th class="text-center" style="width: 90px;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Obligaciones)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">@item.Nombre</div>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(item.CodigoObligacion))
+                                        {
+                                            <span>@item.CodigoObligacion</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Sin código</span>
+                                        }
+                                    </td>
+                                    <td>@item.Cliente</td>
+                                    <td>@item.Empresa</td>
+                                    <td>@item.TipoObligacion</td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-secondary-subtle text-secondary border">
+                                            @item.Estado
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div>@item.FechaVencimiento</div>
+                                        @if (item.DiasAtrasoVencimiento.HasValue && item.DiasAtrasoVencimiento.Value > 0)
+                                        {
+                                            <small class="text-danger">
+                                                @item.DiasAtrasoVencimiento días atraso
+                                            </small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>@item.FechaSeguimiento</div>
+                                        @if (item.DiasAtrasoSeguimiento.HasValue && item.DiasAtrasoSeguimiento.Value > 0)
+                                        {
+                                            <small class="text-danger">
+                                                @item.DiasAtrasoSeguimiento días atraso
+                                            </small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.Aprobado)
+                                        {
+                                            <span class="badge bg-success-subtle text-success border rounded-pill">
+                                                Sí
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning-subtle text-warning border rounded-pill">
+                                                No
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-controller="RegObl"
+                                           asp-action="Details"
+                                           asp-route-id="@item.IdRegObl"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Consultar obligación">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="text-muted fs-1 mb-3">
+                        <i class="bi bi-inbox"></i>
+                    </div>
+                    <h5 class="fw-semibold">No hay obligaciones para mostrar</h5>
+                    <p class="text-muted mb-0">
+                        No se encontraron registros para el indicador seleccionado.
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if ($('#tablaDetalleDashboard').length) {
+                $('#tablaDetalleDashboard').DataTable({
+                    pageLength: 10,
+                    order: [[6, 'asc']],
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                    },
+                    columnDefs: [
+                        { orderable: false, targets: [9] }
+                    ]
+                });
+            }
+        });
+    </script>
+}

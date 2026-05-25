@@ -154,8 +154,10 @@ namespace Alertas.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> SeleccionarProyecto()
+        public async Task<IActionResult> SeleccionarProyecto(string? returnUrl = null)
         {
+            ViewBag.ReturnUrl = returnUrl;
+
             var idUsuario = _seguridadService.ObtenerIdUsuario();
 
             if (idUsuario == null)
@@ -169,7 +171,7 @@ namespace Alertas.Controllers
             {
                 accesos = await _context.Proyectos
                     .Where(p => p.activo && p.configuracion_completa)
-                                    .OrderBy(p => p.nombre)
+                    .OrderBy(p => p.nombre)
                     .Select(p => new AccesoProyectoViewModel
                     {
                         id_proyecto = p.id_proyecto,
@@ -193,12 +195,16 @@ namespace Alertas.Controllers
             {
                 HttpContext.Session.SetString("id_proyecto_activo", accesosUsuario[0].id_proyecto.ToString());
                 HttpContext.Session.SetString("nombre_proyecto_activo", accesosUsuario[0].nombre_proyecto);
+
                 string tipoAccesoSesion = string.Equals(accesosUsuario[0].tipo_acceso, "OBLIGACION", StringComparison.OrdinalIgnoreCase)
                     ? "OBLIGACION"
                     : "PROYECTO";
 
                 HttpContext.Session.SetString("tipo_acceso_proyecto_activo", tipoAccesoSesion);
                 HttpContext.Session.SetString("rol_proyecto_activo", accesosUsuario[0].tipo_acceso);
+
+                if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
 
                 return RedirectToAction("Index", "RegObl");
             }
@@ -218,7 +224,10 @@ namespace Alertas.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SeleccionarProyecto(int idProyecto, string tipoAcceso)
+        public async Task<IActionResult> SeleccionarProyecto(
+            int idProyecto,
+            string tipoAcceso,
+            string? returnUrl = null)
         {
             bool esSuperAdmin = User.HasClaim("EsSuperAdmin", "true");
 
@@ -239,14 +248,12 @@ namespace Alertas.Controllers
             if (!proyecto.configuracion_completa)
             {
                 TempData["Error"] = "Este proyecto aún no está completamente configurado.";
-                return RedirectToAction("SeleccionarProyecto", "Login");
+                return RedirectToAction("SeleccionarProyecto", "Login", new { returnUrl });
             }
-
-            if (proyecto == null)
-                return RedirectToAction("AccessDenied", "Login");
 
             HttpContext.Session.SetString("id_proyecto_activo", proyecto.id_proyecto.ToString());
             HttpContext.Session.SetString("nombre_proyecto_activo", proyecto.nombre);
+
             string tipoAccesoSesion = esSuperAdmin
                 ? "SUPER_ADMIN"
                 : string.Equals(tipoAcceso, "OBLIGACION", StringComparison.OrdinalIgnoreCase)
@@ -255,6 +262,9 @@ namespace Alertas.Controllers
 
             HttpContext.Session.SetString("tipo_acceso_proyecto_activo", tipoAccesoSesion);
             HttpContext.Session.SetString("rol_proyecto_activo", tipoAcceso);
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
 
             return RedirectToAction("Index", "RegObl");
         }

@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Seleccionar Proyecto";
+    var returnUrl = ViewBag.ReturnUrl as string;
 }
 
 <div class="container py-4">
@@ -47,6 +48,7 @@
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="idProyecto" value="@acceso.id_proyecto" />
                                             <input type="hidden" name="tipoAcceso" value="@acceso.tipo_acceso" />
+                                            <input type="hidden" name="returnUrl" value="@returnUrl" />
 
                                             <button type="submit" class="btn btn-primary">
                                                 Ingresar

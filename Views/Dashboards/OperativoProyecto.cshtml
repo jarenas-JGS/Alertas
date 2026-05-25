@@ -24,63 +24,297 @@
         </div>
     </div>
 
+    <div class="card shadow-sm border-0 mb-4 dashboard-filter-card">
+        <div class="card-body">
+            <form asp-controller="Dashboards"
+                  asp-action="OperativoProyecto"
+                  method="get"
+                  class="row g-3 align-items-end">
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Cliente</label>
+                    <select name="idCliente" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Clientes)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdCliente?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Empresa</label>
+                    <select name="idEmpresa" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach (var item in Model.Filtros.Empresas)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdEmpresa?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Ciudad</label>
+                    <select name="idCiudad" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach (var item in Model.Filtros.Ciudades)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdCiudad?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Estado</label>
+                    <select name="idEstado" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Estados)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdEstado?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Tipo de obligación</label>
+                    <select name="idTipoObligacion" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.TiposObligacion)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdTipoObligacion?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl-2">
+                    <label class="form-label small text-muted mb-1">Año</label>
+                    <select name="anio" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Anios)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.Anio?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl-2">
+                    <label class="form-label small text-muted mb-1">Mes</label>
+                    <select name="mes" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Meses)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.Mes?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Responsable</label>
+                    <select name="idResponsable" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Responsables)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdResponsable?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Elaborador</label>
+                    <select name="idElaborador" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Elaboradores)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdElaborador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Autorizador</label>
+                    <select name="idAutorizador" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Autorizadores)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdAutorizador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Aprobador</label>
+                    <select name="idAprobador" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Aprobadores)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdAprobador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Usuario vencimiento</label>
+                    <select name="idUsuarioVencimiento" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.UsuariosVencimiento)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdUsuarioVencimiento?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <div class="d-flex flex-wrap gap-2 justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel me-1"></i>
+                            Aplicar filtros
+                        </button>
+
+                        <a asp-controller="Dashboards"
+                           asp-action="OperativoProyecto"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Limpiar
+                        </a>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
     <div class="row g-3 mb-4">
 
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="text-muted small">Total obligaciones</div>
-                            <h3 class="fw-bold mb-0">@Model.TotalObligaciones</h3>
+            <a asp-controller="Dashboards"
+               asp-action="DetalleOperativo"
+               asp-route-tipo="total"
+               asp-route-idCliente="@Model.Filtros.IdCliente"
+               asp-route-idEmpresa="@Model.Filtros.IdEmpresa"
+               asp-route-idCiudad="@Model.Filtros.IdCiudad"
+               asp-route-idEstado="@Model.Filtros.IdEstado"
+               asp-route-idTipoObligacion="@Model.Filtros.IdTipoObligacion"
+               asp-route-anio="@Model.Filtros.Anio"
+               asp-route-mes="@Model.Filtros.Mes"
+               asp-route-idResponsable="@Model.Filtros.IdResponsable"
+               asp-route-idElaborador="@Model.Filtros.IdElaborador"
+               asp-route-idAutorizador="@Model.Filtros.IdAutorizador"
+               asp-route-idAprobador="@Model.Filtros.IdAprobador"
+               asp-route-idUsuarioVencimiento="@Model.Filtros.IdUsuarioVencimiento"
+               class="text-decoration-none text-dark">
+                <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small">Total obligaciones</div>
+                                <h3 class="fw-bold mb-0">@Model.TotalObligaciones</h3>
+                            </div>
+                            <div class="dashboard-icon bg-primary-subtle text-primary">
+                                <i class="bi bi-list-check"></i>
+                            </div>
                         </div>
-                        <div class="dashboard-icon bg-primary-subtle text-primary">
-                            <i class="bi bi-list-check"></i>
+                        <div class="small text-muted mt-3">
+                            Obligaciones registradas en el proyecto.
                         </div>
-                    </div>
-                    <div class="small text-muted mt-3">
-                        Obligaciones registradas en el proyecto.
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="text-muted small">Vencidas</div>
-                            <h3 class="fw-bold mb-0 text-danger">@Model.ObligacionesVencidas</h3>
+            <a asp-controller="Dashboards"
+               asp-action="DetalleOperativo"
+               asp-route-tipo="vencidas"
+               asp-route-idCliente="@Model.Filtros.IdCliente"
+               asp-route-idEmpresa="@Model.Filtros.IdEmpresa"
+               asp-route-idCiudad="@Model.Filtros.IdCiudad"
+               asp-route-idEstado="@Model.Filtros.IdEstado"
+               asp-route-idTipoObligacion="@Model.Filtros.IdTipoObligacion"
+               asp-route-anio="@Model.Filtros.Anio"
+               asp-route-mes="@Model.Filtros.Mes"
+               asp-route-idResponsable="@Model.Filtros.IdResponsable"
+               asp-route-idElaborador="@Model.Filtros.IdElaborador"
+               asp-route-idAutorizador="@Model.Filtros.IdAutorizador"
+               asp-route-idAprobador="@Model.Filtros.IdAprobador"
+               asp-route-idUsuarioVencimiento="@Model.Filtros.IdUsuarioVencimiento"
+               class="text-decoration-none text-dark">
+                <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small">Vencidas</div>
+                                <h3 class="fw-bold mb-0 text-danger">@Model.ObligacionesVencidas</h3>
+                            </div>
+                            <div class="dashboard-icon bg-danger-subtle text-danger">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
                         </div>
-                        <div class="dashboard-icon bg-danger-subtle text-danger">
-                            <i class="bi bi-exclamation-triangle"></i>
+                        <div class="small text-muted mt-3">
+                            Pendientes con fecha de vencimiento superada.
                         </div>
-                    </div>
-                    <div class="small text-muted mt-3">
-                        Pendientes con fecha de vencimiento superada.
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="text-muted small">Próximas a vencer</div>
-                            <h3 class="fw-bold mb-0 text-warning">@Model.ProximasAVencer</h3>
+            <a asp-controller="Dashboards"
+               asp-action="DetalleOperativo"
+               asp-route-tipo="proximas"
+               asp-route-idCliente="@Model.Filtros.IdCliente"
+               asp-route-idEmpresa="@Model.Filtros.IdEmpresa"
+               asp-route-idCiudad="@Model.Filtros.IdCiudad"
+               asp-route-idEstado="@Model.Filtros.IdEstado"
+               asp-route-idTipoObligacion="@Model.Filtros.IdTipoObligacion"
+               asp-route-anio="@Model.Filtros.Anio"
+               asp-route-mes="@Model.Filtros.Mes"
+               asp-route-idResponsable="@Model.Filtros.IdResponsable"
+               asp-route-idElaborador="@Model.Filtros.IdElaborador"
+               asp-route-idAutorizador="@Model.Filtros.IdAutorizador"
+               asp-route-idAprobador="@Model.Filtros.IdAprobador"
+               asp-route-idUsuarioVencimiento="@Model.Filtros.IdUsuarioVencimiento"
+               class="text-decoration-none text-dark">
+                <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small">Próximas a vencer</div>
+                                <h3 class="fw-bold mb-0 text-warning">@Model.ProximasAVencer</h3>
+                            </div>
+                            <div class="dashboard-icon bg-warning-subtle text-warning">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
                         </div>
-                        <div class="dashboard-icon bg-warning-subtle text-warning">
-                            <i class="bi bi-calendar-event"></i>
+                        <div class="small text-muted mt-3">
+                            Obligaciones pendientes dentro de los próximos 30 días.
                         </div>
-                    </div>
-                    <div class="small text-muted mt-3">
-                        Obligaciones pendientes dentro de los próximos 30 días.
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-12 col-sm-6 col-xl-3">
@@ -106,40 +340,59 @@
 
     <div class="row g-3 mb-4">
 
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100 dashboard-mini-card">
-                <div class="card-body">
-                    <div class="text-muted small">En elaboración</div>
-                    <h4 class="fw-bold mb-0">@Model.EnElaboracion</h4>
-                </div>
-            </div>
-        </div>
+        <div class="row g-3 mb-4">
+            @foreach (var estado in Model.ResumenPorEstados)
+            {
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <a asp-controller="Dashboards"
+                       asp-action="DetalleOperativo"
+                       asp-route-tipo="estado"
+                       asp-route-idEstadoDetalle="@estado.IdEstado"
+                       asp-route-idCliente="@Model.Filtros.IdCliente"
+                       asp-route-idEmpresa="@Model.Filtros.IdEmpresa"
+                       asp-route-idCiudad="@Model.Filtros.IdCiudad"
+                       asp-route-idEstado="@Model.Filtros.IdEstado"
+                       asp-route-idTipoObligacion="@Model.Filtros.IdTipoObligacion"
+                       asp-route-anio="@Model.Filtros.Anio"
+                       asp-route-mes="@Model.Filtros.Mes"
+                       class="text-decoration-none text-dark">
+                        <div class="card shadow-sm border-0 h-100 dashboard-mini-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="text-muted small">@estado.NombreEstado</div>
+                                        <h4 class="fw-bold mb-0">@estado.Total</h4>
+                                    </div>
 
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100 dashboard-mini-card">
-                <div class="card-body">
-                    <div class="text-muted small">En seguimiento</div>
-                    <h4 class="fw-bold mb-0">@Model.EnSeguimiento</h4>
-                </div>
-            </div>
-        </div>
+                                    <div class="dashboard-icon"
+                                         style="background-color:@estado.ColorHex20; color:@estado.ColorHex;">
+                                        <i class="bi @estado.Icono"></i>
+                                    </div>
+                                </div>
 
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100 dashboard-mini-card">
-                <div class="card-body">
-                    <div class="text-muted small">Presentadas</div>
-                    <h4 class="fw-bold mb-0">@Model.Presentadas</h4>
+                                <div class="small text-muted mt-3">
+                                    @if (estado.ControlVencimiento)
+                                    {
+                                        <span>Estado de control de vencimiento.</span>
+                                    }
+                                    else if (estado.ControlSeguimiento)
+                                    {
+                                        <span>Estado de control de seguimiento.</span>
+                                    }
+                                    else if (estado.Bloquea)
+                                    {
+                                        <span>Estado bloqueante del flujo.</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Obligaciones en esta etapa.</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100 dashboard-mini-card">
-                <div class="card-body">
-                    <div class="text-muted small">Cerradas</div>
-                    <h4 class="fw-bold mb-0">@Model.Cerradas</h4>
-                </div>
-            </div>
+            }
         </div>
 
     </div>
@@ -230,6 +483,20 @@
 
 </div>
 
+<div id="dashboardOverlay" class="dashboard-overlay d-none">
+    <div class="dashboard-overlay-content">
+        <div class="spinner-border text-primary mb-3" role="status"></div>
+
+        <h5 class="fw-semibold mb-1">
+            Cargando dashboard...
+        </h5>
+
+        <div class="text-muted">
+            Procesando indicadores y gráficos.
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
@@ -240,8 +507,13 @@
             cumplimiento: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TendenciaCumplimientoMensual)),
             tipos: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopTiposObligacion)),
             ciudades: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ObligacionesPorCiudad)),
+            estadosResumen: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ResumenPorEstados)),
             empresas: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ObligacionesPorEmpresaCliente))
         };
+
+        $('#formFiltrosDashboard').on('submit', function () {
+            $('#dashboardOverlay').removeClass('d-none');
+        });
 
         function labels(data) {
             return data.map(x => x.Label);
@@ -249,6 +521,39 @@
 
         function values(data) {
             return data.map(x => x.Valor);
+        }
+
+        function buildQueryString(extraParams) {
+            const params = new URLSearchParams();
+
+            const currentFilters = {
+                idCliente: '@Model.Filtros.IdCliente',
+                idEmpresa: '@Model.Filtros.IdEmpresa',
+                idCiudad: '@Model.Filtros.IdCiudad',
+                idEstado: '@Model.Filtros.IdEstado',
+                idTipoObligacion: '@Model.Filtros.IdTipoObligacion',
+                anio: '@Model.Filtros.Anio',
+                mes: '@Model.Filtros.Mes',
+                idResponsable: '@Model.Filtros.IdResponsable',
+                idElaborador: '@Model.Filtros.IdElaborador',
+                idAutorizador: '@Model.Filtros.IdAutorizador',
+                idAprobador: '@Model.Filtros.IdAprobador',
+                idUsuarioVencimiento: '@Model.Filtros.IdUsuarioVencimiento'
+            };
+
+            Object.keys(currentFilters).forEach(key => {
+                if (currentFilters[key] && currentFilters[key] !== '') {
+                    params.append(key, currentFilters[key]);
+                }
+            });
+
+            Object.keys(extraParams).forEach(key => {
+                if (extraParams[key] !== null && extraParams[key] !== undefined && extraParams[key] !== '') {
+                    params.set(key, extraParams[key]);
+                }
+            });
+
+            return params.toString();
         }
 
         function renderDonut(elementId, data) {
@@ -293,6 +598,7 @@
                     height: 330,
                     toolbar: { show: false }
                 },
+                colors: ['#2563eb'],
                 series: [{
                     name: 'Obligaciones',
                     data: values(data)
@@ -314,6 +620,7 @@
                 dataLabels: {
                     enabled: false
                 },
+
                 tooltip: {
                     y: {
                         formatter: function (val) {
@@ -336,6 +643,7 @@
                     height: 330,
                     toolbar: { show: false }
                 },
+                colors: ['#198754'],
                 series: [{
                     name: 'Cumplidas',
                     data: values(data)
@@ -368,11 +676,155 @@
             }).render();
         }
 
-        renderDonut('#chartEstados', dashboardData.estados);
-        renderBar('#chartMeses', dashboardData.meses);
+        function renderEstadosClickable(elementId, data) {
+            if (!data || data.length === 0) {
+                document.querySelector(elementId).innerHTML =
+                    '<div class="text-muted text-center py-5">No hay información disponible.</div>';
+                return;
+            }
+
+            const labelsEstados = data.map(x => x.NombreEstado);
+            const valuesEstados = data.map(x => x.Total);
+            const idsEstados = data.map(x => x.IdEstado);
+            const colorsEstados = data.map(x => x.ColorHex || '#6c757d');
+
+            new ApexCharts(document.querySelector(elementId), {
+                chart: {
+                    type: 'bar',
+                    height: 330,
+                    toolbar: { show: false },
+                    events: {
+                        dataPointSelection: function (event, chartContext, config) {
+                            const index = config.dataPointIndex;
+                            const idEstado = idsEstados[index];
+                            const returnUrl = window.location.pathname + window.location.search;
+
+                            const query = buildQueryString({
+                                tipo: 'estado',
+                                idEstadoDetalle: idEstado,
+                                returnUrl: window.location.pathname + window.location.search
+                            });
+
+                            $('#dashboardOverlay').removeClass('d-none');
+                            window.location.href = `/Dashboards/DetalleOperativo?${query}`;
+                        }
+                    }
+                },
+
+                colors: colorsEstados,
+                series: [{
+                    name: 'Obligaciones',
+                    data: valuesEstados
+                }],
+                xaxis: {
+                    categories: labelsEstados,
+                    labels: {
+                        rotate: -45,
+                        trim: true
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        distributed: true,
+                        borderRadius: 6,
+                        columnWidth: '45%'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                legend: {
+                    show: false
+                },
+                states: {
+                    hover: {
+                        filter: {
+                            type: 'darken',
+                            value: 0.15
+                        }
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return val + ' obligaciones - clic para ver detalle';
+                        }
+                    }
+                }
+            }).render();
+        }
+
+        function renderBarClickable(elementId, data, extraParamName, horizontal = false) {
+            if (!data || data.length === 0) {
+                document.querySelector(elementId).innerHTML =
+                    '<div class="text-muted text-center py-5">No hay información disponible.</div>';
+                return;
+            }
+
+            new ApexCharts(document.querySelector(elementId), {
+                chart: {
+                    type: 'bar',
+                    height: 330,
+                    toolbar: { show: false },
+                    events: {
+                        dataPointSelection: function (event, chartContext, config) {
+                            const item = data[config.dataPointIndex];
+
+                            const extraParams = {
+                                tipo: 'total',
+                                returnUrl: window.location.pathname + window.location.search
+                            };
+
+                            if (extraParamName === 'mesVencimiento') {
+                                extraParams.anio = item.Anio;
+                                extraParams.mes = item.Mes;
+                            } else {
+                                extraParams[extraParamName] = item.Id;
+                            }
+
+                            const query = buildQueryString(extraParams);
+                            $('#dashboardOverlay').removeClass('d-none');
+                            window.location.href = `/Dashboards/DetalleOperativo?${query}`;
+                        }
+                    }
+                },
+                colors: ['#2563eb'],
+                series: [{
+                    name: 'Obligaciones',
+                    data: values(data)
+                }],
+                xaxis: {
+                    categories: labels(data),
+                    labels: {
+                        rotate: horizontal ? 0 : -45,
+                        trim: true
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: horizontal,
+                        borderRadius: 6,
+                        columnWidth: '45%'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return val + ' obligaciones - clic para ver detalle';
+                        }
+                    }
+                }
+            }).render();
+        }
+
+        renderEstadosClickable('#chartEstados', dashboardData.estadosResumen);
         renderLine('#chartCumplimiento', dashboardData.cumplimiento);
-        renderBar('#chartTipos', dashboardData.tipos, true);
-        renderBar('#chartCiudades', dashboardData.ciudades, true);
-        renderBar('#chartEmpresas', dashboardData.empresas, true);
+        renderBarClickable('#chartMeses', dashboardData.meses, 'mesVencimiento');
+        renderBarClickable('#chartTipos', dashboardData.tipos, 'idTipoObligacion', true);
+        renderBarClickable('#chartCiudades', dashboardData.ciudades, 'idCiudad', true);
+        renderBarClickable('#chartEmpresas', dashboardData.empresas, 'idEmpresa', true);
     </script>
 }

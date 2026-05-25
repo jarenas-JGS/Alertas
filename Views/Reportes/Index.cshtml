@@ -30,8 +30,9 @@
                     </p>
 
                     <div class="mt-auto">
-                        <a asp-controller="Dashboards"
-                           asp-action="OperativoProyecto"
+                        <a asp-controller="Login"
+                           asp-action="SeleccionarProyecto"
+                           asp-route-returnUrl="@Url.Action("OperativoProyecto", "Dashboards")"
                            class="btn btn-primary">
                             Abrir dashboard
                         </a>
