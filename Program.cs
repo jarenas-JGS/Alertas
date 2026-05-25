@@ -1,6 +1,7 @@
 using Alertas.Data;
 using Alertas.Services;
 using Alertas.Services.CargaMasiva;
+using Alertas.Services.Dashboards;
 using Alertas.Services.Jobs;
 using Alertas.Services.Jobs.Options;
 using Alertas.Services.Notificaciones;
@@ -8,8 +9,6 @@ using Alertas.Services.Notificaciones.Config;
 using Alertas.Services.Storage;
 using Alertas.Services.Storage.Cleanup;
 using Alertas.Services.Storage.Interfaces;
-using Alertas.Services.Storage.Interfaces;
-using Alertas.Services.Storage.Local;
 using Alertas.Services.Storage.Local;
 using Alertas.Services.Storage.Models;
 using Alertas.Services.Storage.R2;
@@ -20,6 +19,8 @@ using System.IO;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<IDashboardOperativoService, DashboardOperativoService>();
 
 builder.Services.AddHostedService<AlertasBackgroundService>();
 

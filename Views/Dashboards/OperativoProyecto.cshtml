@@ -1,0 +1,378 @@
+﻿@model Alertas.ViewModels.Dashboards.DashboardOperativoProyectoVm
+
+@{
+    ViewData["Title"] = "Dashboard Operativo";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="mb-1">
+                <i class="bi bi-speedometer2 me-2"></i>
+                Dashboard Operativo del Proyecto
+            </h3>
+            <div class="text-muted">
+                Indicadores principales, vencimientos, estados y distribución operativa.
+            </div>
+        </div>
+
+        <div class="text-end">
+            <span class="badge rounded-pill bg-primary px-3 py-2">
+                @Model.NombreProyecto
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small">Total obligaciones</div>
+                            <h3 class="fw-bold mb-0">@Model.TotalObligaciones</h3>
+                        </div>
+                        <div class="dashboard-icon bg-primary-subtle text-primary">
+                            <i class="bi bi-list-check"></i>
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-3">
+                        Obligaciones registradas en el proyecto.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small">Vencidas</div>
+                            <h3 class="fw-bold mb-0 text-danger">@Model.ObligacionesVencidas</h3>
+                        </div>
+                        <div class="dashboard-icon bg-danger-subtle text-danger">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-3">
+                        Pendientes con fecha de vencimiento superada.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small">Próximas a vencer</div>
+                            <h3 class="fw-bold mb-0 text-warning">@Model.ProximasAVencer</h3>
+                        </div>
+                        <div class="dashboard-icon bg-warning-subtle text-warning">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-3">
+                        Obligaciones pendientes dentro de los próximos 30 días.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted small">% cumplimiento</div>
+                            <h3 class="fw-bold mb-0 text-success">@Model.PorcentajeCumplimiento.ToString("N2")%</h3>
+                        </div>
+                        <div class="dashboard-icon bg-success-subtle text-success">
+                            <i class="bi bi-check2-circle"></i>
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-3">
+                        Calculado sobre obligaciones cerradas.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-mini-card">
+                <div class="card-body">
+                    <div class="text-muted small">En elaboración</div>
+                    <h4 class="fw-bold mb-0">@Model.EnElaboracion</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-mini-card">
+                <div class="card-body">
+                    <div class="text-muted small">En seguimiento</div>
+                    <h4 class="fw-bold mb-0">@Model.EnSeguimiento</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-mini-card">
+                <div class="card-body">
+                    <div class="text-muted small">Presentadas</div>
+                    <h4 class="fw-bold mb-0">@Model.Presentadas</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-mini-card">
+                <div class="card-body">
+                    <div class="text-muted small">Cerradas</div>
+                    <h4 class="fw-bold mb-0">@Model.Cerradas</h4>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-xl-5">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Obligaciones por estado</h6>
+                    <small class="text-muted">Distribución actual del flujo operativo.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartEstados"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Obligaciones por mes de vencimiento</h6>
+                    <small class="text-muted">Cantidad de obligaciones según el mes de vencimiento.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartMeses"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-xl-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Tendencia de cumplimiento mensual</h6>
+                    <small class="text-muted">Obligaciones aprobadas/cerradas por mes.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartCumplimiento"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-5">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Top tipos de obligación</h6>
+                    <small class="text-muted">Tipos con mayor cantidad de registros.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartTipos"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Obligaciones por ciudad</h6>
+                    <small class="text-muted">Principales ciudades asociadas a las obligaciones.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartCiudades"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Obligaciones por empresa</h6>
+                    <small class="text-muted">Empresas con mayor cantidad de obligaciones.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartEmpresas"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script>
+        const dashboardData = {
+            estados: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ObligacionesPorEstado)),
+            meses: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ObligacionesPorMes)),
+            cumplimiento: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TendenciaCumplimientoMensual)),
+            tipos: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopTiposObligacion)),
+            ciudades: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ObligacionesPorCiudad)),
+            empresas: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ObligacionesPorEmpresaCliente))
+        };
+
+        function labels(data) {
+            return data.map(x => x.Label);
+        }
+
+        function values(data) {
+            return data.map(x => x.Valor);
+        }
+
+        function renderDonut(elementId, data) {
+            if (!data || data.length === 0) {
+                document.querySelector(elementId).innerHTML = '<div class="text-muted text-center py-5">No hay información disponible.</div>';
+                return;
+            }
+
+            new ApexCharts(document.querySelector(elementId), {
+                chart: {
+                    type: 'donut',
+                    height: 330,
+                    toolbar: { show: false }
+                },
+                labels: labels(data),
+                series: values(data),
+                legend: {
+                    position: 'bottom'
+                },
+                dataLabels: {
+                    enabled: true
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '65%'
+                        }
+                    }
+                }
+            }).render();
+        }
+
+        function renderBar(elementId, data, horizontal = false) {
+            if (!data || data.length === 0) {
+                document.querySelector(elementId).innerHTML = '<div class="text-muted text-center py-5">No hay información disponible.</div>';
+                return;
+            }
+
+            new ApexCharts(document.querySelector(elementId), {
+                chart: {
+                    type: 'bar',
+                    height: 330,
+                    toolbar: { show: false }
+                },
+                series: [{
+                    name: 'Obligaciones',
+                    data: values(data)
+                }],
+                xaxis: {
+                    categories: labels(data),
+                    labels: {
+                        rotate: horizontal ? 0 : -45,
+                        trim: true
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: horizontal,
+                        borderRadius: 6,
+                        columnWidth: '45%'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return val + ' obligaciones';
+                        }
+                    }
+                }
+            }).render();
+        }
+
+        function renderLine(elementId, data) {
+            if (!data || data.length === 0) {
+                document.querySelector(elementId).innerHTML = '<div class="text-muted text-center py-5">No hay información disponible.</div>';
+                return;
+            }
+
+            new ApexCharts(document.querySelector(elementId), {
+                chart: {
+                    type: 'area',
+                    height: 330,
+                    toolbar: { show: false }
+                },
+                series: [{
+                    name: 'Cumplidas',
+                    data: values(data)
+                }],
+                xaxis: {
+                    categories: labels(data)
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.35,
+                        opacityTo: 0.05
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return val + ' obligaciones';
+                        }
+                    }
+                }
+            }).render();
+        }
+
+        renderDonut('#chartEstados', dashboardData.estados);
+        renderBar('#chartMeses', dashboardData.meses);
+        renderLine('#chartCumplimiento', dashboardData.cumplimiento);
+        renderBar('#chartTipos', dashboardData.tipos, true);
+        renderBar('#chartCiudades', dashboardData.ciudades, true);
+        renderBar('#chartEmpresas', dashboardData.empresas, true);
+    </script>
+}

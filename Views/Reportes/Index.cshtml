@@ -1,18 +1,88 @@
 ﻿@{
-    ViewData["Title"] = "Reportes";
+    ViewData["Title"] = "Reportes y Dashboards";
 }
 
 <div class="container py-4">
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h2 class="fw-bold mb-2">Reportes</h2>
-            <p class="text-muted mb-4">
-                Este módulo se encuentra en construcción.
-            </p>
 
-            <div class="alert alert-info mb-0">
-                Aquí se construirán los reportes operativos y de control del sistema.
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">
+            <i class="bi bi-bar-chart-line me-2"></i>
+            Reportes y Dashboards
+        </h2>
+        <p class="text-muted mb-0">
+            Consulte indicadores operativos, vencimientos, workflow, alertas y reportes ejecutivos.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="text-primary fs-2 mb-3">
+                        <i class="bi bi-speedometer2"></i>
+                    </div>
+
+                    <h5 class="fw-semibold mb-2">Dashboard Operativo del Proyecto</h5>
+
+                    <p class="text-muted small mb-4">
+                        Consulte indicadores de obligaciones, vencimientos, estados, cumplimiento y distribución operativa del proyecto seleccionado.
+                    </p>
+
+                    <div class="mt-auto">
+                        <a asp-controller="Dashboards"
+                           asp-action="OperativoProyecto"
+                           class="btn btn-primary">
+                            Abrir dashboard
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card shadow-sm border-0 h-100 opacity-75">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="text-secondary fs-2 mb-3">
+                        <i class="bi bi-diagram-3"></i>
+                    </div>
+
+                    <h5 class="fw-semibold mb-2">Dashboard de Workflow</h5>
+
+                    <p class="text-muted small mb-4">
+                        Seguimiento de estados, transiciones, tiempos por etapa y cuellos de botella.
+                    </p>
+
+                    <div class="mt-auto">
+                        <button type="button" class="btn btn-outline-secondary" disabled>
+                            Próximamente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card shadow-sm border-0 h-100 opacity-75">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="text-danger fs-2 mb-3">
+                        <i class="bi bi-calendar2-x"></i>
+                    </div>
+
+                    <h5 class="fw-semibold mb-2">Dashboard de Vencimientos</h5>
+
+                    <p class="text-muted small mb-4">
+                        Control de obligaciones vencidas, próximas a vencer, atrasos y riesgos operativos.
+                    </p>
+
+                    <div class="mt-auto">
+                        <button type="button" class="btn btn-outline-secondary" disabled>
+                            Próximamente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
