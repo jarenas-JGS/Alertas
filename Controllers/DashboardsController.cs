@@ -1,8 +1,11 @@
-﻿using Alertas.Services;
+﻿using Alertas.Data;
+using Alertas.Services;
 using Alertas.Services.Dashboards;
 using Alertas.ViewModels.Dashboards;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Alertas.Controllers
 {
@@ -11,13 +14,16 @@ namespace Alertas.Controllers
     {
         private readonly IDashboardOperativoService _dashboardOperativoService;
         private readonly SeguridadService _seguridadService;
+        private readonly ApplicationDbContext _context;
 
         public DashboardsController(
             IDashboardOperativoService dashboardOperativoService,
-            SeguridadService seguridadService)
+            SeguridadService seguridadService,
+            ApplicationDbContext context)
         {
             _dashboardOperativoService = dashboardOperativoService;
             _seguridadService = seguridadService;
+            _context = context;
         }
 
         public async Task<IActionResult> OperativoProyecto(
@@ -228,6 +234,129 @@ namespace Alertas.Controllers
                 stream.ToArray(),
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 $"DetalleDashboard_{DateTime.Now:yyyyMMddHHmmss}.xlsx");
+        }
+
+        public async Task<IActionResult> ConsultaObligacion(int id, string? returnUrl = null)
+        {
+            var idProyecto = _seguridadService.ObtenerIdProyectoActivo();
+
+            if (idProyecto == null)
+            {
+                TempData["Error"] = "Debe seleccionar un proyecto.";
+                return RedirectToAction("SeleccionarProyecto", "Login");
+            }
+
+            var entidad = await _context.RegObls
+                .AsNoTracking()
+                .Include(x => x.Proyecto)
+                .Include(x => x.Cliente)
+                .Include(x => x.Empresa)
+                .Include(x => x.TipoObligacion)
+                .Include(x => x.Ciudad)
+                .Include(x => x.Dominio)
+                .Include(x => x.Periodo)
+                .Include(x => x.Estado)
+                .Include(x => x.JustifVar)
+                .Include(x => x.AprobadoPor)
+                .Include(x => x.UsuariosObligaciones)
+                    .ThenInclude(uo => uo.Usuario)
+                .Include(x => x.UsuariosObligaciones)
+                    .ThenInclude(uo => uo.Rol)
+                .FirstOrDefaultAsync(x =>
+                    x.id_reg_obl == id &&
+                    x.id_proyecto == idProyecto.Value);
+
+            if (entidad == null)
+                return RedirectToAction("DetalleOperativo");
+
+            var idUsuario = _seguridadService.ObtenerIdUsuario();
+            var esSuperAdmin = User.HasClaim("EsSuperAdmin", "true");
+            var accesoProyecto = _seguridadService.EsAccesoProyectoActivoPorProyecto();
+
+            if (!esSuperAdmin && !accesoProyecto)
+            {
+                var participa = entidad.UsuariosObligaciones.Any(uo =>
+                    uo.id_usuario == idUsuario &&
+                    uo.activo);
+
+                if (!participa)
+                    return RedirectToAction("AccessDenied", "Login");
+            }
+
+            string? Fecha(DateOnly? fecha) =>
+                fecha.HasValue ? fecha.Value.ToString("dd/MM/yyyy") : null;
+
+            var vm = new ConsultaObligacionDashboardVm
+            {
+                IdRegObl = entidad.id_reg_obl,
+                Nombre = entidad.nombre,
+                CodigoObligacion = entidad.cod_obligacion,
+
+                Proyecto = entidad.Proyecto.nombre,
+                Cliente = entidad.Cliente?.nombre ?? "",
+                Empresa = entidad.Empresa?.nombre ?? "",
+                TipoObligacion = entidad.TipoObligacion?.nombre ?? "",
+                Ciudad = entidad.Ciudad?.nombre,
+                Dominio = entidad.Dominio?.nombre ?? "",
+                Periodo = entidad.Periodo?.nombre ?? "",
+                Estado = entidad.Estado?.nombre ?? "",
+
+                FechaCreacion = Fecha(entidad.fecha_creac) ?? "-",
+                FechaVencimiento = entidad.fecha_venc_obl.ToString("dd/MM/yyyy"),
+                FechaSeguimiento = entidad.fecha_venc_seguimiento.ToString("dd/MM/yyyy"),
+                FechaSeguimientoEjecutada = Fecha(entidad.fecha_seguimiento_ejecutada),
+                FechaVencimientoEjecutada = Fecha(entidad.fecha_vencimiento_ejecutada),
+                FechaAprobadoFinal = Fecha(entidad.fecha_aprobado_final),
+
+                DiasAtrasoSeguimiento = entidad.dias_atraso_seguimiento,
+                DiasAtrasoVencimiento = entidad.dias_atraso_vencimiento,
+
+                ValorAprox = entidad.vlr_aprox,
+                ValorReal = entidad.vlr_real,
+                Diferencia = entidad.diferencia,
+                Variacion = entidad.variacion,
+                SaldoFavor = entidad.saldo_favor,
+
+                Justificacion = entidad.JustifVar?.nombre,
+                Observaciones = entidad.observaciones,
+
+                Aprobado = entidad.aprobado,
+                AprobadoPor = entidad.AprobadoPor?.nombre,
+
+                Responsables = entidad.UsuariosObligaciones
+                    .Where(x => x.activo && x.Rol.nombre == "Responsable")
+                    .Select(x => x.Usuario.nombre)
+                    .Distinct()
+                    .ToList(),
+
+                Elaboradores = entidad.UsuariosObligaciones
+                    .Where(x => x.activo && x.Rol.nombre == "Elaborador")
+                    .Select(x => x.Usuario.nombre)
+                    .Distinct()
+                    .ToList(),
+
+                Autorizadores = entidad.UsuariosObligaciones
+                    .Where(x => x.activo && x.Rol.nombre == "Autorizador")
+                    .Select(x => x.Usuario.nombre)
+                    .Distinct()
+                    .ToList(),
+
+                Aprobadores = entidad.UsuariosObligaciones
+                    .Where(x => x.activo && x.Rol.nombre == "Aprobador")
+                    .Select(x => x.Usuario.nombre)
+                    .Distinct()
+                    .ToList(),
+
+                UsuariosVencimiento = entidad.UsuariosObligaciones
+                    .Where(x => x.activo && x.Rol.nombre == "Vencimiento")
+                    .Select(x => x.Usuario.nombre)
+                    .Distinct()
+                    .ToList(),
+
+                ReturnUrl = returnUrl
+            };
+
+            return View(vm);
         }
     }
 }

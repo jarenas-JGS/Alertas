@@ -94,7 +94,8 @@ namespace Alertas.Services.Dashboards
             var vencidas = await obligaciones
                 .CountAsync(o =>
                     o.fecha_venc_obl < hoy &&
-                    (o.aprobado == null || o.aprobado == false));
+                    o.fecha_vencimiento_ejecutada == null &&
+                    !o.Estado.control_vencimiento);
 
             var proximasAVencer = await obligaciones
                 .CountAsync(o =>
@@ -495,7 +496,8 @@ namespace Alertas.Services.Dashboards
             {
                 "vencidas" => obligaciones.Where(o =>
                     o.fecha_venc_obl < hoy &&
-                    (o.aprobado == null || o.aprobado == false)),
+                    o.fecha_vencimiento_ejecutada == null &&
+                    !o.Estado.control_vencimiento),
 
                 "proximas" => obligaciones.Where(o =>
                     o.fecha_venc_obl >= hoy &&
@@ -523,8 +525,19 @@ namespace Alertas.Services.Dashboards
                     Estado = o.Estado.nombre,
                     FechaVencimiento = o.fecha_venc_obl.ToString("dd/MM/yyyy"),
                     FechaSeguimiento = o.fecha_venc_seguimiento.ToString("dd/MM/yyyy"),
-                    DiasAtrasoVencimiento = o.dias_atraso_vencimiento,
-                    DiasAtrasoSeguimiento = o.dias_atraso_seguimiento,
+                    DiasAtrasoVencimiento =
+                        o.fecha_venc_obl < hoy &&
+                        o.fecha_vencimiento_ejecutada == null &&
+                        !o.Estado.control_vencimiento
+                            ? hoy.DayNumber - o.fecha_venc_obl.DayNumber
+                            : null,
+
+                    DiasAtrasoSeguimiento =
+                        o.fecha_venc_seguimiento < hoy &&
+                        o.fecha_seguimiento_ejecutada == null &&
+                        !o.Estado.control_seguimiento
+                            ? hoy.DayNumber - o.fecha_venc_seguimiento.DayNumber
+                            : null,
                     Aprobado = o.aprobado == true
                 })
                 .ToListAsync();

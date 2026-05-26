@@ -1,0 +1,328 @@
+﻿@model Alertas.ViewModels.Dashboards.ConsultaObligacionDashboardVm
+
+@{
+    ViewData["Title"] = "Consulta obligación";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="fw-bold mb-1">Consulta de obligación</h2>
+            <p class="text-muted mb-0">
+                Vista informativa de la obligación seleccionada.
+            </p>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ReturnUrl))
+        {
+            <a href="@Model.ReturnUrl"
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                Volver al detalle
+            </a>
+        }
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+
+                <div>
+                    <h3 class="fw-bold mb-2">@Model.Nombre</h3>
+
+                    <div class="text-muted">
+                        Proyecto:
+                        <span class="fw-semibold text-dark">@Model.Proyecto</span>
+                    </div>
+                </div>
+
+                <div class="text-end">
+
+                    <span class="badge bg-primary fs-6 px-3 py-2">
+                        @Model.Estado
+                    </span>
+
+                    <div class="small text-muted mt-3">
+                        <div>
+                            Fecha venc. obligación:
+                            <strong>@Model.FechaVencimiento</strong>
+                        </div>
+
+                        <div>
+                            Fecha venc. seguimiento:
+                            <strong>@Model.FechaSeguimiento</strong>
+                        </div>
+
+                        <div>
+                            Fecha seguimiento ejecutada:
+                            <strong>@(Model.FechaSeguimientoEjecutada ?? "-")</strong>
+                        </div>
+
+                        <div>
+                            Fecha vencimiento ejecutada:
+                            <strong>@(Model.FechaVencimientoEjecutada ?? "-")</strong>
+                        </div>
+
+                        <div>
+                            Fecha aprobado final:
+                            <strong>@(Model.FechaAprobadoFinal ?? "-")</strong>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+
+                    <h5 class="fw-bold mb-4">Datos generales</h5>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Cliente</label>
+                            <div class="fw-semibold">@Model.Cliente</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Empresa</label>
+                            <div class="fw-semibold">@Model.Empresa</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Tipo obligación</label>
+                            <div class="fw-semibold">@Model.TipoObligacion</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Dominio</label>
+                            <div class="fw-semibold">@Model.Dominio</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Ciudad</label>
+                            <div class="fw-semibold">@Model.Ciudad</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Período</label>
+                            <div class="fw-semibold">@Model.Periodo</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Código obligación</label>
+                            <div class="fw-semibold">
+                                @(string.IsNullOrWhiteSpace(Model.CodigoObligacion)
+                                                                ? "-"
+                                                                : Model.CodigoObligacion)
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Fecha creación</label>
+                            <div class="fw-semibold">@Model.FechaCreacion</div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+
+                    <h5 class="fw-bold mb-4">Valores</h5>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Valor aproximado</label>
+                            <div class="fw-semibold">
+                                @(Model.ValorAprox?.ToString("N0") ?? "-")
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Valor real</label>
+                            <div class="fw-semibold">
+                                @(Model.ValorReal?.ToString("N0") ?? "-")
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Diferencia</label>
+                            <div class="fw-semibold">
+                                @(Model.Diferencia?.ToString("N0") ?? "-")
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">% variación</label>
+                            <div class="fw-semibold">
+                                @(Model.Variacion?.ToString("N2") ?? "-")
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Saldo a favor</label>
+                            <div class="fw-semibold">
+                                @(Model.SaldoFavor?.ToString("N0") ?? "-")
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Aprobada</label>
+                            <div class="fw-semibold">
+                                @(Model.Aprobado == true ? "Sí" : "No")
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+
+                    <h5 class="fw-bold mb-4">Observaciones</h5>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">
+                            Justificación variación
+                        </label>
+
+                        <div class="fw-semibold">
+                            @(string.IsNullOrWhiteSpace(Model.Justificacion)
+                                                        ? "-"
+                                                        : Model.Justificacion)
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label text-muted small">
+                            Observaciones
+                        </label>
+
+                        <div class="fw-semibold">
+                            @(string.IsNullOrWhiteSpace(Model.Observaciones)
+                                                        ? "-"
+                                                        : Model.Observaciones)
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+
+                    <h5 class="fw-bold mb-4">Participantes</h5>
+
+                    <div class="mb-4">
+                        <div class="text-muted small mb-2">Responsables</div>
+
+                        @foreach (var item in Model.Responsables)
+                        {
+                            <div class="badge bg-primary-subtle text-primary border me-1 mb-1">
+                                @item
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="text-muted small mb-2">Elaboradores</div>
+
+                        @foreach (var item in Model.Elaboradores)
+                        {
+                            <div class="badge bg-warning-subtle text-dark border me-1 mb-1">
+                                @item
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="text-muted small mb-2">Autorizadores</div>
+
+                        @foreach (var item in Model.Autorizadores)
+                        {
+                            <div class="badge bg-info-subtle text-dark border me-1 mb-1">
+                                @item
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="text-muted small mb-2">Aprobadores</div>
+
+                        @foreach (var item in Model.Aprobadores)
+                        {
+                            <div class="badge bg-success-subtle text-success border me-1 mb-1">
+                                @item
+                            </div>
+                        }
+                    </div>
+
+                    <div>
+                        <div class="text-muted small mb-2">
+                            Usuarios vencimiento
+                        </div>
+
+                        @foreach (var item in Model.UsuariosVencimiento)
+                        {
+                            <div class="badge bg-danger-subtle text-danger border me-1 mb-1">
+                                @item
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+
+                    <h5 class="fw-bold mb-4">Indicadores</h5>
+
+                    <div class="mb-3">
+                        <div class="text-muted small">
+                            Días atraso seguimiento
+                        </div>
+
+                        <div class="fw-bold fs-4 text-warning">
+                            @(Model.DiasAtrasoSeguimiento?.ToString() ?? "-")
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-muted small">
+                            Días atraso vencimiento
+                        </div>
+
+                        <div class="fw-bold fs-4 text-danger">
+                            @(Model.DiasAtrasoVencimiento?.ToString() ?? "-")
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
