@@ -919,8 +919,8 @@ namespace Alertas.Services.Dashboards
         }
 
         private async Task CargarCombosFiltrosWorkflowAsync(
-    int idProyecto,
-    FiltrosDashboardOperativoVm filtros)
+            int idProyecto,
+            FiltrosDashboardOperativoVm filtros)
         {
             filtros.Clientes = await _context.RegObls
                 .AsNoTracking()
@@ -1007,6 +1007,268 @@ namespace Alertas.Services.Dashboards
             filtros.Autorizadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 3);
             filtros.Aprobadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 4);
             filtros.UsuariosVencimiento = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 5);
+        }
+
+        public async Task<DashboardVencimientosProyectoVm> ObtenerDashboardVencimientosAsync(
+    int idProyecto,
+    FiltrosDashboardOperativoVm filtros)
+        {
+            var hoy = DateOnly.FromDateTime(DateTime.Today);
+            var limite7 = hoy.AddDays(7);
+            var limite30 = hoy.AddDays(30);
+
+            var proyecto = await _context.Proyectos
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.id_proyecto == idProyecto);
+
+            if (proyecto == null)
+                throw new Exception("Proyecto no encontrado.");
+
+            var obligaciones = _context.RegObls
+                .AsNoTracking()
+                .Where(o => o.id_proyecto == idProyecto);
+
+            if (filtros.IdCliente.HasValue)
+                obligaciones = obligaciones.Where(o => o.id_cliente == filtros.IdCliente.Value);
+
+            if (filtros.IdEmpresa.HasValue)
+                obligaciones = obligaciones.Where(o => o.id_empresa == filtros.IdEmpresa.Value);
+
+            if (filtros.IdCiudad.HasValue)
+                obligaciones = obligaciones.Where(o => o.id_ciudad == filtros.IdCiudad.Value);
+
+            if (filtros.IdEstado.HasValue)
+                obligaciones = obligaciones.Where(o => o.id_estado == filtros.IdEstado.Value);
+
+            if (filtros.IdTipoObligacion.HasValue)
+                obligaciones = obligaciones.Where(o => o.id_tipo_obligacion == filtros.IdTipoObligacion.Value);
+
+            if (filtros.Anio.HasValue)
+                obligaciones = obligaciones.Where(o => o.anio == filtros.Anio.Value);
+
+            if (filtros.Mes.HasValue)
+                obligaciones = obligaciones.Where(o => o.mes == filtros.Mes.Value);
+
+            if (filtros.IdResponsable.HasValue)
+                obligaciones = obligaciones.Where(o =>
+                    o.UsuariosObligaciones.Any(uo =>
+                        uo.id_usuario == filtros.IdResponsable.Value &&
+                        uo.id_rol == 1 &&
+                        uo.activo));
+
+            if (filtros.IdElaborador.HasValue)
+                obligaciones = obligaciones.Where(o =>
+                    o.UsuariosObligaciones.Any(uo =>
+                        uo.id_usuario == filtros.IdElaborador.Value &&
+                        uo.id_rol == 2 &&
+                        uo.activo));
+
+            if (filtros.IdAutorizador.HasValue)
+                obligaciones = obligaciones.Where(o =>
+                    o.UsuariosObligaciones.Any(uo =>
+                        uo.id_usuario == filtros.IdAutorizador.Value &&
+                        uo.id_rol == 3 &&
+                        uo.activo));
+
+            if (filtros.IdAprobador.HasValue)
+                obligaciones = obligaciones.Where(o =>
+                    o.UsuariosObligaciones.Any(uo =>
+                        uo.id_usuario == filtros.IdAprobador.Value &&
+                        uo.id_rol == 4 &&
+                        uo.activo));
+
+            if (filtros.IdUsuarioVencimiento.HasValue)
+                obligaciones = obligaciones.Where(o =>
+                    o.UsuariosObligaciones.Any(uo =>
+                        uo.id_usuario == filtros.IdUsuarioVencimiento.Value &&
+                        uo.id_rol == 5 &&
+                        uo.activo));
+
+            var idsEstadosFinales = await _context.Estados
+                .AsNoTracking()
+                .Where(e =>
+                    e.id_proyecto == idProyecto &&
+                    e.activo &&
+                    (
+                        e.nombre.ToLower().Contains("cerrad") ||
+                        e.nombre.ToLower().Contains("anulad") ||
+                        e.nombre.ToLower().Contains("anulac")
+                    ))
+                .Select(e => e.id_estado)
+                .ToListAsync();
+
+            var pendientes = obligaciones
+                .Where(o =>
+                    o.fecha_vencimiento_ejecutada == null &&
+                    !o.Estado.control_vencimiento &&
+                    !idsEstadosFinales.Contains(o.id_estado));
+
+            var vencidasQuery = pendientes
+                .Where(o => o.fecha_venc_obl < hoy);
+
+            var vencidasRaw = await vencidasQuery
+                .Select(o => new
+                {
+                    o.fecha_venc_obl
+                })
+                .ToListAsync();
+
+            var atrasos = vencidasRaw
+                .Select(x => hoy.DayNumber - x.fecha_venc_obl.DayNumber)
+                .Where(x => x > 0)
+                .ToList();
+
+            var vencimientosPorMesRaw = await pendientes
+                .GroupBy(o => new { o.anio, o.mes })
+                .Select(g => new
+                {
+                    Anio = g.Key.anio,
+                    Mes = g.Key.mes,
+                    Total = g.Count()
+                })
+                .OrderBy(x => x.Anio)
+                .ThenBy(x => x.Mes)
+                .ToListAsync();
+
+            var vencimientosPorMes = vencimientosPorMesRaw
+                .Select(x => new SerieDashboardVm
+                {
+                    Anio = x.Anio,
+                    Mes = x.Mes,
+                    Label = $"{x.Anio}-{x.Mes:00}",
+                    Valor = x.Total
+                })
+                .ToList();
+
+            await CargarCombosFiltrosWorkflowAsync(idProyecto, filtros);
+
+            var totalVencidas = await vencidasQuery.CountAsync();
+            var totalVencen7 = await pendientes.CountAsync(o =>
+                o.fecha_venc_obl >= hoy &&
+                o.fecha_venc_obl <= limite7);
+
+            string nivelRiesgo;
+            string riesgoCssClass;
+            string riesgoIcono;
+
+            if (totalVencidas > 0)
+            {
+                nivelRiesgo = "Alto";
+                riesgoCssClass = "danger";
+                riesgoIcono = "bi-exclamation-triangle";
+            }
+            else if (totalVencen7 > 0)
+            {
+                nivelRiesgo = "Medio";
+                riesgoCssClass = "warning";
+                riesgoIcono = "bi-exclamation-circle";
+            }
+            else
+            {
+                nivelRiesgo = "Bajo";
+                riesgoCssClass = "success";
+                riesgoIcono = "bi-check-circle";
+            }
+
+            return new DashboardVencimientosProyectoVm
+            {
+                IdProyecto = idProyecto,
+                NombreProyecto = proyecto.nombre,
+                Filtros = filtros,
+
+                NivelRiesgo = nivelRiesgo,
+                RiesgoCssClass = riesgoCssClass,
+                RiesgoIcono = riesgoIcono,
+
+                TotalPendientes = await pendientes.CountAsync(),
+                Vencidas = await vencidasQuery.CountAsync(),
+                Vencen7Dias = await pendientes.CountAsync(o =>
+                    o.fecha_venc_obl >= hoy &&
+                    o.fecha_venc_obl <= limite7),
+                Vencen30Dias = await pendientes.CountAsync(o =>
+                    o.fecha_venc_obl >= hoy &&
+                    o.fecha_venc_obl <= limite30),
+
+                AtrasoPromedioDias = atrasos.Any()
+                    ? Math.Round((decimal)atrasos.Average(), 2)
+                    : 0,
+
+                MayorAtrasoDias = atrasos.Any()
+                    ? atrasos.Max()
+                    : 0,
+
+                VencimientosPorMes = vencimientosPorMes,
+
+                VencidasPorEstado = await vencidasQuery
+                    .GroupBy(o => new
+                    {
+                        o.id_estado,
+                        o.Estado.nombre
+                    })
+                    .Select(g => new SerieDashboardVm
+                    {
+                        Id = g.Key.id_estado,
+                        Label = g.Key.nombre,
+                        Valor = g.Count()
+                    })
+                    .OrderByDescending(x => x.Valor)
+                    .ToListAsync(),
+
+                TopAutorizadoresVencidas = await vencidasQuery
+                    .SelectMany(o => o.UsuariosObligaciones
+                        .Where(uo => uo.activo && uo.id_rol == 3)
+                        .Select(uo => new
+                        {
+                            uo.id_usuario,
+                            uo.Usuario.nombre
+                        }))
+                    .GroupBy(x => new
+                    {
+                        x.id_usuario,
+                        x.nombre
+                    })
+                    .Select(g => new SerieDashboardVm
+                    {
+                        Id = g.Key.id_usuario,
+                        Label = g.Key.nombre,
+                        Valor = g.Count()
+                    })
+                    .OrderByDescending(x => x.Valor)
+                    .Take(10)
+                    .ToListAsync(),
+
+                VencidasPorEmpresa = await vencidasQuery
+                    .GroupBy(o => new
+                    {
+                        o.id_empresa,
+                        o.Empresa.nombre
+                    })
+                    .Select(g => new SerieDashboardVm
+                    {
+                        Id = g.Key.id_empresa,
+                        Label = g.Key.nombre,
+                        Valor = g.Count()
+                    })
+                    .OrderByDescending(x => x.Valor)
+                    .Take(10)
+                    .ToListAsync(),
+
+                VencidasPorTipoObligacion = await vencidasQuery
+                    .GroupBy(o => new
+                    {
+                        o.id_tipo_obligacion,
+                        o.TipoObligacion.nombre
+                    })
+                    .Select(g => new SerieDashboardVm
+                    {
+                        Id = g.Key.id_tipo_obligacion,
+                        Label = g.Key.nombre,
+                        Valor = g.Count()
+                    })
+                    .OrderByDescending(x => x.Valor)
+                    .Take(10)
+                    .ToListAsync()
+            };
         }
     }
 }

@@ -417,5 +417,64 @@ namespace Alertas.Controllers
 
             return View(vm);
         }
+
+        public async Task<IActionResult> VencimientosProyecto(
+            int? idCliente,
+            int? idEmpresa,
+            int? idCiudad,
+            int? idEstado,
+            int? idTipoObligacion,
+            int? anio,
+            int? mes,
+            int? idResponsable,
+            int? idElaborador,
+            int? idAutorizador,
+            int? idAprobador,
+            int? idUsuarioVencimiento)
+        {
+            var idProyecto = _seguridadService.ObtenerIdProyectoActivo();
+
+            if (idProyecto == null)
+            {
+                TempData["Error"] = "Debe seleccionar un proyecto.";
+                return RedirectToAction("SeleccionarProyecto", "Login");
+            }
+
+            var esSuperAdmin = User.HasClaim("EsSuperAdmin", "true");
+
+            var tieneAccesoProyecto = await _seguridadService
+                .UsuarioTieneAccesoProyectoAsync(idProyecto.Value, "PROYECTO");
+
+            var tieneAccesoObligacion = await _seguridadService
+                .UsuarioTieneAccesoProyectoAsync(idProyecto.Value, "OBLIGACION");
+
+            if (!esSuperAdmin && !tieneAccesoProyecto && !tieneAccesoObligacion)
+            {
+                TempData["Error"] = "No tiene acceso al proyecto seleccionado.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var filtros = new FiltrosDashboardOperativoVm
+            {
+                IdCliente = idCliente,
+                IdEmpresa = idEmpresa,
+                IdCiudad = idCiudad,
+                IdEstado = idEstado,
+                IdTipoObligacion = idTipoObligacion,
+                Anio = anio,
+                Mes = mes,
+
+                IdResponsable = idResponsable,
+                IdElaborador = idElaborador,
+                IdAutorizador = idAutorizador,
+                IdAprobador = idAprobador,
+                IdUsuarioVencimiento = idUsuarioVencimiento
+            };
+
+            var vm = await _dashboardOperativoService
+                .ObtenerDashboardVencimientosAsync(idProyecto.Value, filtros);
+
+            return View(vm);
+        }
     }
 }

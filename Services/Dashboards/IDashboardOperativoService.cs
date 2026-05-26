@@ -17,5 +17,9 @@ namespace Alertas.Services.Dashboards
         Task<DashboardWorkflowProyectoVm> ObtenerDashboardWorkflowAsync(
             int idProyecto,
             FiltrosDashboardOperativoVm filtros);
+
+        Task<DashboardVencimientosProyectoVm> ObtenerDashboardVencimientosAsync(
+            int idProyecto,
+            FiltrosDashboardOperativoVm filtros);
     }
 }

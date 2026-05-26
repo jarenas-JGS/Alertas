@@ -1,0 +1,539 @@
+﻿@model Alertas.ViewModels.Dashboards.DashboardVencimientosProyectoVm
+
+@{
+    ViewData["Title"] = "Dashboard Vencimientos";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="mb-1">
+                <i class="bi bi-calendar2-x me-2"></i>
+                Dashboard de Vencimientos
+            </h3>
+            <div class="text-muted">
+                Control de vencidas, próximas a vencer y riesgos operativos.
+            </div>
+        </div>
+
+        <div class="text-end">
+            <span class="badge rounded-pill bg-danger px-3 py-2">
+                @Model.NombreProyecto
+            </span>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 dashboard-filter-card">
+        <div class="card-body">
+            <form id="formFiltrosDashboard"
+                  asp-controller="Dashboards"
+                  asp-action="VencimientosProyecto"
+                  method="get"
+                  class="row g-3 align-items-end">
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Cliente</label>
+                    <select name="idCliente" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Clientes)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdCliente?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Empresa</label>
+                    <select name="idEmpresa" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach (var item in Model.Filtros.Empresas)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdEmpresa?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Ciudad</label>
+                    <select name="idCiudad" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach (var item in Model.Filtros.Ciudades)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdCiudad?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Estado actual</label>
+                    <select name="idEstado" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Estados)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdEstado?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Tipo obligación</label>
+                    <select name="idTipoObligacion" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.TiposObligacion)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdTipoObligacion?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl-2">
+                    <label class="form-label small text-muted mb-1">Año</label>
+                    <select name="anio" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Anios)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.Anio?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl-2">
+                    <label class="form-label small text-muted mb-1">Mes</label>
+                    <select name="mes" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Meses)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.Mes?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Responsable</label>
+                    <select name="idResponsable" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Responsables)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdResponsable?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Elaborador</label>
+                    <select name="idElaborador" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Elaboradores)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdElaborador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Autorizador</label>
+                    <select name="idAutorizador" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Autorizadores)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdAutorizador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Aprobador</label>
+                    <select name="idAprobador" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Aprobadores)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdAprobador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <div class="d-flex flex-wrap gap-2 justify-content-end">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-funnel me-1"></i>
+                            Aplicar filtros
+                        </button>
+
+                        <a asp-controller="Dashboards"
+                           asp-action="VencimientosProyecto"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Limpiar
+                        </a>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-sm-6 col-xl-2">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="text-muted small">Pendientes</div>
+                    <h3 class="fw-bold mb-0">@Model.TotalPendientes</h3>
+                    <div class="small text-muted mt-3">Sin control de vencimiento ejecutado.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-2">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="text-muted small">Vencidas</div>
+                    <h3 class="fw-bold mb-0 text-danger">@Model.Vencidas</h3>
+                    <div class="small text-muted mt-3">Fecha vencida y pendiente.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-2">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="text-muted small">Vencen 7 días</div>
+                    <h3 class="fw-bold mb-0 text-warning">@Model.Vencen7Dias</h3>
+                    <div class="small text-muted mt-3">Próxima semana.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-2">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="text-muted small">Vencen 30 días</div>
+                    <h3 class="fw-bold mb-0 text-primary">@Model.Vencen30Dias</h3>
+                    <div class="small text-muted mt-3">Próximos 30 días.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-2">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="text-muted small">Atraso promedio</div>
+                    <h3 class="fw-bold mb-0 text-danger">@Model.AtrasoPromedioDias</h3>
+                    <div class="small text-muted mt-3">Días promedio de atraso.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-2">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="text-muted small">Mayor atraso</div>
+                    <h3 class="fw-bold mb-0 text-danger">@Model.MayorAtrasoDias</h3>
+                    <div class="small text-muted mt-3">Máximo atraso detectado.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <div class="text-muted small">Semáforo de riesgo</div>
+                        <h4 class="fw-bold mb-1 text-@Model.RiesgoCssClass">
+                            Riesgo @Model.NivelRiesgo
+                        </h4>
+                        <div class="text-muted">
+                            Basado en obligaciones vencidas y próximas a vencer en 7 días.
+                        </div>
+                    </div>
+
+                    <div class="dashboard-icon bg-@Model.RiesgoCssClass-subtle text-@Model.RiesgoCssClass">
+                        <i class="bi @Model.RiesgoIcono"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-xl-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Vencimientos por mes</h6>
+                    <small class="text-muted">Obligaciones pendientes según mes de vencimiento.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartVencimientosMes"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-5">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Vencidas por estado</h6>
+                    <small class="text-muted">Estados donde se concentran vencimientos.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartVencidasEstado"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Top autorizadores vencidas</h6>
+                    <small class="text-muted">
+                        Autorizadores con mayor cantidad de obligaciones vencidas.
+                    </small>
+                </div>
+                <div class="card-body">
+                    <div id="chartAutorizadores"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Vencidas por empresa</h6>
+                    <small class="text-muted">Empresas con mayor número de vencimientos.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartEmpresas"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Vencidas por tipo</h6>
+                    <small class="text-muted">Tipos de obligación con vencimientos.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartTipos"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div id="dashboardOverlay" class="dashboard-overlay d-none">
+    <div class="dashboard-overlay-content">
+        <div class="spinner-border text-danger mb-3" role="status"></div>
+        <h5 class="fw-semibold mb-1">Cargando dashboard...</h5>
+        <div class="text-muted">Procesando vencimientos y atrasos.</div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script>
+        const vencimientosData = {
+            meses: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VencimientosPorMes)),
+            estados: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VencidasPorEstado)),
+            autorizadores: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopAutorizadoresVencidas)),
+            empresas: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VencidasPorEmpresa)),
+            tipos: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VencidasPorTipoObligacion))
+        };
+
+        $('#formFiltrosDashboard').on('submit', function () {
+            $('#dashboardOverlay').removeClass('d-none');
+        });
+
+        function labels(data) {
+            return data.map(x => x.Label);
+        }
+
+        function values(data) {
+            return data.map(x => x.Valor);
+        }
+
+        function renderBar(elementId, data, color = '#dc3545', horizontal = false) {
+            if (!data || data.length === 0) {
+                document.querySelector(elementId).innerHTML =
+                    '<div class="text-muted text-center py-5">No hay información disponible.</div>';
+                return;
+            }
+
+            new ApexCharts(document.querySelector(elementId), {
+                chart: {
+                    type: 'bar',
+                    height: 330,
+                    toolbar: { show: false }
+                },
+                colors: [color],
+                series: [{
+                    name: 'Obligaciones',
+                    data: values(data)
+                }],
+                xaxis: {
+                    categories: labels(data),
+                    labels: {
+                        rotate: horizontal ? 0 : -45,
+                        trim: true
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: horizontal,
+                        borderRadius: 6,
+                        columnWidth: '45%'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return val + ' obligaciones';
+                        }
+                    }
+                }
+            }).render();
+        }
+
+        function buildQueryString(extraParams) {
+            const params = new URLSearchParams();
+
+            const currentFilters = {
+                idCliente: '@Model.Filtros.IdCliente',
+                idEmpresa: '@Model.Filtros.IdEmpresa',
+                idCiudad: '@Model.Filtros.IdCiudad',
+                idEstado: '@Model.Filtros.IdEstado',
+                idTipoObligacion: '@Model.Filtros.IdTipoObligacion',
+                anio: '@Model.Filtros.Anio',
+                mes: '@Model.Filtros.Mes',
+                idResponsable: '@Model.Filtros.IdResponsable',
+                idElaborador: '@Model.Filtros.IdElaborador',
+                idAutorizador: '@Model.Filtros.IdAutorizador',
+                idAprobador: '@Model.Filtros.IdAprobador',
+                idUsuarioVencimiento: '@Model.Filtros.IdUsuarioVencimiento'
+            };
+
+            Object.keys(currentFilters).forEach(key => {
+                if (currentFilters[key] && currentFilters[key] !== '') {
+                    params.append(key, currentFilters[key]);
+                }
+            });
+
+            Object.keys(extraParams).forEach(key => {
+                if (extraParams[key] !== null && extraParams[key] !== undefined && extraParams[key] !== '') {
+                    params.set(key, extraParams[key]);
+                }
+            });
+
+            return params.toString();
+        }
+
+        function renderBarClickable(elementId, data, extraParamName, color = '#dc3545', horizontal = false) {
+            if (!data || data.length === 0) {
+                document.querySelector(elementId).innerHTML =
+                    '<div class="text-muted text-center py-5">No hay información disponible.</div>';
+                return;
+            }
+
+            new ApexCharts(document.querySelector(elementId), {
+                chart: {
+                    type: 'bar',
+                    height: 330,
+                    toolbar: { show: false },
+                    events: {
+                        dataPointSelection: function (event, chartContext, config) {
+                            const item = data[config.dataPointIndex];
+
+                            const extraParams = {
+                                tipo: 'vencidas',
+                                returnUrl: window.location.pathname + window.location.search
+                            };
+
+                            if (extraParamName === 'mesVencimiento') {
+                                extraParams.anio = item.Anio;
+                                extraParams.mes = item.Mes;
+                                extraParams.tipo = 'total';
+                            } else {
+                                extraParams[extraParamName] = item.Id;
+                            }
+
+                            const query = buildQueryString(extraParams);
+                            $('#dashboardOverlay').removeClass('d-none');
+                            window.location.href = `/Dashboards/DetalleOperativo?${query}`;
+                        }
+                    }
+                },
+                colors: [color],
+                series: [{
+                    name: 'Obligaciones',
+                    data: values(data)
+                }],
+                xaxis: {
+                    categories: labels(data),
+                    labels: {
+                        rotate: horizontal ? 0 : -45,
+                        trim: true
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: horizontal,
+                        borderRadius: 6,
+                        columnWidth: '45%'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return val + ' obligaciones - clic para ver detalle';
+                        }
+                    }
+                }
+            }).render();
+        }
+
+        renderBarClickable('#chartVencimientosMes', vencimientosData.meses, 'mesVencimiento', '#2563eb');
+        renderBarClickable('#chartVencidasEstado', vencimientosData.estados, 'idEstado', '#dc3545', true);
+        renderBarClickable('#chartAutorizadores', vencimientosData.autorizadores, 'idAutorizador', '#dc3545', true);
+        renderBarClickable('#chartEmpresas', vencimientosData.empresas, 'idEmpresa', '#dc3545', true);
+        renderBarClickable('#chartTipos', vencimientosData.tipos, 'idTipoObligacion', '#dc3545', true);
+    </script>
+}

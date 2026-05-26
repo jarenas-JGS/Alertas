@@ -71,23 +71,30 @@
         </div>
 
         <div class="col-md-6 col-xl-4">
-            <div class="card shadow-sm border-0 h-100 opacity-75">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body d-flex flex-column p-4">
+
                     <div class="text-danger fs-2 mb-3">
                         <i class="bi bi-calendar2-x"></i>
                     </div>
 
-                    <h5 class="fw-semibold mb-2">Dashboard de Vencimientos</h5>
+                    <h5 class="fw-semibold mb-2">
+                        Dashboard de Vencimientos
+                    </h5>
 
                     <p class="text-muted small mb-4">
                         Control de obligaciones vencidas, próximas a vencer, atrasos y riesgos operativos.
                     </p>
 
                     <div class="mt-auto">
-                        <button type="button" class="btn btn-outline-secondary" disabled>
-                            Próximamente
-                        </button>
+                        <a asp-controller="Login"
+                           asp-action="SeleccionarProyecto"
+                           asp-route-returnUrl="@Url.Action("VencimientosProyecto", "Dashboards")"
+                           class="btn btn-outline-danger">
+                            Abrir dashboard
+                        </a>
                     </div>
+
                 </div>
             </div>
         </div>
