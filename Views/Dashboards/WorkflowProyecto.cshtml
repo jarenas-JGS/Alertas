@@ -1,0 +1,484 @@
+﻿@model Alertas.ViewModels.Dashboards.DashboardWorkflowProyectoVm
+
+@{
+    ViewData["Title"] = "Dashboard Workflow";
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="mb-1">
+                <i class="bi bi-diagram-3 me-2"></i>
+                Dashboard de Workflow
+            </h3>
+            <div class="text-muted">
+                Indicadores de transiciones, movimientos y actividad del flujo.
+            </div>
+        </div>
+
+        <div class="text-end">
+            <span class="badge rounded-pill bg-primary px-3 py-2">
+                @Model.NombreProyecto
+            </span>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 dashboard-filter-card">
+        <div class="card-body">
+            <form id="formFiltrosDashboard"
+                  asp-controller="Dashboards"
+                  asp-action="WorkflowProyecto"
+                  method="get"
+                  class="row g-3 align-items-end">
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Cliente</label>
+                    <select name="idCliente" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Clientes)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdCliente?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Empresa</label>
+                    <select name="idEmpresa" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach (var item in Model.Filtros.Empresas)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdEmpresa?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Ciudad</label>
+                    <select name="idCiudad" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach (var item in Model.Filtros.Ciudades)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdCiudad?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Estado actual</label>
+                    <select name="idEstado" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Estados)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdEstado?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Tipo obligación</label>
+                    <select name="idTipoObligacion" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.TiposObligacion)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdTipoObligacion?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl-2">
+                    <label class="form-label small text-muted mb-1">Año</label>
+                    <select name="anio" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Anios)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.Anio?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3 col-xl-2">
+                    <label class="form-label small text-muted mb-1">Mes</label>
+                    <select name="mes" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Meses)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.Mes?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Responsable</label>
+                    <select name="idResponsable" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Responsables)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdResponsable?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Elaborador</label>
+                    <select name="idElaborador" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Elaboradores)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdElaborador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Autorizador</label>
+                    <select name="idAutorizador" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Autorizadores)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdAutorizador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">Aprobador</label>
+                    <select name="idAprobador" class="form-select">
+                        <option value="">Todos</option>
+                        @foreach (var item in Model.Filtros.Aprobadores)
+                        {
+                            <option value="@item.Value" selected="@(Model.Filtros.IdAprobador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <div class="d-flex flex-wrap gap-2 justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel me-1"></i>
+                            Aplicar filtros
+                        </button>
+
+                        <a asp-controller="Dashboards"
+                           asp-action="WorkflowProyecto"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Limpiar
+                        </a>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="text-muted small">Total transiciones</div>
+                    <h3 class="fw-bold mb-0">@Model.TotalTransiciones</h3>
+                    <div class="small text-muted mt-3">Movimientos registrados en el flujo.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="text-muted small">Obligaciones con movimiento</div>
+                    <h3 class="fw-bold mb-0">@Model.ObligacionesConMovimiento</h3>
+                    <div class="small text-muted mt-3">Obligaciones con historial de workflow.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="text-muted small">Transiciones manuales</div>
+                    <h3 class="fw-bold mb-0 text-primary">@Model.TransicionesManuales</h3>
+                    <div class="small text-muted mt-3">Ejecutadas por usuarios.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+                    <div class="text-muted small">Transiciones automáticas</div>
+                    <h3 class="fw-bold mb-0 text-success">@Model.TransicionesAutomaticas</h3>
+                    <div class="small text-muted mt-3">Ejecutadas por procesos automáticos.</div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.MayorCuelloBotella != null)
+        {
+            <div class="row g-3 mb-4">
+
+                <div class="col-12">
+                    <div class="card shadow-sm border-0">
+
+                        <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
+
+                            <div>
+                                <div class="text-muted small">
+                                    Principal cuello de botella
+                                </div>
+
+                                <h4 class="fw-bold mb-1">
+                                    @Model.MayorCuelloBotella.Estado
+                                </h4>
+
+                                <div class="text-muted">
+                                    Promedio:
+                                    <span class="fw-semibold text-danger">
+                                        @Model.MayorCuelloBotella.DiasPromedio días
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-icon bg-danger-subtle text-danger">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Transiciones por estado destino</h6>
+                    <small class="text-muted">Estados que más reciben movimientos.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartEstadosDestino"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Transiciones por mes</h6>
+                    <small class="text-muted">Evolución mensual del workflow.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartTransicionesMes"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Transiciones por acción</h6>
+                    <small class="text-muted">Acciones más usadas en el flujo.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartAcciones"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Transiciones por usuario</h6>
+                    <small class="text-muted">Usuarios que más han ejecutado movimientos.</small>
+                </div>
+                <div class="card-body">
+                    <div id="chartUsuarios"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">Tiempo promedio por estado</h6>
+                    <small class="text-muted">
+                        Días promedio que permanecen las obligaciones en cada estado antes de avanzar.
+                    </small>
+                </div>
+                <div class="card-body">
+                    <div id="chartTiempoEstados"></div>
+                    <div class="small text-muted mt-3">
+                        El análisis excluye el estado inicial del flujo y estados finales
+                        como Cerrada o Anulada.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div id="dashboardOverlay" class="dashboard-overlay d-none">
+    <div class="dashboard-overlay-content">
+        <div class="spinner-border text-primary mb-3" role="status"></div>
+        <h5 class="fw-semibold mb-1">Cargando dashboard...</h5>
+        <div class="text-muted">Procesando indicadores y gráficos.</div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script>
+        const workflowData = {
+            estadosDestino: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TransicionesPorEstadoDestino)),
+            acciones: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TransicionesPorAccion)),
+            usuarios: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TransicionesPorUsuario)),
+            meses: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TransicionesPorMes)),
+            tiempoEstados: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TiempoPromedioPorEstado))
+        };
+
+        $('#formFiltrosDashboard').on('submit', function () {
+            $('#dashboardOverlay').removeClass('d-none');
+        });
+
+        function labels(data) {
+            return data.map(x => x.Label);
+        }
+
+        function values(data) {
+            return data.map(x => x.Valor);
+        }
+
+        function renderBar(elementId, data, horizontal = false) {
+            if (!data || data.length === 0) {
+                document.querySelector(elementId).innerHTML =
+                    '<div class="text-muted text-center py-5">No hay información disponible.</div>';
+                return;
+            }
+
+            new ApexCharts(document.querySelector(elementId), {
+                chart: {
+                    type: 'bar',
+                    height: 330,
+                    toolbar: { show: false }
+                },
+                colors: ['#2563eb'],
+                series: [{
+                    name: 'Transiciones',
+                    data: values(data)
+                }],
+                xaxis: {
+                    categories: labels(data),
+                    labels: {
+                        rotate: horizontal ? 0 : -45,
+                        trim: true
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: horizontal,
+                        borderRadius: 6,
+                        columnWidth: '45%'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val) {
+                            return val + ' transiciones';
+                        }
+                    }
+                }
+            }).render();
+        }
+
+                function renderTiempoEstados(elementId, data) {
+            if (!data || data.length === 0) {
+                document.querySelector(elementId).innerHTML =
+                    '<div class="text-muted text-center py-5">No hay información disponible.</div>';
+                return;
+            }
+
+            new ApexCharts(document.querySelector(elementId), {
+                chart: {
+                    type: 'bar',
+                    height: 360,
+                    toolbar: { show: false }
+                },
+                colors: ['#dc3545'],
+                series: [{
+                    name: 'Días promedio',
+                    data: data.map(x => x.DiasPromedio)
+                }],
+                xaxis: {
+                    categories: data.map(x => x.Estado),
+                    labels: {
+                        rotate: -45,
+                        trim: true
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 6,
+                        columnWidth: '45%'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (val, opts) {
+                            const item = data[opts.dataPointIndex];
+                            return val + ' días promedio (' + item.TotalMediciones + ' mediciones)';
+                        }
+                    }
+                }
+            }).render();
+        }
+
+        renderBar('#chartEstadosDestino', workflowData.estadosDestino, true);
+        renderBar('#chartTransicionesMes', workflowData.meses);
+        renderBar('#chartAcciones', workflowData.acciones, true);
+        renderBar('#chartUsuarios', workflowData.usuarios, true);
+        renderTiempoEstados('#chartTiempoEstados', workflowData.tiempoEstados);
+    </script>
+}

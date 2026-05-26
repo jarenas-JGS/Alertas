@@ -46,10 +46,29 @@
                                 <input type="hidden" name="Estados[@i].id_estado" value="@Model.Estados[i].id_estado" />
                                 <input type="hidden" name="Estados[@i].eliminar" value="false" class="input-eliminar" />
 
-                                <input name="Estados[@i].nombre" value="@Model.Estados[i].nombre" class="form-control" />
+                                @{
+                                    var nombreEstado = Model.Estados[i].nombre?.Trim().ToLower();
+                                    var esEstadoBase = nombreEstado == "creada"
+                                    || nombreEstado == "cerrada"
+                                    || nombreEstado == "anulada";
+                                }
+
+                                <input name="Estados[@i].nombre"
+                                       value="@Model.Estados[i].nombre"
+                                       class="form-control"
+                                       @(esEstadoBase ? "readonly" : "") />
                             </td>
                             <td>
-                                <input name="Estados[@i].orden" value="@Model.Estados[i].orden" class="form-control" type="number" min="1" />
+                                @{
+                                    var esCreada = nombreEstado == "creada";
+                                }
+
+                                <input name="Estados[@i].orden"
+                                       value="@Model.Estados[i].orden"
+                                       class="form-control"
+                                       type="number"
+                                       min="1"
+                                       @(esCreada ? "readonly" : "") />
                             </td>
                             <td class="text-center">
                                 <input name="Estados[@i].bloquea" value="true" type="checkbox" class="form-check-input" @(Model.Estados[i].bloquea ? "checked" : "") />
@@ -69,10 +88,10 @@
                             </td>
                             <td class="text-center">
                                 @{
-                                    var nombreEstado = Model.Estados[i].nombre?.Trim().ToLower();
-                                    var esNoEliminable = nombreEstado == "creada"
-                                    || nombreEstado == "cerrada"
-                                    || nombreEstado == "anulada";
+                                    var nombreEstado1 = Model.Estados[i].nombre?.Trim().ToLower();
+                                    var esNoEliminable = nombreEstado1 == "creada"
+                                    || nombreEstado1 == "cerrada"
+                                    || nombreEstado1 == "anulada";
                                 }
 
                                 @if (esNoEliminable)

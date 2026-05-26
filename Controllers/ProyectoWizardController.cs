@@ -338,9 +338,36 @@ namespace Alertas.Controllers
                 }
             }
 
+            var estadoCreada = estadosValidar
+                .FirstOrDefault(e => e.nombre.Trim().ToLower() == "creada");
+
+            if (estadoCreada == null)
+            {
+                ModelState.AddModelError("", "Debe existir el estado inicial Creada.");
+            }
+            else if (estadoCreada.orden != 1)
+            {
+                ModelState.AddModelError("", "El estado Creada debe tener siempre orden 1.");
+            }
+
+            var estadoAnuladaValidacion = estadosValidar
+                .FirstOrDefault(e => e.nombre.Trim().ToLower() == "anulada");
+
+            if (estadoCerradaValidacion != null && estadoAnuladaValidacion != null)
+            {
+                if (estadoAnuladaValidacion.orden <= estadoCerradaValidacion.orden)
+                {
+                    ModelState.AddModelError(
+                        "",
+                        "El estado Anulada debe tener un orden superior al estado Cerrada."
+                    );
+                }
+            }
+
 
             if (!ModelState.IsValid)
                 return View(vm);
+
 
             var estadoControlVencimientoVm = vm.Estados
                 .Where(e => !e.eliminar && e.activo)

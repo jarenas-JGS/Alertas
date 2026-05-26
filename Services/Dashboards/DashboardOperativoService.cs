@@ -631,5 +631,382 @@ namespace Alertas.Services.Dashboards
                 _ => "bi-circle"
             };
         }
+
+        public async Task<DashboardWorkflowProyectoVm> ObtenerDashboardWorkflowAsync(
+            int idProyecto,
+            FiltrosDashboardOperativoVm filtros)
+        {
+            var proyecto = await _context.Proyectos
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.id_proyecto == idProyecto);
+
+            if (proyecto == null)
+                throw new Exception("Proyecto no encontrado.");
+
+            var obligaciones = _context.RegObls
+                .AsNoTracking()
+                .Where(o => o.id_proyecto == idProyecto);
+
+            if (filtros.IdCliente.HasValue)
+                obligaciones = obligaciones.Where(o => o.id_cliente == filtros.IdCliente.Value);
+
+            if (filtros.IdEmpresa.HasValue)
+                obligaciones = obligaciones.Where(o => o.id_empresa == filtros.IdEmpresa.Value);
+
+            if (filtros.IdCiudad.HasValue)
+                obligaciones = obligaciones.Where(o => o.id_ciudad == filtros.IdCiudad.Value);
+
+            if (filtros.IdEstado.HasValue)
+                obligaciones = obligaciones.Where(o => o.id_estado == filtros.IdEstado.Value);
+
+            if (filtros.IdTipoObligacion.HasValue)
+                obligaciones = obligaciones.Where(o => o.id_tipo_obligacion == filtros.IdTipoObligacion.Value);
+
+            if (filtros.Anio.HasValue)
+                obligaciones = obligaciones.Where(o => o.anio == filtros.Anio.Value);
+
+            if (filtros.Mes.HasValue)
+                obligaciones = obligaciones.Where(o => o.mes == filtros.Mes.Value);
+
+            if (filtros.IdResponsable.HasValue)
+                obligaciones = obligaciones.Where(o =>
+                    o.UsuariosObligaciones.Any(uo =>
+                        uo.id_usuario == filtros.IdResponsable.Value &&
+                        uo.id_rol == 1 &&
+                        uo.activo));
+
+            if (filtros.IdElaborador.HasValue)
+                obligaciones = obligaciones.Where(o =>
+                    o.UsuariosObligaciones.Any(uo =>
+                        uo.id_usuario == filtros.IdElaborador.Value &&
+                        uo.id_rol == 2 &&
+                        uo.activo));
+
+            if (filtros.IdAutorizador.HasValue)
+                obligaciones = obligaciones.Where(o =>
+                    o.UsuariosObligaciones.Any(uo =>
+                        uo.id_usuario == filtros.IdAutorizador.Value &&
+                        uo.id_rol == 3 &&
+                        uo.activo));
+
+            if (filtros.IdAprobador.HasValue)
+                obligaciones = obligaciones.Where(o =>
+                    o.UsuariosObligaciones.Any(uo =>
+                        uo.id_usuario == filtros.IdAprobador.Value &&
+                        uo.id_rol == 4 &&
+                        uo.activo));
+
+            if (filtros.IdUsuarioVencimiento.HasValue)
+                obligaciones = obligaciones.Where(o =>
+                    o.UsuariosObligaciones.Any(uo =>
+                        uo.id_usuario == filtros.IdUsuarioVencimiento.Value &&
+                        uo.id_rol == 5 &&
+                        uo.activo));
+
+            var idsObligaciones = obligaciones.Select(o => o.id_reg_obl);
+
+            var flujo = _context.HistOblFlujos
+                .AsNoTracking()
+                .Where(h => idsObligaciones.Contains(h.id_reg_obl));
+
+            var totalTransiciones = await flujo.CountAsync();
+
+            var obligacionesConMovimiento = await flujo
+                .Select(h => h.id_reg_obl)
+                .Distinct()
+                .CountAsync();
+
+            var automaticas = await flujo.CountAsync(h => h.es_automatico);
+            var manuales = await flujo.CountAsync(h => !h.es_automatico);
+
+            var transicionesPorMesRaw = await flujo
+                .GroupBy(h => new
+                {
+                    h.fecha.Year,
+                    h.fecha.Month
+                })
+                .Select(g => new
+                {
+                    Anio = g.Key.Year,
+                    Mes = g.Key.Month,
+                    Total = g.Count()
+                })
+                .OrderBy(x => x.Anio)
+                .ThenBy(x => x.Mes)
+                .ToListAsync();
+
+            var transicionesPorMes = transicionesPorMesRaw
+                .Select(x => new SerieDashboardVm
+                {
+                    Anio = x.Anio,
+                    Mes = x.Mes,
+                    Label = $"{x.Anio}-{x.Mes:00}",
+                    Valor = x.Total
+                })
+                .ToList();
+
+            await CargarCombosFiltrosWorkflowAsync(idProyecto, filtros);
+
+            var hoyUtc = DateTime.UtcNow;
+
+            var historialOrdenado = await flujo
+                .Where(h => h.id_estado_destino != null)
+                .OrderBy(h => h.id_reg_obl)
+                .ThenBy(h => h.fecha)
+                .Select(h => new
+                {
+                    h.id_reg_obl,
+                    h.id_estado_destino,
+                    h.fecha,
+                    EstadoDestino = h.EstadoDestino!.nombre
+                })
+                .ToListAsync();
+
+            var tiemposPorEstado = new List<(int IdEstado, string Estado, double Dias)>();
+
+            var gruposPorObligacion = historialOrdenado
+                .GroupBy(h => h.id_reg_obl);
+
+            foreach (var grupo in gruposPorObligacion)
+            {
+                var movimientos = grupo
+                    .OrderBy(h => h.fecha)
+                    .ToList();
+
+                for (int i = 0; i < movimientos.Count; i++)
+                {
+                    var actual = movimientos[i];
+
+                    if (actual.id_estado_destino == null)
+                        continue;
+
+                    DateTime fechaFin;
+
+                    if (i < movimientos.Count - 1)
+                    {
+                        fechaFin = movimientos[i + 1].fecha;
+                    }
+                    else
+                    {
+                        fechaFin = hoyUtc;
+                    }
+
+                    var dias = (fechaFin - actual.fecha).TotalDays;
+
+                    if (dias < 0)
+                        continue;
+
+                    tiemposPorEstado.Add((
+                        actual.id_estado_destino.Value,
+                        actual.EstadoDestino,
+                        dias
+                    ));
+                }
+            }
+
+            var estadosProyecto = await _context.Estados
+            .AsNoTracking()
+            .Where(e => e.id_proyecto == idProyecto && e.activo)
+            .OrderBy(e => e.orden)
+            .ToListAsync();
+
+            var estadoInicial = estadosProyecto
+                .OrderBy(e => e.orden)
+                .FirstOrDefault();
+
+            var idsEstadosFinales = estadosProyecto
+                .Where(e =>
+                    e.nombre.ToLower().Contains("cerrada") ||
+                    e.nombre.ToLower().Contains("anulada"))
+                .Select(e => e.id_estado)
+                .ToHashSet();
+
+            var tiempoPromedioPorEstado = tiemposPorEstado
+                .Join(
+                    estadosProyecto,
+                    t => t.IdEstado,
+                    e => e.id_estado,
+                    (t, e) => new
+                    {
+                        Tiempo = t,
+                        Estado = e
+                    })
+                .Where(x =>
+                    estadoInicial == null || x.Estado.id_estado != estadoInicial.id_estado)
+                .Where(x =>
+                    !idsEstadosFinales.Contains(x.Estado.id_estado))
+                .GroupBy(x => new
+                {
+                    x.Tiempo.IdEstado,
+                    x.Tiempo.Estado,
+                    x.Estado.orden
+                })
+                .Select(g => new TiempoEstadoWorkflowVm
+                {
+                    IdEstado = g.Key.IdEstado,
+                    Estado = g.Key.Estado,
+                    Orden = g.Key.orden,
+                    DiasPromedio = Math.Round(
+                        (decimal)g.Average(x => x.Tiempo.Dias), 2),
+                    TotalMediciones = g.Count()
+                })
+                .OrderBy(x => x.Orden)
+                .ToList();
+
+            var mayorCuelloBotella = tiempoPromedioPorEstado
+                .OrderByDescending(x => x.DiasPromedio)
+                .FirstOrDefault();
+
+            return new DashboardWorkflowProyectoVm
+            {
+                IdProyecto = idProyecto,
+                NombreProyecto = proyecto.nombre,
+
+                TotalTransiciones = totalTransiciones,
+                ObligacionesConMovimiento = obligacionesConMovimiento,
+                TransicionesAutomaticas = automaticas,
+                TransicionesManuales = manuales,
+                TiempoPromedioPorEstado = tiempoPromedioPorEstado,
+                MayorCuelloBotella = mayorCuelloBotella,
+
+                Filtros = filtros,
+
+                TransicionesPorEstadoDestino = await flujo
+                    .Where(h => h.EstadoDestino != null)
+                    .GroupBy(h => new
+                    {
+                        h.id_estado_destino,
+                        h.EstadoDestino!.nombre
+                    })
+                    .Select(g => new SerieDashboardVm
+                    {
+                        Id = g.Key.id_estado_destino,
+                        Label = g.Key.nombre,
+                        Valor = g.Count()
+                    })
+                    .OrderByDescending(x => x.Valor)
+                    .ToListAsync(),
+
+                TransicionesPorAccion = await flujo
+                    .GroupBy(h => h.accion ?? "Sin acción")
+                    .Select(g => new SerieDashboardVm
+                    {
+                        Label = g.Key,
+                        Valor = g.Count()
+                    })
+                    .OrderByDescending(x => x.Valor)
+                    .Take(10)
+                    .ToListAsync(),
+
+                TransicionesPorUsuario = await flujo
+                    .GroupBy(h => new
+                    {
+                        h.id_usuario,
+                        h.Usuario.nombre
+                    })
+                    .Select(g => new SerieDashboardVm
+                    {
+                        Id = g.Key.id_usuario,
+                        Label = g.Key.nombre,
+                        Valor = g.Count()
+                    })
+                    .OrderByDescending(x => x.Valor)
+                    .Take(10)
+                    .ToListAsync(),
+
+                TransicionesPorMes = transicionesPorMes
+            };
+        }
+
+        private async Task CargarCombosFiltrosWorkflowAsync(
+    int idProyecto,
+    FiltrosDashboardOperativoVm filtros)
+        {
+            filtros.Clientes = await _context.RegObls
+                .AsNoTracking()
+                .Where(o => o.id_proyecto == idProyecto && o.Cliente != null)
+                .Select(o => new SelectListItem
+                {
+                    Value = o.id_cliente.ToString(),
+                    Text = o.Cliente.nombre
+                })
+                .Distinct()
+                .OrderBy(x => x.Text)
+                .ToListAsync();
+
+            filtros.Empresas = await _context.RegObls
+                .AsNoTracking()
+                .Where(o => o.id_proyecto == idProyecto)
+                .Select(o => new SelectListItem
+                {
+                    Value = o.id_empresa.ToString(),
+                    Text = o.Empresa.nombre
+                })
+                .Distinct()
+                .OrderBy(x => x.Text)
+                .ToListAsync();
+
+            filtros.Ciudades = await _context.RegObls
+                .AsNoTracking()
+                .Where(o => o.id_proyecto == idProyecto && o.id_ciudad != null)
+                .Select(o => new SelectListItem
+                {
+                    Value = o.id_ciudad!.Value.ToString(),
+                    Text = o.Ciudad!.nombre
+                })
+                .Distinct()
+                .OrderBy(x => x.Text)
+                .ToListAsync();
+
+            filtros.Estados = await _context.Estados
+                .AsNoTracking()
+                .Where(e => e.id_proyecto == idProyecto && e.activo)
+                .OrderBy(e => e.orden)
+                .Select(e => new SelectListItem
+                {
+                    Value = e.id_estado.ToString(),
+                    Text = e.nombre
+                })
+                .ToListAsync();
+
+            filtros.TiposObligacion = await _context.RegObls
+                .AsNoTracking()
+                .Where(o => o.id_proyecto == idProyecto)
+                .Select(o => new SelectListItem
+                {
+                    Value = o.id_tipo_obligacion.ToString(),
+                    Text = o.TipoObligacion.nombre
+                })
+                .Distinct()
+                .OrderBy(x => x.Text)
+                .ToListAsync();
+
+            filtros.Anios = await _context.RegObls
+                .AsNoTracking()
+                .Where(o => o.id_proyecto == idProyecto)
+                .Select(o => o.anio)
+                .Distinct()
+                .OrderByDescending(x => x)
+                .Select(x => new SelectListItem
+                {
+                    Value = x.ToString(),
+                    Text = x.ToString()
+                })
+                .ToListAsync();
+
+            filtros.Meses = Enumerable.Range(1, 12)
+                .Select(m => new SelectListItem
+                {
+                    Value = m.ToString(),
+                    Text = new DateTime(2000, m, 1).ToString("MMMM")
+                })
+                .ToList();
+
+            filtros.Responsables = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 1);
+            filtros.Elaboradores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 2);
+            filtros.Autorizadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 3);
+            filtros.Aprobadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 4);
+            filtros.UsuariosVencimiento = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 5);
+        }
     }
 }

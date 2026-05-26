@@ -13,5 +13,9 @@ namespace Alertas.Services.Dashboards
             string tipo,
             FiltrosDashboardOperativoVm filtros,
             int? idEstadoDetalle);
+
+        Task<DashboardWorkflowProyectoVm> ObtenerDashboardWorkflowAsync(
+            int idProyecto,
+            FiltrosDashboardOperativoVm filtros);
     }
 }
