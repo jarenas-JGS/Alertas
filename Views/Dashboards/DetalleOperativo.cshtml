@@ -72,6 +72,7 @@
                     <table class="table table-hover align-middle" id="tablaDetalleDashboard">
                         <thead class="table-light">
                             <tr>
+                                <th>ID</th>
                                 <th>Obligación</th>
                                 <th>Código</th>
                                 <th>Cliente</th>
@@ -89,8 +90,14 @@
                             {
                                 <tr>
                                     <td>
+                                        <span class="badge bg-secondary-subtle text-dark border">
+                                            #@item.IdRegObl
+                                        </span>
+                                    </td>
+                                    <td>
                                         <div class="fw-semibold">@item.Nombre</div>
                                     </td>
+
                                     <td>
                                         @if (!string.IsNullOrWhiteSpace(item.CodigoObligacion))
                                         {
@@ -180,12 +187,12 @@
             if ($('#tablaDetalleDashboard').length) {
                 $('#tablaDetalleDashboard').DataTable({
                     pageLength: 10,
-                    order: [[6, 'asc']],
+                    order: [[7, 'asc']],
                     language: {
                         url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
                     },
                     columnDefs: [
-                        { orderable: false, targets: [9] }
+                        { orderable: false, targets: [10] }
                     ]
                 });
             }
