@@ -27,30 +27,41 @@
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
 
-            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div class="row align-items-start g-3">
 
-                <div>
-                    <h2 class="fw-bold mb-1">@Model.Nombre</h2>
+                <div class="col-12 col-lg-8">
 
-                    <div class="mb-2">
-                        <span class="badge bg-secondary-subtle text-dark border">
-                            Obligación #@Model.IdRegObl
-                        </span>
+                    <div>
+                        <h3 class="fw-bold mb-2">@Model.Nombre</h3>
+
+                        <div class="mb-2">
+                            <span class="badge bg-secondary-subtle text-dark border">
+                                Obligación #@Model.IdRegObl
+                            </span>
+                        </div>
+
+                        <div class="text-muted">
+                            Proyecto:
+                            <span class="fw-semibold text-dark">@Model.Proyecto</span>
+                        </div>
                     </div>
 
-                    <div class="text-muted">
-                        Proyecto:
-                        <span class="fw-semibold text-dark">@Model.Proyecto</span>
-                    </div>
                 </div>
 
-                <div class="text-end">
+                <div class="col-12 col-lg-4 text-lg-end">
 
-                    <span class="badge bg-primary fs-6 px-3 py-2">
+                    <span class="badge bg-primary px-3 py-2 mb-2">
                         @Model.Estado
                     </span>
 
-                    <div class="small text-muted mt-3">
+                    @if (Model.DiasAtrasoVencimiento.HasValue && Model.DiasAtrasoVencimiento.Value > 0)
+                    {
+                        <span class="badge bg-danger px-3 py-2 mb-2 ms-1">
+                            Vencida
+                        </span>
+                    }
+
+                    <div class="small text-muted mt-2">
                         <div>
                             Fecha venc. obligación:
                             <strong>@Model.FechaVencimiento</strong>
@@ -67,17 +78,22 @@
                         </div>
 
                         <div>
+                            Días atraso seguimiento:
+                            <strong>@(Model.DiasAtrasoSeguimiento?.ToString() ?? "-")</strong>
+                        </div>
+
+                        <div>
                             Fecha vencimiento ejecutada:
                             <strong>@(Model.FechaVencimientoEjecutada ?? "-")</strong>
                         </div>
 
                         <div>
-                            Fecha aprobado final:
-                            <strong>@(Model.FechaAprobadoFinal ?? "-")</strong>
+                            Días atraso vencimiento:
+                            <strong>@(Model.DiasAtrasoVencimiento?.ToString() ?? "-")</strong>
                         </div>
                     </div>
 
-                </div>
+
 
             </div>
 
