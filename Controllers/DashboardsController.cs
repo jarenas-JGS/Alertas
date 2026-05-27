@@ -246,6 +246,11 @@ namespace Alertas.Controllers
                 return RedirectToAction("SeleccionarProyecto", "Login");
             }
 
+            var idUsuario = _seguridadService.ObtenerIdUsuario();
+
+            if (idUsuario == null)
+                return RedirectToAction("Index", "Login");
+
             var entidad = await _context.RegObls
                 .AsNoTracking()
                 .Include(x => x.Proyecto)
@@ -267,20 +272,17 @@ namespace Alertas.Controllers
                     x.id_proyecto == idProyecto.Value);
 
             if (entidad == null)
-                return RedirectToAction("DetalleOperativo");
+                return RedirectToAction("AccessDenied", "Login");
 
-            var idUsuario = _seguridadService.ObtenerIdUsuario();
-            var esSuperAdmin = User.HasClaim("EsSuperAdmin", "true");
-            var accesoProyecto = _seguridadService.EsAccesoProyectoActivoPorProyecto();
+            bool esSuperAdmin = User.HasClaim("EsSuperAdmin", "true");
 
-            if (idUsuario == null)
-                return RedirectToAction("Index", "Login");
+            bool tieneAccesoProyecto = await _seguridadService
+                .UsuarioTieneAccesoProyectoAsync(idProyecto.Value, "PROYECTO");
 
-            bool participaEnObligacion = entidad.UsuariosObligaciones.Any(uo =>
-                uo.id_usuario == idUsuario.Value &&
-                uo.activo);
+            bool tieneAccesoObligacionEnProyecto = await _seguridadService
+                .UsuarioTieneAccesoProyectoAsync(idProyecto.Value, "OBLIGACION");
 
-            if (!esSuperAdmin && !accesoProyecto && !participaEnObligacion)
+            if (!esSuperAdmin && !tieneAccesoProyecto && !tieneAccesoObligacionEnProyecto)
             {
                 return RedirectToAction("AccessDenied", "Login");
             }
