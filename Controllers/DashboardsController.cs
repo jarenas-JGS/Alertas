@@ -273,14 +273,16 @@ namespace Alertas.Controllers
             var esSuperAdmin = User.HasClaim("EsSuperAdmin", "true");
             var accesoProyecto = _seguridadService.EsAccesoProyectoActivoPorProyecto();
 
-            if (!esSuperAdmin && !accesoProyecto)
-            {
-                var participa = entidad.UsuariosObligaciones.Any(uo =>
-                    uo.id_usuario == idUsuario &&
-                    uo.activo);
+            if (idUsuario == null)
+                return RedirectToAction("Index", "Login");
 
-                if (!participa)
-                    return RedirectToAction("AccessDenied", "Login");
+            bool participaEnObligacion = entidad.UsuariosObligaciones.Any(uo =>
+                uo.id_usuario == idUsuario.Value &&
+                uo.activo);
+
+            if (!esSuperAdmin && !accesoProyecto && !participaEnObligacion)
+            {
+                return RedirectToAction("AccessDenied", "Login");
             }
 
             string? Fecha(DateOnly? fecha) =>
