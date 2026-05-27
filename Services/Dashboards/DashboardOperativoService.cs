@@ -3,6 +3,7 @@ using Alertas.Models;
 using Alertas.ViewModels.Dashboards;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Alertas.Services.Constantes;
 
 namespace Alertas.Services.Dashboards
 {
@@ -58,35 +59,35 @@ namespace Alertas.Services.Dashboards
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdResponsable.Value &&
-                        uo.id_rol == 1 &&
+                        uo.Rol.nombre == RolesSistema.Responsable &&
                         uo.activo));
 
             if (filtros.IdElaborador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdElaborador.Value &&
-                        uo.id_rol == 2 &&
+                        uo.Rol.nombre == RolesSistema.Elaborador &&
                         uo.activo));
 
             if (filtros.IdAutorizador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdAutorizador.Value &&
-                        uo.id_rol == 3 &&
+                        uo.Rol.nombre == RolesSistema.Autorizador &&
                         uo.activo));
 
             if (filtros.IdAprobador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdAprobador.Value &&
-                        uo.id_rol == 4 &&
+                        uo.Rol.nombre == RolesSistema.Aprobador &&
                         uo.activo));
 
             if (filtros.IdUsuarioVencimiento.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdUsuarioVencimiento.Value &&
-                        uo.id_rol == 5 &&
+                        uo.Rol.nombre == RolesSistema.Vencimiento &&
                         uo.activo));
 
             var total = await obligaciones.CountAsync();
@@ -313,11 +314,11 @@ namespace Alertas.Services.Dashboards
                     estadosControlVencimiento.Contains(o.id_estado) &&
                     o.aprobado == true);
 
-            filtros.Responsables = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 1);
-            filtros.Elaboradores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 2);
-            filtros.Autorizadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 3);
-            filtros.Aprobadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 4);
-            filtros.UsuariosVencimiento = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 5);
+            filtros.Responsables = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, RolesSistema.Responsable);
+            filtros.Elaboradores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, RolesSistema.Elaborador);
+            filtros.Autorizadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, RolesSistema.Autorizador);
+            filtros.Aprobadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, RolesSistema.Aprobador);
+            filtros.UsuariosVencimiento = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, RolesSistema.Vencimiento);
 
             var vm = new DashboardOperativoProyectoVm
             {
@@ -450,35 +451,35 @@ namespace Alertas.Services.Dashboards
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdResponsable.Value &&
-                        uo.id_rol == 1 &&
+                        uo.Rol.nombre == RolesSistema.Responsable &&
                         uo.activo));
 
             if (filtros.IdElaborador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdElaborador.Value &&
-                        uo.id_rol == 2 &&
+                        uo.Rol.nombre == RolesSistema.Elaborador &&
                         uo.activo));
 
             if (filtros.IdAutorizador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdAutorizador.Value &&
-                        uo.id_rol == 3 &&
+                        uo.Rol.nombre == RolesSistema.Autorizador &&
                         uo.activo));
 
             if (filtros.IdAprobador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdAprobador.Value &&
-                        uo.id_rol == 4 &&
+                        uo.Rol.nombre == RolesSistema.Aprobador &&
                         uo.activo));
 
             if (filtros.IdUsuarioVencimiento.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdUsuarioVencimiento.Value &&
-                        uo.id_rol == 5 &&
+                        uo.Rol.nombre == RolesSistema.Vencimiento &&
                         uo.activo));
 
             tipo = (tipo ?? string.Empty).Trim().ToLower();
@@ -553,13 +554,13 @@ namespace Alertas.Services.Dashboards
 
         private async Task<List<SelectListItem>> ObtenerUsuariosPorRolProyectoAsync(
             int idProyecto,
-            int idRol)
+            string nombreRol)
         {
             return await _context.UsuariosObligaciones
                 .AsNoTracking()
                 .Where(uo =>
                     uo.activo &&
-                    uo.id_rol == idRol &&
+                    uo.Rol.nombre == nombreRol &&
                     uo.RegObl.id_proyecto == idProyecto)
                 .Select(uo => new SelectListItem
                 {
@@ -672,35 +673,35 @@ namespace Alertas.Services.Dashboards
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdResponsable.Value &&
-                        uo.id_rol == 1 &&
+                        uo.Rol.nombre == RolesSistema.Responsable &&
                         uo.activo));
 
             if (filtros.IdElaborador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdElaborador.Value &&
-                        uo.id_rol == 2 &&
+                        uo.Rol.nombre == RolesSistema.Elaborador &&
                         uo.activo));
 
             if (filtros.IdAutorizador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdAutorizador.Value &&
-                        uo.id_rol == 3 &&
+                        uo.Rol.nombre == RolesSistema.Autorizador &&
                         uo.activo));
 
             if (filtros.IdAprobador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdAprobador.Value &&
-                        uo.id_rol == 4 &&
+                        uo.Rol.nombre == RolesSistema.Aprobador &&
                         uo.activo));
 
             if (filtros.IdUsuarioVencimiento.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdUsuarioVencimiento.Value &&
-                        uo.id_rol == 5 &&
+                        uo.Rol.nombre == RolesSistema.Vencimiento &&
                         uo.activo));
 
             var idsObligaciones = obligaciones.Select(o => o.id_reg_obl);
@@ -1002,16 +1003,16 @@ namespace Alertas.Services.Dashboards
                 })
                 .ToList();
 
-            filtros.Responsables = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 1);
-            filtros.Elaboradores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 2);
-            filtros.Autorizadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 3);
-            filtros.Aprobadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 4);
-            filtros.UsuariosVencimiento = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, 5);
+            filtros.Responsables = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, RolesSistema.Responsable);
+            filtros.Elaboradores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, RolesSistema.Elaborador);
+            filtros.Autorizadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, RolesSistema.Autorizador);
+            filtros.Aprobadores = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, RolesSistema.Aprobador);
+            filtros.UsuariosVencimiento = await ObtenerUsuariosPorRolProyectoAsync(idProyecto, RolesSistema.Vencimiento);
         }
 
         public async Task<DashboardVencimientosProyectoVm> ObtenerDashboardVencimientosAsync(
-    int idProyecto,
-    FiltrosDashboardOperativoVm filtros)
+            int idProyecto,
+            FiltrosDashboardOperativoVm filtros)
         {
             var hoy = DateOnly.FromDateTime(DateTime.Today);
             var limite7 = hoy.AddDays(7);
@@ -1053,35 +1054,35 @@ namespace Alertas.Services.Dashboards
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdResponsable.Value &&
-                        uo.id_rol == 1 &&
+                        uo.Rol.nombre == RolesSistema.Responsable &&
                         uo.activo));
 
             if (filtros.IdElaborador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdElaborador.Value &&
-                        uo.id_rol == 2 &&
+                        uo.Rol.nombre == RolesSistema.Elaborador &&
                         uo.activo));
 
             if (filtros.IdAutorizador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdAutorizador.Value &&
-                        uo.id_rol == 3 &&
+                        uo.Rol.nombre == RolesSistema.Autorizador &&
                         uo.activo));
 
             if (filtros.IdAprobador.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdAprobador.Value &&
-                        uo.id_rol == 4 &&
+                        uo.Rol.nombre == RolesSistema.Aprobador &&
                         uo.activo));
 
             if (filtros.IdUsuarioVencimiento.HasValue)
                 obligaciones = obligaciones.Where(o =>
                     o.UsuariosObligaciones.Any(uo =>
                         uo.id_usuario == filtros.IdUsuarioVencimiento.Value &&
-                        uo.id_rol == 5 &&
+                        uo.Rol.nombre == RolesSistema.Vencimiento &&
                         uo.activo));
 
             var idsEstadosFinales = await _context.Estados
@@ -1216,7 +1217,10 @@ namespace Alertas.Services.Dashboards
 
                 TopAutorizadoresVencidas = await vencidasQuery
                     .SelectMany(o => o.UsuariosObligaciones
-                        .Where(uo => uo.activo && uo.id_rol == 3)
+                        .Where(uo =>
+                            uo.activo &&
+                            uo.Rol != null &&
+                            uo.Rol.nombre == "Autorizador")
                         .Select(uo => new
                         {
                             uo.id_usuario,
