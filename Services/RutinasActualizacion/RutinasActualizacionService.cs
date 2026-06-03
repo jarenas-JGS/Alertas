@@ -44,6 +44,17 @@ namespace Alertas.Services.RutinasActualizacion
                 return preview;
             }
 
+            var totalExcluidas = await _context.RegObls
+                .Join(_context.Estados,
+                    ro => ro.id_estado,
+                    es => es.id_estado,
+                    (ro, es) => new { ro, es })
+                .CountAsync(x =>
+                    x.ro.id_proyecto == model.IdProyecto.Value &&
+                    x.ro.id_empresa == model.IdEmpresa.Value &&
+                    (x.es.nombre == "Cerrada" ||
+                     x.es.nombre == "Anulada"));
+
             var obligaciones = await _context.RegObls
                 .Where(ro =>
                     ro.id_proyecto == model.IdProyecto.Value &&
@@ -59,9 +70,13 @@ namespace Alertas.Services.RutinasActualizacion
                     {
                         x.ro.id_reg_obl,
                         x.ro.nombre,
+                        x.ro.id_estado,
                         Empresa = x.e.nombre,
                         Estado = es.nombre
                     })
+                .Where(x =>
+                    x.Estado != "Cerrada" &&
+                    x.Estado != "Anulada")
                 .OrderBy(x => x.nombre)
                 .ToListAsync();
 
@@ -71,6 +86,12 @@ namespace Alertas.Services.RutinasActualizacion
             {
                 preview.Advertencias.Add("No existen obligaciones para el proyecto y empresa seleccionados.");
                 return preview;
+            }
+
+            if (totalExcluidas > 0)
+            {
+                preview.Advertencias.Add(
+                    $"Se excluyeron {totalExcluidas} obligaciones en estado Cerrada o Anulada.");
             }
 
             var idsObligaciones = obligaciones
@@ -262,9 +283,16 @@ namespace Alertas.Services.RutinasActualizacion
             try
             {
                 var obligaciones = await _context.RegObls
-                    .Where(ro =>
-                        ro.id_proyecto == model.IdProyecto.Value &&
-                        ro.id_empresa == model.IdEmpresa.Value)
+                    .Join(_context.Estados,
+                        ro => ro.id_estado,
+                        es => es.id_estado,
+                        (ro, es) => new { ro, es })
+                    .Where(x =>
+                        x.ro.id_proyecto == model.IdProyecto.Value &&
+                        x.ro.id_empresa == model.IdEmpresa.Value &&
+                        x.es.nombre != "Cerrada" &&
+                        x.es.nombre != "Anulada")
+                    .Select(x => x.ro)
                     .ToListAsync();
 
                 var idsObligaciones = obligaciones
