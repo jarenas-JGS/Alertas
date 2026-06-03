@@ -7,6 +7,8 @@
     var idProyectoActivo = Context.Session.GetString("id_proyecto_activo");
     var nombreProyectoActivo = Context.Session.GetString("nombre_proyecto_activo");
     var tipoAccesoProyectoActivo = Context.Session.GetString("tipo_acceso_proyecto_activo");
+    var puedeVerRutinas = await SeguridadService.UsuarioPuedeVerRutinasActualizacionAsync();
+
 }
 
 <!DOCTYPE html>
@@ -129,6 +131,36 @@
 
                                 </ul>
                             </li>
+                            @inject Alertas.Services.SeguridadService SeguridadService
+
+                            @if (puedeVerRutinas)
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="rutinasActualizacionDropdown" role="button"
+                                       data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-activity me-1"></i> Rutinas de actualización
+                                    </a>
+
+                                    <ul class="dropdown-menu shadow-sm" aria-labelledby="rutinasActualizacionDropdown">
+
+                                        <li>
+                                            <h6 class="dropdown-header">Actualizaciones Masivas</h6>
+                                        </li>
+
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="RutinasActualizacion"
+                                               asp-action="Index">
+                                                Actualización Usuarios-Roles
+                                            </a>
+                                        </li>
+
+                                    </ul>
+
+                                </li>
+
+                            }
+
                         }
                     </ul>
 

@@ -1,0 +1,178 @@
+﻿@model Alertas.ViewModels.RutinasActualizacion.RutinaParticipantesPreviewVm
+
+@{
+    ViewData["Title"] = "Preview rutina de actualización";
+}
+
+<div class="container mt-4">
+
+    <div class="mb-3">
+        <h3>
+            <i class="bi bi-search me-2"></i>
+            Preview rutina de actualización
+        </h3>
+        <small class="text-muted">
+            Revise las obligaciones que tendrán cambios antes de confirmar la actualización masiva.
+        </small>
+    </div>
+
+    @if (Model.Advertencias.Any())
+    {
+        <div class="alert alert-warning shadow-sm">
+            <strong>Advertencias:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach (var adv in Model.Advertencias)
+                {
+                    <li>@adv</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="row mb-3">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">Total obligaciones</small>
+                    <h4 class="mb-0">@Model.TotalObligaciones</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">Con cambios efectivos</small>
+                    <h4 class="mb-0">@Model.TotalAfectadas</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">Omitidas</small>
+                    <h4 class="mb-0">@Model.TotalOmitidas</h4>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-sm table-striped align-middle" id="tablaPreview">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Obligación</th>
+                            <th>Empresa</th>
+                            <th>Estado</th>
+                            <th>Resultado esperado</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in Model.Obligaciones)
+                        {
+                            <tr class="@(item.MostrarAunqueSeaOmitida ? "table-warning" : "")">
+                                <td>@item.IdRegObl</td>
+                                <td>@item.NombreObligacion</td>
+                                <td>@item.Empresa</td>
+                                <td>@item.Estado</td>
+                                <td>
+                                    @if (item.MostrarAunqueSeaOmitida)
+                                    {
+                                        <i class="bi bi-exclamation-triangle text-warning me-1"></i>
+                                    }
+                                    @item.ResultadoEsperado
+                                </td>
+                                <td>@item.Observacion</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+
+            <hr />
+
+            <div class="d-flex gap-2">
+
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Volver
+                </a>
+
+                @if (Model.TotalAfectadas > 0)
+                {
+                    <form asp-action="Confirmar"
+                          method="post"
+                          id="frmConfirmar">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="IdProyecto" value="@Model.Parametros.IdProyecto" />
+                        <input type="hidden" name="IdEmpresa" value="@Model.Parametros.IdEmpresa" />
+                        <input type="hidden" name="IdRol" value="@Model.Parametros.IdRol" />
+                        <input type="hidden" name="Accion" value="@Model.Parametros.Accion" />
+                        <input type="hidden" name="IdUsuarioOrigen" value="@Model.Parametros.IdUsuarioOrigen" />
+                        <input type="hidden" name="IdUsuarioDestino" value="@Model.Parametros.IdUsuarioDestino" />
+
+                        <button type="submit"
+                                class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Confirmar ejecución
+                        </button>
+
+                    </form>
+                }
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="overlayProceso"
+     class="d-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
+     style="z-index: 2000;">
+
+    <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="card shadow-lg p-4 text-center">
+            <div class="spinner-border mb-3" role="status"></div>
+            <h5>Transacción en proceso</h5>
+            <small class="text-muted">
+                Por favor espere mientras se ejecuta la rutina.
+            </small>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+
+            if ($.fn.DataTable) {
+                $('#tablaPreview').DataTable({
+                    pageLength: 25,
+                    order: [[0, 'asc']],
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json'
+                    }
+                });
+            }
+
+            $('#frmConfirmar').submit(function () {
+                $('#overlayProceso').removeClass('d-none');
+            });
+
+        });
+    </script>
+}

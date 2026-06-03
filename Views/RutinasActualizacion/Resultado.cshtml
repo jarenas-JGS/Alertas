@@ -1,0 +1,112 @@
+﻿@model Alertas.ViewModels.RutinasActualizacion.RutinaParticipantesResultadoVm
+
+@{
+    ViewData["Title"] = "Resultado rutina de actualización";
+}
+
+<div class="container mt-4">
+
+    <div class="mb-3">
+        <h3>
+            <i class="bi bi-check2-circle me-2"></i>
+            Resultado rutina de actualización
+        </h3>
+        <small class="text-muted">
+            Resumen de la ejecución realizada sobre los participantes de obligaciones.
+        </small>
+    </div>
+
+    @if (Model.Errores.Any())
+    {
+        <div class="alert alert-danger shadow-sm">
+            <strong>Se presentaron errores:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach (var error in Model.Errores)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success shadow-sm">
+            <i class="bi bi-check-circle me-1"></i>
+            La rutina se ejecutó correctamente.
+        </div>
+    }
+
+    <div class="row mb-3">
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">Obligaciones procesadas</small>
+                    <h4 class="mb-0">@Model.ObligacionesProcesadas</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">Registros insertados</small>
+                    <h4 class="mb-0">@Model.RegistrosInsertados</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">Registros reactivados</small>
+                    <h4 class="mb-0">@Model.RegistrosReactivados</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">Registros desactivados</small>
+                    <h4 class="mb-0">@Model.RegistrosDesactivados</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <small class="text-muted">Registros omitidos</small>
+                    <h4 class="mb-0">@Model.RegistrosOmitidos</h4>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <p class="text-muted mb-3">
+                Puede volver a ejecutar otra rutina o regresar al inicio.
+            </p>
+
+            <div class="d-flex gap-2">
+
+                <a asp-action="Index" class="btn btn-primary">
+                    <i class="bi bi-arrow-repeat me-1"></i>
+                    Nueva rutina
+                </a>
+
+                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-house me-1"></i>
+                    Ir al inicio
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>

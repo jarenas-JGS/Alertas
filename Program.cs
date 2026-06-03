@@ -6,6 +6,7 @@ using Alertas.Services.Jobs;
 using Alertas.Services.Jobs.Options;
 using Alertas.Services.Notificaciones;
 using Alertas.Services.Notificaciones.Config;
+using Alertas.Services.RutinasActualizacion;
 using Alertas.Services.Storage;
 using Alertas.Services.Storage.Cleanup;
 using Alertas.Services.Storage.Interfaces;
@@ -19,6 +20,10 @@ using System.IO;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<
+    IRutinasActualizacionService,
+    RutinasActualizacionService>();
 
 builder.Services.AddScoped<IDashboardOperativoService, DashboardOperativoService>();
 

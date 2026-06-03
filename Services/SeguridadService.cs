@@ -308,7 +308,92 @@ namespace Alertas.Services
             return _httpContextAccessor.HttpContext?.Session.GetString("rol_proyecto_activo");
         }
 
+        public async Task<bool> UsuarioPuedeVerRutinasActualizacionAsync()
+        {
+            if (EsSuperAdmin())
+                return true;
 
+            var idUsuario = ObtenerIdUsuario();
+
+            if (idUsuario == null)
+                return false;
+
+            return await _context.UsuariosProyectos
+                .Where(up => up.id_usuario == idUsuario && up.activo)
+                .Join(_context.Roles,
+                    up => up.id_rol,
+                    r => r.id_rol,
+                    (up, r) => r.nombre)
+                .AnyAsync(nombreRol => nombreRol == "Administrador Proyecto");
+        }
+
+        public async Task<List<ProyectoAccesoViewModel>> ObtenerProyectosAdministrablesAsync()
+        {
+            var idUsuario = ObtenerIdUsuario();
+
+            if (EsSuperAdmin())
+            {
+                return await _context.Proyectos
+                    .Where(p => p.activo && p.configuracion_completa)
+                    .OrderBy(p => p.nombre)
+                    .Select(p => new ProyectoAccesoViewModel
+                    {
+                        id_proyecto = p.id_proyecto,
+                        nombre_proyecto = p.nombre,
+                        tipo_acceso = "SUPERADMIN",
+                        descripcion_acceso = p.nombre
+                    })
+                    .ToListAsync();
+            }
+
+            if (idUsuario == null)
+                return new List<ProyectoAccesoViewModel>();
+
+            return await _context.UsuariosProyectos
+                .Where(up => up.id_usuario == idUsuario && up.activo)
+                .Join(_context.Roles,
+                    up => up.id_rol,
+                    r => r.id_rol,
+                    (up, r) => new { up, r })
+                .Where(x => x.r.nombre == "Administrador Proyecto")
+                .Join(_context.Proyectos,
+                    x => x.up.id_proyecto,
+                    p => p.id_proyecto,
+                    (x, p) => p)
+                .Where(p => p.activo && p.configuracion_completa)
+                .OrderBy(p => p.nombre)
+                .Select(p => new ProyectoAccesoViewModel
+                {
+                    id_proyecto = p.id_proyecto,
+                    nombre_proyecto = p.nombre,
+                    tipo_acceso = "Administrador Proyecto",
+                    descripcion_acceso = p.nombre
+                })
+                .Distinct()
+                .ToListAsync();
+        }
+
+
+        public async Task<bool> UsuarioPuedeAdministrarProyectoAsync(int idProyecto)
+        {
+            if (EsSuperAdmin())
+                return true;
+
+            var idUsuario = ObtenerIdUsuario();
+
+            if (idUsuario == null)
+                return false;
+
+            return await _context.UsuariosProyectos
+                .Where(up => up.id_usuario == idUsuario
+                          && up.id_proyecto == idProyecto
+                          && up.activo)
+                .Join(_context.Roles,
+                    up => up.id_rol,
+                    r => r.id_rol,
+                    (up, r) => r.nombre)
+                .AnyAsync(nombreRol => nombreRol == "Administrador Proyecto");
+        }
 
 
     }
