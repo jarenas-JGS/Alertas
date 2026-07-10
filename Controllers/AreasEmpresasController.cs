@@ -149,29 +149,42 @@ namespace Alertas.Controllers
         // =========================
         public async Task<IActionResult> Delete(int id)
         {
-            var data = await _context.AreasEmpresas
+            var areaEmpresa = await _context.AreasEmpresas
                 .Include(a => a.Area)
                 .Include(a => a.Empresa)
                 .FirstOrDefaultAsync(a => a.id_area_empresa == id);
 
-            if (data == null)
+            if (areaEmpresa == null)
                 return NotFound();
 
-            return View(data);
+            ViewBag.PuedeEliminar = !await TieneRelacionesConObligaciones(
+                areaEmpresa.id_area,
+                areaEmpresa.id_empresa
+            );
+
+            return View(areaEmpresa);
         }
 
         [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var entity = await _context.AreasEmpresas.FindAsync(id);
+            var areaEmpresa = await _context.AreasEmpresas
+                .FirstOrDefaultAsync(a => a.id_area_empresa == id);
 
-            if (entity == null)
+            if (areaEmpresa == null)
                 return NotFound();
 
-            entity.activo = false; // 👈 eliminación lógica
+            if (await TieneRelacionesConObligaciones(areaEmpresa.id_area, areaEmpresa.id_empresa))
+            {
+                TempData["Error"] = "No se puede eliminar el registro porque existen obligaciones asociadas a esta área y empresa.";
+                return RedirectToAction(nameof(Delete), new { id });
+            }
+
+            _context.AreasEmpresas.Remove(areaEmpresa);
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Registro inactivado.";
+            TempData["Success"] = "Registro eliminado correctamente.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -202,6 +215,16 @@ namespace Alertas.Controllers
                 x.id_empresa == vm.id_empresa &&
                 x.email.ToLower() == vm.email.ToLower() &&
                 (!idExcluir.HasValue || x.id_area_empresa != idExcluir));
+        }
+
+        private async Task<bool> TieneRelacionesConObligaciones(int idArea, int idEmpresa)
+        {
+            return await _context.RegObls
+                .Include(o => o.Proyecto)
+                .AnyAsync(o =>
+                    o.id_empresa == idEmpresa &&
+                    o.Proyecto.id_area == idArea
+                );
         }
     }
 }
