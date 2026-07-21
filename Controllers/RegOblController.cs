@@ -878,10 +878,20 @@ namespace Alertas.Controllers
 
                 if (entidad.id_justif_var != justificacionNueva)
                 {
+                    string? nombreJustificacionAnterior =
+                        entidad.JustifVar?.nombre;
+
+                    string? nombreJustificacionNueva = justificacionNueva.HasValue
+                        ? await _context.JustifVars
+                            .Where(j => j.id_justif_var == justificacionNueva.Value)
+                            .Select(j => j.nombre)
+                            .FirstOrDefaultAsync()
+                        : null;
+
                     RegistrarCambio(
-                        "id_justif_var",
-                        entidad.id_justif_var?.ToString(),
-                        justificacionNueva?.ToString());
+                        "Justificación variación",
+                        nombreJustificacionAnterior,
+                        nombreJustificacionNueva);
                 }
 
                 entidad.id_justif_var = justificacionNueva;
@@ -1526,6 +1536,7 @@ namespace Alertas.Controllers
                 .Include(x => x.Proyecto)
                 .Include(x => x.Estado)
                 .Include(x => x.Adjuntos)
+                .Include(x => x.JustifVar)
                 .Include(x => x.UsuariosObligaciones)
                     .ThenInclude(uo => uo.Rol)
                 .FirstOrDefaultAsync(x => x.id_reg_obl == model.id_reg_obl && x.id_proyecto == idProyecto);
