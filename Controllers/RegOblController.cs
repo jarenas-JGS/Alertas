@@ -675,6 +675,7 @@ namespace Alertas.Controllers
             int? vlrAproxCalc = traeVlrAprox ? model.vlr_aprox : entidad.vlr_aprox;
             int? vlrRealCalc = traeVlrReal ? model.vlr_real : entidad.vlr_real;
 
+
             if (puedeEditarValores)
             {
                 if (vlrRealCalc.HasValue)
@@ -684,21 +685,37 @@ namespace Alertas.Controllers
                     if ((vlrAproxCalc ?? 0) > 0)
                     {
                         nuevaVariacion = Math.Round(
-                            ((decimal)(vlrRealCalc.Value - (vlrAproxCalc ?? 0)) / (vlrAproxCalc ?? 1)) * 100m, 2);
+                            ((decimal)(vlrRealCalc.Value - vlrAproxCalc.Value)
+                             / vlrAproxCalc.Value) * 100m,
+                            2);
                     }
                     else
                     {
                         nuevaVariacion = null;
                     }
 
-                    int? justifActual = traeJustif ? model.id_justif_var : entidad.id_justif_var;
+                    int? justificacionEfectiva = traeJustif
+                        ? model.id_justif_var
+                        : entidad.id_justif_var;
 
-                    int? justificacionEfectiva = model.id_justif_var ?? entidad.id_justif_var;
+                    bool justificacionObligatoria =
+                        vlrAproxCalc.HasValue &&
+                        vlrAproxCalc.Value != 0 &&
+                        vlrRealCalc.Value != 0 &&
+                        vlrRealCalc.Value != vlrAproxCalc.Value;
 
-                    if (nuevaDiferencia.HasValue && nuevaDiferencia.Value != 0 && justificacionEfectiva == null)
+                    if (justificacionObligatoria && justificacionEfectiva == null)
                     {
-                        TempData["Error"] = "Debe seleccionar una justificación cuando exista diferencia.";
-                        return (false, RedirectToAction(nameof(Seguimiento), new { id = entidad.id_reg_obl }));
+                        TempData["Error"] =
+                            "Debe seleccionar una justificación cuando el valor real sea diferente al valor aproximado.";
+
+                        return (
+                            false,
+                            RedirectToAction(
+                                nameof(Seguimiento),
+                                new { id = entidad.id_reg_obl }
+                            )
+                        );
                     }
                 }
                 else
@@ -706,6 +723,7 @@ namespace Alertas.Controllers
                     nuevaDiferencia = null;
                     nuevaVariacion = null;
                 }
+
             }
 
             bool traeParticipantes =
@@ -867,9 +885,15 @@ namespace Alertas.Controllers
             {
                 int? justificacionNueva;
 
-                if (nuevaDiferencia.HasValue && nuevaDiferencia.Value != 0)
+                bool hayValorReal =
+                    vlrRealCalc.HasValue &&
+                    vlrRealCalc.Value != 0;
+
+                if (hayValorReal)
                 {
-                    justificacionNueva = model.id_justif_var ?? entidad.id_justif_var;
+                    justificacionNueva = traeJustif
+                        ? model.id_justif_var
+                        : entidad.id_justif_var;
                 }
                 else
                 {
@@ -878,15 +902,39 @@ namespace Alertas.Controllers
 
                 if (entidad.id_justif_var != justificacionNueva)
                 {
-                    string? nombreJustificacionAnterior =
-                        entidad.JustifVar?.nombre;
+                    int? idJustificacionAnterior = entidad.id_justif_var;
 
-                    string? nombreJustificacionNueva = justificacionNueva.HasValue
-                        ? await _context.JustifVars
-                            .Where(j => j.id_justif_var == justificacionNueva.Value)
-                            .Select(j => j.nombre)
-                            .FirstOrDefaultAsync()
-                        : null;
+                    var idsJustificaciones = new[]
+                    {
+                        idJustificacionAnterior,
+                        justificacionNueva
+                    }
+                    .Where(x => x.HasValue)
+                    .Select(x => x!.Value)
+                    .Distinct()
+                    .ToList();
+
+                    var nombresJustificaciones = await _context.JustifVars
+                        .Where(j => idsJustificaciones.Contains(j.id_justif_var))
+                        .ToDictionaryAsync(
+                            j => j.id_justif_var,
+                            j => j.nombre);
+
+                    string? nombreJustificacionAnterior =
+                        idJustificacionAnterior.HasValue &&
+                        nombresJustificaciones.TryGetValue(
+                            idJustificacionAnterior.Value,
+                            out var nombreAnterior)
+                                ? nombreAnterior
+                                : null;
+
+                    string? nombreJustificacionNueva =
+                        justificacionNueva.HasValue &&
+                        nombresJustificaciones.TryGetValue(
+                            justificacionNueva.Value,
+                            out var nombreNuevo)
+                                ? nombreNuevo
+                                : null;
 
                     RegistrarCambio(
                         "Justificación variación",

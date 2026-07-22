@@ -869,6 +869,7 @@
                 if (vlrReal === null) {
                     diferenciaInput.value = "";
                     variacionInput.value = "";
+
                     justifSelect.value = "";
                     justifSelect.required = false;
                     justifSelect.disabled = true;
@@ -878,7 +879,7 @@
                 const diferencia = vlrReal - (vlrAprox ?? 0);
                 diferenciaInput.value = formatearMiles(diferencia);
 
-                if ((vlrAprox ?? 0) > 0) {
+                if (vlrAprox !== null && vlrAprox > 0) {
                     const variacion = ((vlrReal - vlrAprox) / vlrAprox) * 100;
                     variacionInput.value = variacion.toFixed(2);
                 } else {
@@ -888,10 +889,33 @@
                 const puedeEditarJustificacion =
                     document.getElementById("puedeEditarJustificacion")?.value === "true";
 
-                if (diferencia !== 0 && puedeEditarJustificacion) {
-                    justifSelect.disabled = false;
-                    justifSelect.required = true;
-                } else {
+                const aproxInformado = vlrAprox !== null && vlrAprox > 0;
+                const realInformado = vlrReal !== null;
+
+                const justificacionObligatoria =
+                    aproxInformado &&
+                    vlrReal > 0 &&
+                    vlrReal !== vlrAprox;
+
+                if (!realInformado) {
+                    justifSelect.value = "";
+                    justifSelect.required = false;
+                    justifSelect.disabled = true;
+                }
+                else if (!aproxInformado) {
+                    // Aproximado vacío o en cero y sí existe valor real:
+                    // se habilita, pero no es obligatorio.
+                    justifSelect.disabled = !puedeEditarJustificacion;
+                    justifSelect.required = false;
+                }
+                else if (justificacionObligatoria) {
+                    // Aproximado y real mayores que cero y diferentes:
+                    // la justificación es obligatoria.
+                    justifSelect.disabled = !puedeEditarJustificacion;
+                    justifSelect.required = puedeEditarJustificacion;
+                }
+                else {
+                    // Son iguales o el valor real es cero.
                     justifSelect.value = "";
                     justifSelect.required = false;
                     justifSelect.disabled = true;
