@@ -47,6 +47,7 @@ namespace Alertas.Data
         public virtual DbSet<NotificacionLog> NotificacionesLog { get; set; }
         public DbSet<JobsEjecucion> JobsEjecuciones { get; set; }
         public DbSet<JobsLock> JobsLocks { get; set; }
+        public virtual DbSet<ConfiguracionOperativa> ConfiguracionesOperativas { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -507,6 +508,28 @@ namespace Alertas.Data
                 .HasForeignKey(r => r.id_usuario_soporte_post_cierre)
                 .HasConstraintName("fk_reg_obl_usuario_soporte_post_cierre")
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ConfiguracionOperativa>(entity =>
+            {
+                entity.ToTable("configuracion_operativa");
+
+                entity.HasKey(e => e.clave);
+
+                entity.Property(e => e.clave)
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.valor)
+                    .HasMaxLength(500)
+                    .IsRequired();
+
+                entity.Property(e => e.descripcion)
+                    .HasMaxLength(500);
+
+                entity.HasOne(e => e.UsuarioActualizacion)
+                    .WithMany()
+                    .HasForeignKey(e => e.id_usuario_actualizacion)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
 
             OnModelCreatingPartial(modelBuilder);
         }

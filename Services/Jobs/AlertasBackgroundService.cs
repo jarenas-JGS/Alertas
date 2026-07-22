@@ -1,5 +1,6 @@
 ﻿using Alertas.Data;
 using Alertas.Models;
+using Alertas.Services.ConfiguracionOperativa;
 using Alertas.Services.Jobs.Options;
 using Alertas.Services.Notificaciones;
 using Alertas.Services.Notificaciones.DTOs;
@@ -105,10 +106,23 @@ namespace Alertas.Services.Jobs
 
             using var scope = _serviceProvider.CreateScope();
 
-
-
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var lockService = scope.ServiceProvider.GetRequiredService<IJobLockService>();
+            var configuracionOperativaService = scope.ServiceProvider
+                .GetRequiredService<IConfiguracionOperativaService>();
+
+            var habilitadoDesdeAplicacion =
+                await configuracionOperativaService.EstaHabilitadoAsync(
+                    ClavesConfiguracionOperativa.AlertasAutomaticasHabilitadas,
+                    stoppingToken);
+
+            if (!habilitadoDesdeAplicacion)
+            {
+                _logger.LogInformation(
+                    "El job automático de alertas está deshabilitado desde la configuración operativa de la aplicación.");
+
+                return;
+            }
 
             var debeEjecutarPorHorario = await DebeEjecutarPorHorarioAsync(
                 options,

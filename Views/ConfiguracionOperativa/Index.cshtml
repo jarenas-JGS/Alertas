@@ -1,0 +1,668 @@
+﻿@model Alertas.ViewModels.ConfiguracionOperativa.ConfiguracionOperativaViewModel
+
+@{
+    ViewData["Title"] = "Configuración Operativa";
+
+    var estadoEfectivoClase = Model.EstadoEfectivo
+        ? (Model.SimularEjecucion ? "alert-info" : "alert-success")
+        : "alert-warning";
+
+    var estadoEfectivoIcono = Model.EstadoEfectivo
+        ? (Model.SimularEjecucion
+            ? "bi-info-circle-fill"
+            : "bi-check-circle-fill")
+        : "bi-exclamation-triangle-fill";
+
+    var estadoEfectivoTexto = Model.EstadoEfectivo
+        ? (Model.SimularEjecucion
+            ? "Habilitado en modo simulación"
+            : "Habilitado")
+        : "No disponible para ejecución";
+}
+
+<div class="container mt-4">
+
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-sliders me-2"></i>
+                Configuración Operativa
+            </h2>
+
+            <p class="text-muted mb-0">
+                Administra la ejecución automática de alertas y consulta el estado técnico del proceso.
+            </p>
+        </div>
+
+        <a asp-controller="Monitoreo"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Volver
+        </a>
+    </div>
+
+    <!-- Mensajes -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Cerrar">
+            </button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @TempData["Error"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Cerrar">
+            </button>
+        </div>
+    }
+
+    <!-- Estado operativo -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-toggle-on me-2"></i>
+                <strong>Control operativo</strong>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row align-items-center">
+
+                <div class="col-lg-8">
+                    <h5 class="mb-2">
+                        Envío automático de alertas
+                    </h5>
+
+                    <p class="text-muted mb-3">
+                        Este interruptor permite habilitar o detener el proceso automático
+                        sin modificar variables de Railway ni realizar un nuevo despliegue.
+                    </p>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
+                    {
+                        <p class="mb-3">
+                            <strong>Descripción:</strong>
+                            @Model.Descripcion
+                        </p>
+                    }
+
+                    <div class="mb-2">
+                        <strong>Estado actual:</strong>
+
+                        @if (Model.AlertasAutomaticasHabilitadas)
+                        {
+                            <span class="badge bg-success ms-1">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Habilitado
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger ms-1">
+                                <i class="bi bi-x-circle me-1"></i>
+                                Deshabilitado
+                            </span>
+                        }
+                    </div>
+
+                    <div class="small text-muted">
+                        @if (!string.IsNullOrWhiteSpace(Model.UsuarioActualizacion))
+                        {
+                            <span>
+                                Último cambio realizado por
+                                <strong>@Model.UsuarioActualizacion</strong>
+                            </span>
+                        }
+                        else
+                        {
+                            <span>No se encuentra registrado el usuario del último cambio.</span>
+                        }
+
+                        @if (Model.FechaActualizacion.HasValue)
+                        {
+                            <span>
+                                el
+                                <strong>
+                                    @Model.FechaActualizacion.Value.ToString("dd/MM/yyyy HH:mm")
+                                </strong>.
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+
+                    @if (Model.AlertasAutomaticasHabilitadas)
+                    {
+                        <button type="button"
+                                class="btn btn-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalConfirmacion"
+                                data-habilitar="false"
+                                data-titulo="Deshabilitar alertas automáticas"
+                                data-mensaje="¿Estás seguro de que deseas detener la ejecución automática de alertas?"
+                                data-clase="btn-danger"
+                                data-icono="bi-pause-circle">
+                            <i class="bi bi-pause-circle me-1"></i>
+                            Deshabilitar
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button"
+                                class="btn btn-success"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalConfirmacion"
+                                data-habilitar="true"
+                                data-titulo="Habilitar alertas automáticas"
+                                data-mensaje="¿Estás seguro de que deseas habilitar la ejecución automática de alertas?"
+                                data-clase="btn-success"
+                                data-icono="bi-play-circle">
+                            <i class="bi bi-play-circle me-1"></i>
+                            Habilitar
+                        </button>
+                    }
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Estado técnico -->
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-light">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-cpu me-2"></i>
+                <strong>Estado técnico del job</strong>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Estado efectivo -->
+            <div class="alert @estadoEfectivoClase mb-4">
+                <div class="d-flex align-items-start">
+
+                    <i class="bi @estadoEfectivoIcono fs-4 me-3"></i>
+
+                    <div>
+                        <div class="fw-bold">
+                            Estado efectivo: @estadoEfectivoTexto
+                        </div>
+
+                        <div class="mt-1">
+                            @Model.EstadoEfectivoMensaje
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Resumen principal -->
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-6 col-xl-3">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-muted small mb-1">
+                            Ambiente actual
+                        </div>
+
+                        <div class="fw-semibold">
+                            <i class="bi bi-server me-1"></i>
+                            @Model.AmbienteActual
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-xl-3">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-muted small mb-1">
+                            Configuración técnica
+                        </div>
+
+                        @if (Model.JobHabilitadoConfiguracion)
+                        {
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Job habilitado
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">
+                                <i class="bi bi-x-circle me-1"></i>
+                                Job deshabilitado
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-xl-3">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-muted small mb-1">
+                            Interruptor operativo
+                        </div>
+
+                        @if (Model.AlertasAutomaticasHabilitadas)
+                        {
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Habilitado
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">
+                                <i class="bi bi-x-circle me-1"></i>
+                                Deshabilitado
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-xl-3">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-muted small mb-1">
+                            Modo de ejecución
+                        </div>
+
+                        @if (Model.SimularEjecucion)
+                        {
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-flask me-1"></i>
+                                Simulación
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-primary">
+                                <i class="bi bi-send-check me-1"></i>
+                                Ejecución real
+                            </span>
+                        }
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Detalle técnico -->
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0">
+
+                    <tbody>
+
+                        <tr>
+                            <th style="width: 38%;">
+                                Ambiente actual
+                            </th>
+                            <td>
+                                <span class="fw-semibold">
+                                    @Model.AmbienteActual
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>
+                                Job habilitado por configuración
+                            </th>
+                            <td>
+                                @if (Model.JobHabilitadoConfiguracion)
+                                {
+                                    <span class="badge bg-success">Sí</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">No</span>
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>
+                                Envío real permitido
+                            </th>
+                            <td>
+                                @if (Model.PermitirEnvioReal)
+                                {
+                                    <span class="badge bg-success">Sí</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">No</span>
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>
+                                Ambiente permitido
+                            </th>
+                            <td>
+                                @if (Model.AmbientePermitido)
+                                {
+                                    <span class="badge bg-success">
+                                        Sí
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">
+                                        No
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>
+                                Bloquear envíos fuera de producción
+                            </th>
+                            <td>
+                                @if (Model.BloquearEnviosFueraDeProduccion)
+                                {
+                                    <span class="badge bg-success">
+                                        Sí
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        No
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>
+                                Interruptor operativo
+                            </th>
+                            <td>
+                                @if (Model.AlertasAutomaticasHabilitadas)
+                                {
+                                    <span class="badge bg-success">
+                                        Habilitado
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">
+                                        Deshabilitado
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>
+                                Modo simulación
+                            </th>
+                            <td>
+                                @if (Model.SimularEjecucion)
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        Sí
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        No
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>
+                                Programación
+                            </th>
+                            <td>
+                                @if (Model.UsarHorarioDiario)
+                                {
+                                    <span>
+                                        <i class="bi bi-calendar-check me-1"></i>
+                                        Ejecución diaria a las
+                                        <strong>
+                                            @($"{Model.HoraEjecucion:00}:{Model.MinutoEjecucion:00}")
+                                        </strong>
+                                    </span>
+
+                                    @if (!string.IsNullOrWhiteSpace(Model.ZonaHoraria))
+                                    {
+                                        <span class="text-muted">
+                                            — @Model.ZonaHoraria
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span>
+                                        <i class="bi bi-arrow-repeat me-1"></i>
+                                        Revisión cada
+                                        <strong>@Model.IntervaloMinutos minutos</strong>
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>
+                                Omitir festivos
+                            </th>
+                            <td>
+                                @if (Model.OmitirFestivos)
+                                {
+                                    <span class="badge bg-success">Sí</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">No</span>
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>
+                                Intervalo de revisión
+                            </th>
+                            <td>
+                                Cada @Model.IntervaloMinutos minutos
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>
+                                Destino de pruebas
+                            </th>
+                            <td>
+                                @if (string.IsNullOrWhiteSpace(Model.EmailDestinoPruebas))
+                                {
+                                    <span class="text-muted">
+                                        No configurado
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>
+                                        <i class="bi bi-envelope me-1"></i>
+                                        @Model.EmailDestinoPruebas
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade"
+     id="modalConfirmacion"
+     tabindex="-1"
+     aria-labelledby="modalConfirmacionLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form asp-controller="ConfiguracionOperativa"
+                  asp-action="CambiarEstado"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       id="habilitar"
+                       name="habilitar"
+                       value="" />
+
+                <div class="modal-header">
+                    <h5 class="modal-title"
+                        id="modalConfirmacionLabel">
+                        Confirmar operación
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Cerrar">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="d-flex align-items-start">
+
+                        <i id="modalIcono"
+                           class="bi bi-question-circle fs-3 me-3">
+                        </i>
+
+                        <div>
+                            <p id="modalMensaje"
+                               class="mb-0">
+                                ¿Deseas continuar con esta operación?
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="submit"
+                            id="btnConfirmar"
+                            class="btn btn-primary">
+                        <i id="btnConfirmarIcono"
+                           class="bi bi-check-circle me-1">
+                        </i>
+
+                        Confirmar
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const modal = document.getElementById("modalConfirmacion");
+
+            if (!modal) {
+                return;
+            }
+
+            modal.addEventListener("show.bs.modal", function (event) {
+
+                const botonOrigen = event.relatedTarget;
+
+                if (!botonOrigen) {
+                    return;
+                }
+
+                const habilitar =
+                    botonOrigen.getAttribute("data-habilitar");
+
+                const titulo =
+                    botonOrigen.getAttribute("data-titulo");
+
+                const mensaje =
+                    botonOrigen.getAttribute("data-mensaje");
+
+                const claseBoton =
+                    botonOrigen.getAttribute("data-clase");
+
+                const icono =
+                    botonOrigen.getAttribute("data-icono");
+
+                document.getElementById("habilitar").value =
+                    habilitar;
+
+                document.getElementById("modalConfirmacionLabel").textContent =
+                    titulo;
+
+                document.getElementById("modalMensaje").textContent =
+                    mensaje;
+
+                const modalIcono =
+                    document.getElementById("modalIcono");
+
+                modalIcono.className =
+                    "bi " + icono + " fs-3 me-3";
+
+                const btnConfirmar =
+                    document.getElementById("btnConfirmar");
+
+                btnConfirmar.className =
+                    "btn " + claseBoton;
+
+                const btnConfirmarIcono =
+                    document.getElementById("btnConfirmarIcono");
+
+                btnConfirmarIcono.className =
+                    "bi " + icono + " me-1";
+            });
+
+        });
+    </script>
+}

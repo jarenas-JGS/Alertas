@@ -1,6 +1,7 @@
 using Alertas.Data;
 using Alertas.Services;
 using Alertas.Services.CargaMasiva;
+using Alertas.Services.ConfiguracionOperativa;
 using Alertas.Services.Dashboards;
 using Alertas.Services.Jobs;
 using Alertas.Services.Jobs.Options;
@@ -115,6 +116,10 @@ builder.Services.Configure<SmtpSettings>(
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<IPlantillaCorreoAlertasService, PlantillaCorreoAlertasService>();
+
+builder.Services.AddScoped<
+    IConfiguracionOperativaService,
+    ConfiguracionOperativaService>();
 
 var storageProvider = builder.Configuration["StorageSettings:Provider"];
 
