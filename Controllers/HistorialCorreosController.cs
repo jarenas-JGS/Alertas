@@ -94,6 +94,7 @@ namespace Alertas.Controllers
                 .Include(x => x.Proyecto)
                 .Include(x => x.Usuario)
                 .Include(x => x.Detalles)
+                    .ThenInclude(x => x.RegObl)
                 .FirstOrDefaultAsync(x => x.id_notificacion_envio == id);
 
             if (envio == null)
@@ -121,6 +122,7 @@ namespace Alertas.Controllers
                         NombreMensaje = x.nombre_mensaje,
                         Prioridad = x.prioridad,
                         IdRegObl = x.id_reg_obl,
+                        NombreObligacion = x.RegObl?.nombre ?? "Obligación no disponible",
                         FechaVencObl = x.fecha_venc_obl,
                         DiasVencimientoObl = x.dias_vencimiento_obl,
                         FechaVencSeguimiento = x.fecha_venc_seguimiento,

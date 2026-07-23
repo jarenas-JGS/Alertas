@@ -65,11 +65,11 @@
                             <th>Prioridad</th>
                             <th>Alerta</th>
                             <th>Mensaje</th>
-                            <th>Id obligación</th>
-                            <th>Fecha venc. obligación</th>
-                            <th>Días obligación</th>
-                            <th>Fecha venc. seguimiento</th>
-                            <th>Días seguimiento</th>
+                            <th>Obligación</th>
+                            <th>Fecha venc obligación</th>
+                            <th>Días venc obligación</th>
+                            <th>Fecha venc seguimiento</th>
+                            <th>Días venc seguimiento</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -79,7 +79,18 @@
                                 <td>@item.Prioridad</td>
                                 <td>@item.NombreAlerta</td>
                                 <td>@item.NombreMensaje</td>
-                                <td>@item.IdRegObl</td>
+                                <td>
+                                    <span class="fw-semibold">
+                                        @item.IdRegObl
+                                    </span>
+
+                                    @if (!string.IsNullOrWhiteSpace(item.NombreObligacion))
+                                    {
+                                        <span class="text-muted">
+                                            - @item.NombreObligacion
+                                        </span>
+                                    }
+                                </td>
                                 <td>@item.FechaVencObl?.ToString("dd/MM/yyyy")</td>
                                 <td>@item.DiasVencimientoObl</td>
                                 <td>@item.FechaVencSeguimiento?.ToString("dd/MM/yyyy")</td>

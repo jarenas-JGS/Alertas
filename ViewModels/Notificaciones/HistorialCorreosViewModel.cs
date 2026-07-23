@@ -41,6 +41,7 @@
         public int Prioridad { get; set; }
 
         public int IdRegObl { get; set; }
+        public string NombreObligacion { get; set; } = "";
         public DateOnly? FechaVencObl { get; set; }
         public int? DiasVencimientoObl { get; set; }
 
