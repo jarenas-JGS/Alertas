@@ -303,6 +303,26 @@ namespace Alertas.Controllers
                 }
             }
 
+            var estadoControlVencimientoVm = vm.Estados
+                .Where(e => !e.eliminar && e.activo)
+                .FirstOrDefault(e => e.control_vencimiento);
+
+            var estadoCerradaVm = vm.Estados
+                .Where(e => !e.eliminar && e.activo)
+                .FirstOrDefault(e => e.nombre.Trim().ToLower() == "cerrada");
+
+            if (estadoControlVencimientoVm != null && estadoCerradaVm != null)
+            {
+                foreach (var item in vm.Estados.Where(e =>
+                    !e.eliminar &&
+                    e.activo &&
+                    e.orden > estadoControlVencimientoVm.orden &&
+                    e.orden < estadoCerradaVm.orden))
+                {
+                    item.bloquea = true;
+                }
+            }
+
             bool estadosCambiaron = false;
 
             foreach (var item in vm.Estados)
@@ -368,136 +388,199 @@ namespace Alertas.Controllers
             if (!ModelState.IsValid)
                 return View(vm);
 
+            await using var transaction = await _context.Database.BeginTransactionAsync();
 
-            var estadoControlVencimientoVm = vm.Estados
-                .Where(e => !e.eliminar && e.activo)
-                .FirstOrDefault(e => e.control_vencimiento);
-
-            var estadoCerradaVm = vm.Estados
-                .Where(e => !e.eliminar && e.activo)
-                .FirstOrDefault(e => e.nombre.Trim().ToLower() == "cerrada");
-
-            if (estadoControlVencimientoVm != null && estadoCerradaVm != null)
+            try
             {
-                foreach (var item in vm.Estados.Where(e =>
-                    !e.eliminar &&
-                    e.activo &&
-                    e.orden > estadoControlVencimientoVm.orden &&
-                    e.orden < estadoCerradaVm.orden))
-                {
-                    item.bloquea = true;
-                }
-            }
+                /*
+                 * Identificar los nuevos estados seleccionados para los controles.
+                 */
+                var nuevoControlSeguimiento = vm.Estados
+                    .FirstOrDefault(e =>
+                        !e.eliminar &&
+                        e.activo &&
+                        e.control_seguimiento);
 
-            foreach (var item in vm.Estados)
-            {
-                if (item.eliminar)
+                var nuevoControlVencimiento = vm.Estados
+                    .FirstOrDefault(e =>
+                        !e.eliminar &&
+                        e.activo &&
+                        e.control_vencimiento);
+
+                /*
+                 * Identificar los controles actualmente guardados en BD.
+                 */
+                var controlSeguimientoActual = proyecto.Estados
+                    .FirstOrDefault(e => e.control_seguimiento);
+
+                var controlVencimientoActual = proyecto.Estados
+                    .FirstOrDefault(e => e.control_vencimiento);
+
+                bool cambiaControlSeguimiento =
+                    controlSeguimientoActual != null &&
+                    (
+                        nuevoControlSeguimiento == null ||
+                        !nuevoControlSeguimiento.id_estado.HasValue ||
+                        controlSeguimientoActual.id_estado != nuevoControlSeguimiento.id_estado.Value
+                    );
+
+                bool cambiaControlVencimiento =
+                    controlVencimientoActual != null &&
+                    (
+                        nuevoControlVencimiento == null ||
+                        !nuevoControlVencimiento.id_estado.HasValue ||
+                        controlVencimientoActual.id_estado != nuevoControlVencimiento.id_estado.Value
+                    );
+
+                /*
+                 * Primera etapa:
+                 * liberar los índices únicos parciales de PostgreSQL.
+                 */
+                if (cambiaControlSeguimiento)
+                    controlSeguimientoActual!.control_seguimiento = false;
+
+                if (cambiaControlVencimiento)
+                    controlVencimientoActual!.control_vencimiento = false;
+
+                if (cambiaControlSeguimiento || cambiaControlVencimiento)
+                    await _context.SaveChangesAsync();
+
+                /*
+                 * Segunda etapa:
+                 * actualizar, reactivar, inactivar o crear estados.
+                 */
+                foreach (var item in vm.Estados)
                 {
-                    if (item.id_estado.HasValue)
+                    if (item.eliminar)
                     {
-                        var estadoEliminar = proyecto.Estados
-                            .FirstOrDefault(e => e.id_estado == item.id_estado.Value);
-
-                        if (estadoEliminar != null)
+                        if (item.id_estado.HasValue)
                         {
-                            estadoEliminar.activo = false;
-                            estadoEliminar.control_vencimiento = false;
-                            estadoEliminar.control_seguimiento = false;
+                            var estadoEliminar = proyecto.Estados
+                                .FirstOrDefault(e => e.id_estado == item.id_estado.Value);
+
+                            if (estadoEliminar != null)
+                            {
+                                estadoEliminar.activo = false;
+                                estadoEliminar.control_vencimiento = false;
+                                estadoEliminar.control_seguimiento = false;
+                            }
                         }
+
+                        continue;
                     }
 
-                    continue;
-                }
-
-                Estado estado;
-
-                if (item.id_estado.HasValue)
-                {
-                    estado = proyecto.Estados
-                        .First(e => e.id_estado == item.id_estado.Value);
-
-                    estado.nombre = item.nombre.Trim();
-                    estado.orden = item.orden;
-                    estado.bloquea = item.bloquea;
-                    estado.control_vencimiento = item.control_vencimiento;
-                    estado.control_seguimiento = item.control_seguimiento;
-                    estado.activo = item.activo;
-                }
-                else
-                {
-                    var nombreNuevo = item.nombre.Trim().ToLower();
-
-                    var estadoInactivoExistente = proyecto.Estados
-                        .FirstOrDefault(e =>
-                            e.nombre.Trim().ToLower() == nombreNuevo &&
-                            !e.activo);
-
-                    if (estadoInactivoExistente != null)
+                    if (item.id_estado.HasValue)
                     {
-                        estadoInactivoExistente.nombre = item.nombre.Trim();
-                        estadoInactivoExistente.orden = item.orden;
-                        estadoInactivoExistente.bloquea = item.bloquea;
-                        estadoInactivoExistente.control_vencimiento = item.control_vencimiento;
-                        estadoInactivoExistente.control_seguimiento = item.control_seguimiento;
-                        estadoInactivoExistente.activo = item.activo;
+                        var estado = proyecto.Estados
+                            .First(e => e.id_estado == item.id_estado.Value);
+
+                        estado.nombre = item.nombre.Trim();
+                        estado.orden = item.orden;
+                        estado.bloquea = item.bloquea;
+                        estado.control_vencimiento = item.control_vencimiento;
+                        estado.control_seguimiento = item.control_seguimiento;
+                        estado.activo = item.activo;
                     }
                     else
                     {
-                        estado = new Estado
-                        {
-                            id_proyecto = proyecto.id_proyecto,
-                            nombre = item.nombre.Trim(),
-                            orden = item.orden,
-                            bloquea = item.bloquea,
-                            control_vencimiento = item.control_vencimiento,
-                            control_seguimiento = item.control_seguimiento,
-                            activo = item.activo
-                        };
+                        var nombreNuevo = item.nombre.Trim().ToLower();
 
-                        _context.Estados.Add(estado);
+                        var estadoInactivoExistente = proyecto.Estados
+                            .FirstOrDefault(e =>
+                                e.nombre.Trim().ToLower() == nombreNuevo &&
+                                !e.activo);
+
+                        if (estadoInactivoExistente != null)
+                        {
+                            estadoInactivoExistente.nombre = item.nombre.Trim();
+                            estadoInactivoExistente.orden = item.orden;
+                            estadoInactivoExistente.bloquea = item.bloquea;
+                            estadoInactivoExistente.control_vencimiento = item.control_vencimiento;
+                            estadoInactivoExistente.control_seguimiento = item.control_seguimiento;
+                            estadoInactivoExistente.activo = item.activo;
+                        }
+                        else
+                        {
+                            var estado = new Estado
+                            {
+                                id_proyecto = proyecto.id_proyecto,
+                                nombre = item.nombre.Trim(),
+                                orden = item.orden,
+                                bloquea = item.bloquea,
+                                control_vencimiento = item.control_vencimiento,
+                                control_seguimiento = item.control_seguimiento,
+                                activo = item.activo
+                            };
+
+                            _context.Estados.Add(estado);
+                        }
                     }
                 }
-            }
 
-            if (estadosCambiaron)
+                /*
+                 * Si cambiaron los estados, invalidar y limpiar pasos dependientes.
+                 */
+                if (estadosCambiaron)
+                {
+                    proyecto.configuracion_completa = false;
+
+                    /*
+                     * Estados off de las alertas.
+                     */
+                    var idsGruposAlertas = await _context.GruposAlertas
+                        .Where(g => g.id_proyecto == proyecto.id_proyecto)
+                        .Select(g => g.id_grupo_alerta)
+                        .ToListAsync();
+
+                    var idsAlertasDias = await _context.GruposAlertasDias
+                        .Where(a => idsGruposAlertas.Contains(a.id_grupo_alerta))
+                        .Select(a => a.id_grupo_alerta_dia)
+                        .ToListAsync();
+
+                    var estadosOff = await _context.GruposAlertasDiasEstadosOff
+                        .Where(eo => idsAlertasDias.Contains(eo.id_grupo_alerta_dia))
+                        .ToListAsync();
+
+                    _context.GruposAlertasDiasEstadosOff.RemoveRange(estadosOff);
+
+                    /*
+                     * Roles por transición y transiciones.
+                     */
+                    var transicionesProyecto = await _context.EstadosTransicion
+                        .Where(t => t.id_proyecto == proyecto.id_proyecto)
+                        .ToListAsync();
+
+                    var idsTransiciones = transicionesProyecto
+                        .Select(t => t.id_estado_transicion)
+                        .ToList();
+
+                    var rolesTransiciones = await _context.RolesEstadosTransicion
+                        .Where(r => idsTransiciones.Contains(r.id_estado_transicion))
+                        .ToListAsync();
+
+                    _context.RolesEstadosTransicion.RemoveRange(rolesTransiciones);
+                    _context.EstadosTransicion.RemoveRange(transicionesProyecto);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return RedirectToAction(
+                    "Transiciones",
+                    new { id = proyecto.id_proyecto }
+                );
+            }
+            catch (Exception)
             {
-                proyecto.configuracion_completa = false;
+                await transaction.RollbackAsync();
 
-                var gruposAlertas = await _context.GruposAlertas
-                    .Where(g => g.id_proyecto == proyecto.id_proyecto)
-                    .Select(g => g.id_grupo_alerta)
-                    .ToListAsync();
+                ModelState.AddModelError(
+                    "",
+                    "No fue posible guardar la configuración de estados. Revise los controles de seguimiento y vencimiento."
+                );
 
-                var alertasDiasIds = await _context.GruposAlertasDias
-                    .Where(a => gruposAlertas.Contains(a.id_grupo_alerta))
-                    .Select(a => a.id_grupo_alerta_dia)
-                    .ToListAsync();
-
-                var estadosOff = await _context.GruposAlertasDiasEstadosOff
-                    .Where(eo => alertasDiasIds.Contains(eo.id_grupo_alerta_dia))
-                    .ToListAsync();
-
-                _context.GruposAlertasDiasEstadosOff.RemoveRange(estadosOff);
-
-                var transicionesProyecto = await _context.EstadosTransicion
-                    .Where(t => t.id_proyecto == proyecto.id_proyecto)
-                    .ToListAsync();
-
-                var idsTransiciones = transicionesProyecto
-                    .Select(t => t.id_estado_transicion)
-                    .ToList();
-
-                var rolesTransiciones = await _context.RolesEstadosTransicion
-                    .Where(r => idsTransiciones.Contains(r.id_estado_transicion))
-                    .ToListAsync();
-
-                _context.RolesEstadosTransicion.RemoveRange(rolesTransiciones);
-                _context.EstadosTransicion.RemoveRange(transicionesProyecto);
+                return View(vm);
             }
-
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction("Transiciones", new { id = proyecto.id_proyecto });
         }
 
         private List<Estado> CrearPlantillaEstados(int idProyecto)
