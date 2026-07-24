@@ -629,34 +629,31 @@ namespace Alertas.Controllers
 
             bool esElaborador = elaboradores.Contains(idUsuario);
             bool esAutorizador = autorizadores.Contains(idUsuario);
+            bool estadoBloquea = entidad.Estado.bloquea;
 
             bool puedeEditarDatosGenerales =
-                !estadoFinal &&
-                !esPresentada &&
+                !estadoBloquea &&
                 (esSuperAdmin || esAdminProyecto);
 
             bool puedeEditarParticipantes =
-                !estadoFinal &&
-                !esPresentada &&
+                !estadoBloquea &&
                 (esSuperAdmin || esAdminProyecto);
 
             bool puedeEditarFechasBase =
-                !estadoFinal &&
-                !esPresentada &&
+                !estadoBloquea &&
                 esAntesDeSeguimiento &&
                 (esSuperAdmin || esAdminProyecto);
 
             bool puedeEditarValores =
-                !estadoFinal &&
-                !esPresentada &&
+                !estadoBloquea &&
                 esAntesDePresentada &&
                 (esSuperAdmin || esAdminProyecto || esElaborador || esAutorizador);
 
-            bool puedeEditarJustificacion = puedeEditarValores;
+            bool puedeEditarJustificacion =
+                puedeEditarValores;
 
             bool puedeEditarObservaciones =
-                !estadoFinal &&
-                !esPresentada &&
+                !estadoBloquea &&
                 (esSuperAdmin || esAdminProyecto || esElaborador || esAutorizador);
 
             // ============================
@@ -1069,6 +1066,7 @@ namespace Alertas.Controllers
         {
 
             var idProyectoNullable = _seguridadService.ObtenerIdProyectoActivo();
+
             
             if (idProyectoNullable == null)
                 return RedirectToAction("SeleccionarProyecto", "Login");
@@ -1333,41 +1331,38 @@ namespace Alertas.Controllers
                 esAdminProyecto
             );
 
+            bool estadoBloquea = entidad.Estado.bloquea;
+
             // ============================
             // Permisos por fase lógica
             // ============================
             model.PuedeEditarDatosGenerales =
-                !estadoFinal &&
-                !esPresentada &&
+                !estadoBloquea &&
                 (esSuperAdmin || esAdminProyecto);
 
             model.PuedeEditarParticipantes =
-                !estadoFinal &&
-                !esPresentada &&
+                !estadoBloquea &&
                 (esSuperAdmin || esAdminProyecto);
 
             model.PuedeEditarFechasBase =
-                !estadoFinal &&
-                !esPresentada &&
+                !estadoBloquea &&
                 esAntesDeSeguimiento &&
                 (esSuperAdmin || esAdminProyecto);
 
             model.PuedeEditarValores =
-                !estadoFinal &&
-                !esPresentada &&
+                !estadoBloquea &&
                 esAntesDePresentada &&
                 (esSuperAdmin || esAdminProyecto || esElaborador || esAutorizador);
 
-            model.PuedeEditarJustificacion = model.PuedeEditarValores;
+            model.PuedeEditarJustificacion =
+                model.PuedeEditarValores;
 
             model.PuedeEditarObservaciones =
-                !estadoFinal &&
-                !esPresentada &&
+                !estadoBloquea &&
                 (esSuperAdmin || esAdminProyecto || esElaborador || esAutorizador);
 
             model.PuedeCargarSoporte =
-                !estadoFinal &&
-                !esPresentada &&
+                !estadoBloquea &&
                 esAntesDePresentada &&
                 (esSuperAdmin || esAdminProyecto || esElaborador || esAutorizador);
 
