@@ -152,9 +152,18 @@ namespace Alertas.Services.CargaMasiva
             {
                 await transaction.RollbackAsync();
 
-                var mensaje = ex.InnerException?.Message ?? ex.Message;
+                var mensajes = new List<string>();
+                var excepcionActual = ex;
 
-                throw new Exception("ERROR DETALLADO: " + mensaje);
+                while (excepcionActual != null)
+                {
+                    mensajes.Add(excepcionActual.Message);
+                    excepcionActual = excepcionActual.InnerException;
+                }
+
+                var detalle = string.Join(" | ", mensajes.Distinct());
+
+                throw new Exception($"ERROR DETALLADO: {detalle}", ex);
             }
         }
 
