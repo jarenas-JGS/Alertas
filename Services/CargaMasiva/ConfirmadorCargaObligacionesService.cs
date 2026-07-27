@@ -2,6 +2,7 @@
 using Alertas.Models;
 using Alertas.ViewModels.CargaMasiva;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace Alertas.Services.CargaMasiva
 {
@@ -19,6 +20,8 @@ namespace Alertas.Services.CargaMasiva
             int idUsuarioActual)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            var stopwatch = Stopwatch.StartNew();
 
             try
             {
@@ -44,6 +47,10 @@ namespace Alertas.Services.CargaMasiva
                 var roles = await _context.Roles
                     .Where(r => r.Activo)
                     .ToDictionaryAsync(r => r.nombre, r => r.id_rol);
+
+                // ===============================
+                // IDs de los roles del sistema
+                // ===============================
 
                 int idRolResponsable = ObtenerRol(roles, "Responsable");
                 int idRolElaborador = ObtenerRol(roles, "Elaborador");
@@ -334,6 +341,13 @@ namespace Alertas.Services.CargaMasiva
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                stopwatch.Stop();
+
+                Console.WriteLine(
+                    $"Cargue masivo finalizado. " +
+                    $"Obligaciones: {totalInsertadas}. " +
+                    $"Tiempo: {stopwatch.Elapsed.TotalSeconds:N2} segundos.");
+
                 return new ResultadoCargaObligacionesViewModel
                 {
                     exitoso = true,
@@ -371,15 +385,6 @@ namespace Alertas.Services.CargaMasiva
             return rol.Value;
         }
 
-        private async Task<Cliente> ObtenerClienteAsync(string? valor)
-        {
-            var nit = ExtraerCodigo(valor);
-
-            var cliente = await _context.Clientes
-                .FirstOrDefaultAsync(c => c.activo && c.nit == nit);
-
-            return cliente ?? throw new InvalidOperationException($"Cliente no válido: {valor}");
-        }
 
         private async Task<Empresa> ObtenerEmpresaAsync(string? valor)
         {
