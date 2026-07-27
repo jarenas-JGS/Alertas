@@ -51,16 +51,164 @@ namespace Alertas.Services.CargaMasiva
                 int idRolAprobador = ObtenerRol(roles, "Aprobador");
                 int idRolVencimiento = ObtenerRol(roles, "Vencimiento");
 
+                // ======================================================
+                // Precarga de catálogos para evitar consultas por fila
+                // ======================================================
+
+                var clientesLista = await _context.Clientes
+                    .AsNoTracking()
+                    .Where(c => c.activo)
+                    .ToListAsync();
+
+                var clientesPorNit = clientesLista
+                    .Where(c => !string.IsNullOrWhiteSpace(c.nit))
+                    .GroupBy(c => NormalizarTexto(c.nit))
+                    .ToDictionary(
+                        grupo => grupo.Key,
+                        grupo => grupo.First());
+
+
+                var empresasLista = await _context.Empresas
+                    .AsNoTracking()
+                    .Where(e => e.activo)
+                    .ToListAsync();
+
+                var empresasPorNit = empresasLista
+                    .Where(e => !string.IsNullOrWhiteSpace(e.nit))
+                    .GroupBy(e => NormalizarTexto(e.nit))
+                    .ToDictionary(
+                        grupo => grupo.Key,
+                        grupo => grupo.First());
+
+
+                var ciudadesLista = await _context.Ciudades
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var ciudadesPorNombre = ciudadesLista
+                    .Where(c => !string.IsNullOrWhiteSpace(c.nombre))
+                    .GroupBy(c => NormalizarTexto(c.nombre))
+                    .ToDictionary(
+                        grupo => grupo.Key,
+                        grupo => grupo.First());
+
+
+                var periodosLista = await _context.Periodos
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var periodosPorNombre = periodosLista
+                    .Where(p => !string.IsNullOrWhiteSpace(p.nombre))
+                    .GroupBy(p => NormalizarTexto(p.nombre))
+                    .ToDictionary(
+                        grupo => grupo.Key,
+                        grupo => grupo.First());
+
+
+                var dominiosLista = await _context.Dominios
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var dominiosPorNombre = dominiosLista
+                    .Where(d => !string.IsNullOrWhiteSpace(d.nombre))
+                    .GroupBy(d => NormalizarTexto(d.nombre))
+                    .ToDictionary(
+                        grupo => grupo.Key,
+                        grupo => grupo.First());
+
+
+                var tiposObligacionLista = await _context.TipoObligaciones
+                    .AsNoTracking()
+                    .Where(t =>
+                        t.id_area == proyecto.id_area &&
+                        t.activo)
+                    .ToListAsync();
+
+                var tiposObligacionPorNombre = tiposObligacionLista
+                    .Where(t => !string.IsNullOrWhiteSpace(t.nombre))
+                    .GroupBy(t => NormalizarTexto(t.nombre))
+                    .ToDictionary(
+                        grupo => grupo.Key,
+                        grupo => grupo.First());
+
+
                 int totalInsertadas = 0;
+
 
                 foreach (var fila in carga.filas)
                 {
-                    var cliente = await ObtenerClienteAsync(fila.cliente);
-                    var empresa = await ObtenerEmpresaAsync(fila.empresa);
-                    var ciudad = await ObtenerCiudadAsync(fila.ciudad);
-                    var periodo = await ObtenerPeriodoAsync(fila.periodo);
-                    var dominio = await ObtenerDominioAsync(fila.dominio);
-                    var tipoObligacion = await ObtenerTipoObligacionAsync(fila.tipo_obligacion, proyecto.id_area);
+                    var nitCliente = NormalizarTexto(
+                        ExtraerCodigo(fila.cliente));
+
+                    if (!clientesPorNit.TryGetValue(
+                        nitCliente,
+                        out var cliente))
+                    {
+                        throw new InvalidOperationException(
+                            $"Cliente no válido: {fila.cliente}");
+                    }
+
+
+                    var nitEmpresa = NormalizarTexto(
+                        ExtraerCodigo(fila.empresa));
+
+                    if (!empresasPorNit.TryGetValue(
+                        nitEmpresa,
+                        out var empresa))
+                    {
+                        throw new InvalidOperationException(
+                            $"Empresa no válida: {fila.empresa}");
+                    }
+
+
+                    Ciudad? ciudad = null;
+
+                    if (!string.IsNullOrWhiteSpace(fila.ciudad))
+                    {
+                        var ciudadNormalizada =
+                            NormalizarTexto(fila.ciudad);
+
+                        ciudadesPorNombre.TryGetValue(
+                            ciudadNormalizada,
+                            out ciudad);
+                    }
+
+
+                    var periodoNormalizado =
+                        NormalizarTexto(fila.periodo);
+
+                    if (!periodosPorNombre.TryGetValue(
+                        periodoNormalizado,
+                        out var periodo))
+                    {
+                        throw new InvalidOperationException(
+                            $"Periodo no válido: {fila.periodo}");
+                    }
+
+
+                    var dominioNormalizado =
+                        NormalizarTexto(fila.dominio);
+
+                    if (!dominiosPorNombre.TryGetValue(
+                        dominioNormalizado,
+                        out var dominio))
+                    {
+                        throw new InvalidOperationException(
+                            $"Dominio no válido: {fila.dominio}");
+                    }
+
+
+                    var tipoObligacionNormalizado =
+                        NormalizarTexto(fila.tipo_obligacion);
+
+                    if (!tiposObligacionPorNombre.TryGetValue(
+                        tipoObligacionNormalizado,
+                        out var tipoObligacion))
+                    {
+                        throw new InvalidOperationException(
+                            $"Tipo de obligación no válido: " +
+                            $"{fila.tipo_obligacion}");
+                    }
 
                     var fechaVencObl = DateOnly.FromDateTime(fila.fecha_vencimiento_obligacion!.Value);
                     var fechaVencSeg = DateOnly.FromDateTime(fila.fecha_vencimiento_seguimiento!.Value);
