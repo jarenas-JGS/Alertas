@@ -159,190 +159,274 @@ namespace Alertas.Services.CargaMasiva
                         grupo => grupo.Key,
                         grupo => grupo.First());
 
+
                 int totalInsertadas = 0;
 
+                const int TAMANO_LOTE = 50;
 
-                foreach (var fila in carga.filas)
+                foreach (var lote in carga.filas.Chunk(TAMANO_LOTE))
                 {
-                    var nitCliente = NormalizarTexto(
-                        ExtraerCodigo(fila.cliente));
+                    /*
+                     * En esta lista conservamos la relación entre:
+                     *
+                     * - La fila original del Excel.
+                     * - La entidad RegObl creada para esa fila.
+                     *
+                     * Después del primer SaveChangesAsync, cada RegObl
+                     * tendrá asignado su id_reg_obl.
+                     */
+                    var obligacionesDelLote =
+                        new List<(CargaObligacionesFilaViewModel Fila, RegObl Obligacion)>();
 
-                    if (!clientesPorNit.TryGetValue(
-                        nitCliente,
-                        out var cliente))
+                    // ======================================================
+                    // PASO 1: preparar las obligaciones del lote
+                    // ======================================================
+
+                    foreach (var fila in lote)
                     {
-                        throw new InvalidOperationException(
-                            $"Cliente no válido: {fila.cliente}");
+                        var nitCliente = NormalizarTexto(
+                            ExtraerCodigo(fila.cliente));
+
+                        if (!clientesPorNit.TryGetValue(
+                            nitCliente,
+                            out var cliente))
+                        {
+                            throw new InvalidOperationException(
+                                $"Cliente no válido: {fila.cliente}");
+                        }
+
+                        var nitEmpresa = NormalizarTexto(
+                            ExtraerCodigo(fila.empresa));
+
+                        if (!empresasPorNit.TryGetValue(
+                            nitEmpresa,
+                            out var empresa))
+                        {
+                            throw new InvalidOperationException(
+                                $"Empresa no válida: {fila.empresa}");
+                        }
+
+                        Ciudad? ciudad = null;
+
+                        if (!string.IsNullOrWhiteSpace(fila.ciudad))
+                        {
+                            var ciudadNormalizada =
+                                NormalizarTexto(fila.ciudad);
+
+                            ciudadesPorNombre.TryGetValue(
+                                ciudadNormalizada,
+                                out ciudad);
+                        }
+
+                        var periodoNormalizado =
+                            NormalizarTexto(fila.periodo);
+
+                        if (!periodosPorNombre.TryGetValue(
+                            periodoNormalizado,
+                            out var periodo))
+                        {
+                            throw new InvalidOperationException(
+                                $"Periodo no válido: {fila.periodo}");
+                        }
+
+                        var dominioNormalizado =
+                            NormalizarTexto(fila.dominio);
+
+                        if (!dominiosPorNombre.TryGetValue(
+                            dominioNormalizado,
+                            out var dominio))
+                        {
+                            throw new InvalidOperationException(
+                                $"Dominio no válido: {fila.dominio}");
+                        }
+
+                        var tipoObligacionNormalizado =
+                            NormalizarTexto(fila.tipo_obligacion);
+
+                        if (!tiposObligacionPorNombre.TryGetValue(
+                            tipoObligacionNormalizado,
+                            out var tipoObligacion))
+                        {
+                            throw new InvalidOperationException(
+                                $"Tipo de obligación no válido: " +
+                                $"{fila.tipo_obligacion}");
+                        }
+
+                        var fechaVencObl = DateOnly.FromDateTime(
+                            fila.fecha_vencimiento_obligacion!.Value);
+
+                        var fechaVencSeg = DateOnly.FromDateTime(
+                            fila.fecha_vencimiento_seguimiento!.Value);
+
+                        var valorAprox =
+                            ConvertirDecimalAInt(fila.valor_aproximado);
+
+                        var saldoFavor =
+                            ConvertirDecimalAInt(fila.saldo_favor);
+
+                        var regObl = new RegObl
+                        {
+                            nombre = fila.nombre ?? string.Empty,
+                            cod_obligacion = fila.codigo_obligacion,
+
+                            id_cliente = cliente.id_cliente,
+                            id_empresa = empresa.id_empresa,
+                            id_ciudad = ciudad?.id_ciudad,
+                            id_periodo = periodo.id_periodo,
+                            id_dominio = dominio.id_dominio,
+                            id_tipo_obligacion =
+                                tipoObligacion.id_tipo_obligacion,
+                            id_proyecto = proyecto.id_proyecto,
+
+                            fecha_venc_obl = fechaVencObl,
+                            fecha_venc_seguimiento = fechaVencSeg,
+
+                            vigencia = fila.vigencia!.Value,
+
+                            anio = fechaVencObl.Year,
+                            mes = fechaVencObl.Month,
+                            dia = fechaVencObl.Day,
+
+                            vlr_aprox = valorAprox,
+                            saldo_favor = saldoFavor,
+                            vlr_real = null,
+                            diferencia = null,
+                            variacion = null,
+
+                            cc_empleador = fila.cc_empleador,
+                            nombre_empleador = fila.empleador,
+
+                            cc_empleado = fila.cc_empleado,
+                            nombre_empleado = fila.empleado,
+
+                            observaciones = fila.observaciones,
+
+                            id_estado = estadoInicial.id_estado,
+
+                            fecha_creac =
+                                DateOnly.FromDateTime(DateTime.Today),
+
+                            fecha_ult_modif = DateTime.UtcNow,
+                            id_usuario_ult_modif = idUsuarioActual,
+
+                            soporte_post_cierre_cumplido = false,
+                            fecha_soporte_post_cierre = null,
+                            id_usuario_soporte_post_cierre = null
+                        };
+
+                        obligacionesDelLote.Add(
+                            (fila, regObl));
                     }
 
+                    // ======================================================
+                    // PASO 2: guardar las obligaciones del lote
+                    //
+                    // Después de este SaveChangesAsync, PostgreSQL habrá
+                    // generado los id_reg_obl.
+                    // ======================================================
 
-                    var nitEmpresa = NormalizarTexto(
-                        ExtraerCodigo(fila.empresa));
+                    _context.RegObls.AddRange(
+                        obligacionesDelLote.Select(x => x.Obligacion));
 
-                    if (!empresasPorNit.TryGetValue(
-                        nitEmpresa,
-                        out var empresa))
-                    {
-                        throw new InvalidOperationException(
-                            $"Empresa no válida: {fila.empresa}");
-                    }
-
-
-                    Ciudad? ciudad = null;
-
-                    if (!string.IsNullOrWhiteSpace(fila.ciudad))
-                    {
-                        var ciudadNormalizada =
-                            NormalizarTexto(fila.ciudad);
-
-                        ciudadesPorNombre.TryGetValue(
-                            ciudadNormalizada,
-                            out ciudad);
-                    }
-
-
-                    var periodoNormalizado =
-                        NormalizarTexto(fila.periodo);
-
-                    if (!periodosPorNombre.TryGetValue(
-                        periodoNormalizado,
-                        out var periodo))
-                    {
-                        throw new InvalidOperationException(
-                            $"Periodo no válido: {fila.periodo}");
-                    }
-
-
-                    var dominioNormalizado =
-                        NormalizarTexto(fila.dominio);
-
-                    if (!dominiosPorNombre.TryGetValue(
-                        dominioNormalizado,
-                        out var dominio))
-                    {
-                        throw new InvalidOperationException(
-                            $"Dominio no válido: {fila.dominio}");
-                    }
-
-
-                    var tipoObligacionNormalizado =
-                        NormalizarTexto(fila.tipo_obligacion);
-
-                    if (!tiposObligacionPorNombre.TryGetValue(
-                        tipoObligacionNormalizado,
-                        out var tipoObligacion))
-                    {
-                        throw new InvalidOperationException(
-                            $"Tipo de obligación no válido: " +
-                            $"{fila.tipo_obligacion}");
-                    }
-
-                    var fechaVencObl = DateOnly.FromDateTime(fila.fecha_vencimiento_obligacion!.Value);
-                    var fechaVencSeg = DateOnly.FromDateTime(fila.fecha_vencimiento_seguimiento!.Value);
-
-                    var valorAprox = ConvertirDecimalAInt(fila.valor_aproximado);
-                    var saldoFavor = ConvertirDecimalAInt(fila.saldo_favor);
-
-                    var regObl = new RegObl
-                    {
-                        nombre = fila.nombre ?? string.Empty,
-                        cod_obligacion = fila.codigo_obligacion,
-
-                        id_cliente = cliente.id_cliente,
-                        id_empresa = empresa.id_empresa,
-                        id_ciudad = ciudad?.id_ciudad,
-                        id_periodo = periodo.id_periodo,
-                        id_dominio = dominio.id_dominio,
-                        id_tipo_obligacion = tipoObligacion.id_tipo_obligacion,
-                        id_proyecto = proyecto.id_proyecto,
-
-                        fecha_venc_obl = fechaVencObl,
-                        fecha_venc_seguimiento = fechaVencSeg,
-
-                        vigencia = fila.vigencia!.Value,
-                        anio = fechaVencObl.Year,
-                        mes = fechaVencObl.Month,
-                        dia = fechaVencObl.Day,
-
-                        vlr_aprox = valorAprox,
-                        saldo_favor = saldoFavor,
-                        vlr_real = null,
-                        diferencia = null,
-                        variacion = null,
-
-                        cc_empleador = fila.cc_empleador,
-                        nombre_empleador = fila.empleador,
-                        cc_empleado = fila.cc_empleado,
-                        nombre_empleado = fila.empleado,
-
-                        observaciones = fila.observaciones,
-
-                        id_estado = estadoInicial.id_estado,
-                        fecha_creac = DateOnly.FromDateTime(DateTime.Today),
-
-                        fecha_ult_modif = DateTime.UtcNow,
-                        id_usuario_ult_modif = idUsuarioActual,
-
-                        soporte_post_cierre_cumplido = false,
-                        fecha_soporte_post_cierre = null,
-                        id_usuario_soporte_post_cierre = null,
-                    };
-
-                    _context.RegObls.Add(regObl);
                     await _context.SaveChangesAsync();
 
-                    CrearUsuariosObligacion(
-                        regObl.id_reg_obl,
-                        fila.responsable,
-                        idRolResponsable,
-                        idUsuarioActual,
-                        usuariosPorEmail);
+                    // ======================================================
+                    // PASO 3: crear participantes e historial
+                    // ======================================================
 
-                    CrearUsuariosObligacion(
-                        regObl.id_reg_obl,
-                        fila.elaborador,
-                        idRolElaborador,
-                        idUsuarioActual,
-                        usuariosPorEmail);
-
-                    CrearUsuariosObligacion(
-                        regObl.id_reg_obl,
-                        fila.autorizador,
-                        idRolAutorizador,
-                        idUsuarioActual,
-                        usuariosPorEmail);
-
-                    CrearUsuariosObligacion(
-                        regObl.id_reg_obl,
-                        fila.aprobador,
-                        idRolAprobador,
-                        idUsuarioActual,
-                        usuariosPorEmail);
-
-                    CrearUsuariosObligacion(
-                        regObl.id_reg_obl,
-                        fila.usuario_vencimiento,
-                        idRolVencimiento,
-                        idUsuarioActual,
-                        usuariosPorEmail);
-
-                    _context.HistOblFlujos.Add(new HistOblFlujo
+                    foreach (var registro in obligacionesDelLote)
                     {
-                        id_reg_obl = regObl.id_reg_obl,
-                        id_estado_origen = null,
-                        id_estado_destino = estadoInicial.id_estado,
-                        accion = "Creación por cargue masivo",
-                        observacion = "Obligación creada desde plantilla Excel.",
-                        id_usuario = idUsuarioActual,
-                        fecha = DateTime.UtcNow,
-                        rol_ejecutor = "Cargue masivo",
-                        es_automatico = true
-                    });
+                        var fila = registro.Fila;
+                        var regObl = registro.Obligacion;
 
-                    totalInsertadas++;
+                        CrearUsuariosObligacion(
+                            regObl.id_reg_obl,
+                            fila.responsable,
+                            idRolResponsable,
+                            idUsuarioActual,
+                            usuariosPorEmail);
+
+                        CrearUsuariosObligacion(
+                            regObl.id_reg_obl,
+                            fila.elaborador,
+                            idRolElaborador,
+                            idUsuarioActual,
+                            usuariosPorEmail);
+
+                        CrearUsuariosObligacion(
+                            regObl.id_reg_obl,
+                            fila.autorizador,
+                            idRolAutorizador,
+                            idUsuarioActual,
+                            usuariosPorEmail);
+
+                        CrearUsuariosObligacion(
+                            regObl.id_reg_obl,
+                            fila.aprobador,
+                            idRolAprobador,
+                            idUsuarioActual,
+                            usuariosPorEmail);
+
+                        CrearUsuariosObligacion(
+                            regObl.id_reg_obl,
+                            fila.usuario_vencimiento,
+                            idRolVencimiento,
+                            idUsuarioActual,
+                            usuariosPorEmail);
+
+                        _context.HistOblFlujos.Add(
+                            new HistOblFlujo
+                            {
+                                id_reg_obl = regObl.id_reg_obl,
+                                id_estado_origen = null,
+                                id_estado_destino =
+                                    estadoInicial.id_estado,
+
+                                accion =
+                                    "Creación por cargue masivo",
+
+                                observacion =
+                                    "Obligación creada desde plantilla Excel.",
+
+                                id_usuario = idUsuarioActual,
+                                fecha = DateTime.UtcNow,
+
+                                rol_ejecutor = "Cargue masivo",
+                                es_automatico = true
+                            });
+                    }
+
+                    // ======================================================
+                    // PASO 4: guardar participantes e historial
+                    // ======================================================
+
+                    await _context.SaveChangesAsync();
+
+                    totalInsertadas += obligacionesDelLote.Count;
+
+                    _logger.LogInformation(
+                        "Cargue masivo en progreso. " +
+                        "Proyecto: {IdProyecto}. " +
+                        "Procesadas: {Procesadas}/{Total}. " +
+                        "Tiempo: {TiempoSegundos:N2} segundos.",
+                        carga.id_proyecto,
+                        totalInsertadas,
+                        carga.filas.Count,
+                        stopwatch.Elapsed.TotalSeconds);
+
+                    /*
+                     * En este punto todo el lote ya fue guardado.
+                     *
+                     * Clear evita que EF Core conserve en memoria todas
+                     * las obligaciones, participantes e historiales de
+                     * los lotes anteriores.
+                     *
+                     * No afecta la transacción de PostgreSQL.
+                     */
+                    _context.ChangeTracker.Clear();
                 }
 
-                await _context.SaveChangesAsync();
+
                 await transaction.CommitAsync();
 
                 stopwatch.Stop();
@@ -407,63 +491,6 @@ namespace Alertas.Services.CargaMasiva
             return rol.Value;
         }
 
-
-        private async Task<Empresa> ObtenerEmpresaAsync(string? valor)
-        {
-            var nit = ExtraerCodigo(valor);
-
-            var empresa = await _context.Empresas
-                .FirstOrDefaultAsync(e => e.activo && e.nit == nit);
-
-            return empresa ?? throw new InvalidOperationException($"Empresa no válida: {valor}");
-        }
-
-        private async Task<Ciudad?> ObtenerCiudadAsync(string? valor)
-        {
-            if (string.IsNullOrWhiteSpace(valor))
-                return null;
-
-            var valorNormalizado = NormalizarTexto(valor);
-
-            return await _context.Ciudades
-                .FirstOrDefaultAsync(p =>
-                    p.nombre.Trim().ToUpper() == valorNormalizado);
-        }
-
-        private async Task<Periodo> ObtenerPeriodoAsync(string? valor)
-        {
-            var valorNormalizado = NormalizarTexto(valor);
-
-            var periodo = await _context.Periodos
-                .FirstOrDefaultAsync(p =>
-                    p.nombre.Trim().ToUpper() == valorNormalizado);
-
-            return periodo ?? throw new InvalidOperationException($"Periodo no válido: {valor}");
-        }
-
-        private async Task<Dominio> ObtenerDominioAsync(string? valor)
-        {
-            var valorNormalizado = NormalizarTexto(valor);
-
-            var dominio = await _context.Dominios
-                .FirstOrDefaultAsync(p =>
-                    p.nombre.Trim().ToUpper() == valorNormalizado);
-
-            return dominio ?? throw new InvalidOperationException($"Dominio no válido: {valor}");
-        }
-
-        private async Task<TipoObligacion> ObtenerTipoObligacionAsync(string? valor, int idArea)
-        {
-            var valorNormalizado = NormalizarTexto(valor);
-
-            var tipo = await _context.TipoObligaciones
-                .FirstOrDefaultAsync(t =>
-                    t.nombre.Trim().ToUpper() == valorNormalizado &&
-                    t.id_area == idArea &&
-                    t.activo);
-
-            return tipo ?? throw new InvalidOperationException($"Tipo de obligación no válido: {valor}");
-        }
 
         private void CrearUsuariosObligacion(
             int idRegObl,
