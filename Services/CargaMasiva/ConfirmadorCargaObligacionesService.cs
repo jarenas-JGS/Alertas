@@ -9,19 +9,23 @@ namespace Alertas.Services.CargaMasiva
     public class ConfirmadorCargaObligacionesService : IConfirmadorCargaObligacionesService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<ConfirmadorCargaObligacionesService> _logger;
 
-        public ConfirmadorCargaObligacionesService(ApplicationDbContext context)
+        public ConfirmadorCargaObligacionesService(
+            ApplicationDbContext context,
+            ILogger<ConfirmadorCargaObligacionesService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<ResultadoCargaObligacionesViewModel> ConfirmarAsync(
             CargaObligacionesTemporalViewModel carga,
             int idUsuarioActual)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-
             var stopwatch = Stopwatch.StartNew();
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
@@ -343,10 +347,12 @@ namespace Alertas.Services.CargaMasiva
 
                 stopwatch.Stop();
 
-                Console.WriteLine(
-                    $"Cargue masivo finalizado. " +
-                    $"Obligaciones: {totalInsertadas}. " +
-                    $"Tiempo: {stopwatch.Elapsed.TotalSeconds:N2} segundos.");
+                _logger.LogInformation(
+                    "Cargue masivo finalizado correctamente. Proyecto: {IdProyecto}. " +
+                    "Obligaciones insertadas: {Cantidad}. Tiempo total: {TiempoSegundos:N2} segundos.",
+                    carga.id_proyecto,
+                    totalInsertadas,
+                    stopwatch.Elapsed.TotalSeconds);
 
                 return new ResultadoCargaObligacionesViewModel
                 {
@@ -358,6 +364,15 @@ namespace Alertas.Services.CargaMasiva
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+
+                stopwatch.Stop();
+
+                _logger.LogError(
+                    ex,
+                    "Error en cargue masivo. Proyecto: {IdProyecto}. " +
+                    "Tiempo transcurrido: {TiempoSegundos:N2} segundos.",
+                    carga.id_proyecto,
+                    stopwatch.Elapsed.TotalSeconds);
 
                 var mensajes = new List<string>();
                 var excepcionActual = ex;
