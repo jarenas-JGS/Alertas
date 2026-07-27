@@ -131,6 +131,22 @@ namespace Alertas.Services.CargaMasiva
                         grupo => grupo.Key,
                         grupo => grupo.First());
 
+                // ======================================================
+                // Precarga de usuarios activos
+                // ======================================================
+
+                var usuariosLista = await _context.Usuarios
+                    .AsNoTracking()
+                    .Where(u =>
+                        u.activo &&
+                        !string.IsNullOrWhiteSpace(u.email))
+                    .ToListAsync();
+
+                var usuariosPorEmail = usuariosLista
+                    .GroupBy(u => NormalizarTexto(u.email))
+                    .ToDictionary(
+                        grupo => grupo.Key,
+                        grupo => grupo.First());
 
                 int totalInsertadas = 0;
 
@@ -264,11 +280,40 @@ namespace Alertas.Services.CargaMasiva
                     _context.RegObls.Add(regObl);
                     await _context.SaveChangesAsync();
 
-                    await CrearUsuariosObligacionAsync(regObl.id_reg_obl, fila.responsable, idRolResponsable, idUsuarioActual);
-                    await CrearUsuariosObligacionAsync(regObl.id_reg_obl, fila.elaborador, idRolElaborador, idUsuarioActual);
-                    await CrearUsuariosObligacionAsync(regObl.id_reg_obl, fila.autorizador, idRolAutorizador, idUsuarioActual);
-                    await CrearUsuariosObligacionAsync(regObl.id_reg_obl, fila.aprobador, idRolAprobador, idUsuarioActual);
-                    await CrearUsuariosObligacionAsync(regObl.id_reg_obl, fila.usuario_vencimiento, idRolVencimiento, idUsuarioActual);
+                    CrearUsuariosObligacion(
+                        regObl.id_reg_obl,
+                        fila.responsable,
+                        idRolResponsable,
+                        idUsuarioActual,
+                        usuariosPorEmail);
+
+                    CrearUsuariosObligacion(
+                        regObl.id_reg_obl,
+                        fila.elaborador,
+                        idRolElaborador,
+                        idUsuarioActual,
+                        usuariosPorEmail);
+
+                    CrearUsuariosObligacion(
+                        regObl.id_reg_obl,
+                        fila.autorizador,
+                        idRolAutorizador,
+                        idUsuarioActual,
+                        usuariosPorEmail);
+
+                    CrearUsuariosObligacion(
+                        regObl.id_reg_obl,
+                        fila.aprobador,
+                        idRolAprobador,
+                        idUsuarioActual,
+                        usuariosPorEmail);
+
+                    CrearUsuariosObligacion(
+                        regObl.id_reg_obl,
+                        fila.usuario_vencimiento,
+                        idRolVencimiento,
+                        idUsuarioActual,
+                        usuariosPorEmail);
 
                     _context.HistOblFlujos.Add(new HistOblFlujo
                     {
@@ -393,35 +438,38 @@ namespace Alertas.Services.CargaMasiva
             return tipo ?? throw new InvalidOperationException($"Tipo de obligación no válido: {valor}");
         }
 
-        private async Task CrearUsuariosObligacionAsync(
+        private void CrearUsuariosObligacion(
             int idRegObl,
             string? usuariosTexto,
             int idRol,
-            int idUsuarioAsignacion)
+            int idUsuarioAsignacion,
+            IReadOnlyDictionary<string, Usuario> usuariosPorEmail)
         {
             var usuarios = SepararUsuarios(usuariosTexto);
 
             foreach (var usuarioTexto in usuarios)
             {
                 var email = ExtraerCodigo(usuarioTexto);
+                var emailNormalizado = NormalizarTexto(email);
 
-                var usuario = await _context.Usuarios
-                    .FirstOrDefaultAsync(u =>
-                        u.activo &&
-                        u.email == email);
-
-                if (usuario == null)
-                    throw new InvalidOperationException($"Usuario no válido: {usuarioTexto}");
-
-                _context.UsuariosObligaciones.Add(new UsuarioObligacion
+                if (!usuariosPorEmail.TryGetValue(
+                    emailNormalizado,
+                    out var usuario))
                 {
-                    id_reg_obl = idRegObl,
-                    id_usuario = usuario.id_usuario,
-                    id_rol = idRol,
-                    activo = true,
-                    fecha_asignacion = DateTime.UtcNow,
-                    id_usuario_asignacion = idUsuarioAsignacion
-                });
+                    throw new InvalidOperationException(
+                        $"Usuario no válido: {usuarioTexto}");
+                }
+
+                _context.UsuariosObligaciones.Add(
+                    new UsuarioObligacion
+                    {
+                        id_reg_obl = idRegObl,
+                        id_usuario = usuario.id_usuario,
+                        id_rol = idRol,
+                        activo = true,
+                        fecha_asignacion = DateTime.UtcNow,
+                        id_usuario_asignacion = idUsuarioAsignacion
+                    });
             }
         }
 
