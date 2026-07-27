@@ -354,11 +354,18 @@ namespace Alertas.Services.CargaMasiva
                     totalInsertadas,
                     stopwatch.Elapsed.TotalSeconds);
 
+                string tiempoTranscurrido =
+                    stopwatch.Elapsed.TotalMinutes >= 1
+                        ? $"{stopwatch.Elapsed.TotalMinutes:N2} minutos"
+                        : $"{stopwatch.Elapsed.TotalSeconds:N2} segundos";
+
                 return new ResultadoCargaObligacionesViewModel
                 {
                     exitoso = true,
                     total_insertadas = totalInsertadas,
-                    mensaje = $"Se cargaron correctamente {totalInsertadas} obligaciones."
+                    mensaje =
+                        $"Se cargaron correctamente {totalInsertadas} obligaciones " +
+                        $"en {tiempoTranscurrido}."
                 };
             }
             catch (Exception ex)
