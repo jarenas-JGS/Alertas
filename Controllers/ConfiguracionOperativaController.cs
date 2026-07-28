@@ -1,12 +1,13 @@
 ﻿using Alertas.Data;
 using Alertas.Services.ConfiguracionOperativa;
+using Alertas.Services.Jobs;
+using Alertas.Services.Jobs.Options;
 using Alertas.ViewModels.ConfiguracionOperativa;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using Alertas.Services.Jobs.Options;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 
 
 namespace Alertas.Controllers
@@ -19,19 +20,21 @@ namespace Alertas.Controllers
         private readonly IConfiguracionOperativaService _configuracionService;
         private readonly AlertasJobOptions _jobOptions;
         private readonly IWebHostEnvironment _environment;
+        private readonly AlertasBackgroundService _alertasBackgroundService;
 
         public ConfiguracionOperativaController(
             ApplicationDbContext context,
             IConfiguracionOperativaService configuracionService,
             IOptions<AlertasJobOptions> jobOptions,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            AlertasBackgroundService alertasBackgroundService)
         {
             _context = context;
             _configuracionService = configuracionService;
             _jobOptions = jobOptions.Value;
             _environment = environment;
+            _alertasBackgroundService = alertasBackgroundService;
         }
-
         public async Task<IActionResult> Index()
         {
             if (!User.HasClaim("EsSuperAdmin", "true"))
@@ -234,6 +237,49 @@ namespace Alertas.Controllers
             }
 
             return null;
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EjecutarAhora(
+            CancellationToken cancellationToken)
+        {
+            if (!User.HasClaim("EsSuperAdmin", "true"))
+            {
+                TempData["Error"] =
+                    "No tienes permisos para ejecutar manualmente el job.";
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (!_jobOptions.Habilitado)
+            {
+                TempData["Error"] =
+                    "El job está deshabilitado por la configuración técnica del ambiente.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                await _alertasBackgroundService.EjecutarAhoraAsync(
+                    cancellationToken);
+
+                TempData["Success"] =
+                    "La ejecución del job finalizó. Consulta el resultado en Monitoreo de Jobs y en el Historial de Correos.";
+            }
+            catch (OperationCanceledException)
+            {
+                TempData["Error"] =
+                    "La ejecución fue cancelada antes de finalizar.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] =
+                    $"No fue posible ejecutar el job: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

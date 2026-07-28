@@ -28,7 +28,10 @@ builder.Services.AddScoped<
 
 builder.Services.AddScoped<IDashboardOperativoService, DashboardOperativoService>();
 
-builder.Services.AddHostedService<AlertasBackgroundService>();
+builder.Services.AddSingleton<AlertasBackgroundService>();
+
+builder.Services.AddHostedService(sp =>
+    sp.GetRequiredService<AlertasBackgroundService>());
 
 builder.Services.AddScoped<IJobLockService, JobLockService>();
 

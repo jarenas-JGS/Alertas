@@ -182,6 +182,16 @@
                         </button>
                     }
 
+                    <button type="button"
+                            class="btn btn-primary ms-2"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalEjecutarAhora"
+                            @(Model.EstadoEfectivo ? null : "disabled")
+                            title="Ejecutar inmediatamente el proceso automático">
+                        <i class="bi bi-play-fill me-1"></i>
+                        Ejecutar ahora
+                    </button>
+
                 </div>
             </div>
 
@@ -601,6 +611,109 @@
     </div>
 </div>
 
+<div class="modal fade"
+     id="modalEjecutarAhora"
+     tabindex="-1"
+     aria-labelledby="modalEjecutarAhoraLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <form asp-controller="ConfiguracionOperativa"
+                  asp-action="EjecutarAhora"
+                  method="post"
+                  id="formEjecutarAhora">
+
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header">
+                    <h5 class="modal-title"
+                        id="modalEjecutarAhoraLabel">
+                        Ejecutar alertas ahora
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Cerrar">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="d-flex align-items-start">
+
+                        <i class="bi bi-play-circle-fill text-primary fs-3 me-3"></i>
+
+                        <div>
+                            <p class="mb-2">
+                                Se iniciará inmediatamente el proceso automático
+                                de generación y envío de alertas.
+                            </p>
+
+                            <p class="mb-0 text-muted">
+                                El proceso respetará el control de duplicados,
+                                el lock, el timeout y la configuración del ambiente.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary"
+                            id="btnConfirmarEjecucion">
+                        <i class="bi bi-play-fill me-1"></i>
+                        Ejecutar
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<div id="overlayEjecucionJob"
+     style="display:none;
+            position:fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,0.45);
+            z-index:9999;
+            align-items:center;
+            justify-content:center;">
+
+    <div class="bg-white rounded shadow p-4 text-center"
+         style="max-width:420px;">
+
+        <div class="spinner-border text-primary mb-3"
+             role="status">
+            <span class="visually-hidden">
+                Procesando...
+            </span>
+        </div>
+
+        <h5 id="tituloOverlayJob">
+            Ejecutando proceso automático
+        </h5>
+
+        <p class="mb-0 text-muted"
+           id="mensajeOverlayJob">
+            Por favor espere. No cierre esta ventana ni actualice la página.
+        </p>
+    </div>
+</div>
+
 @section Scripts
 {
     <script>
@@ -663,6 +776,146 @@
                     "bi " + icono + " me-1";
             });
 
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // Código existente del modal Habilitar / Deshabilitar
+            const modalConfirmacion =
+                document.getElementById("modalConfirmacion");
+
+            if (modalConfirmacion) {
+                modalConfirmacion.addEventListener(
+                    "show.bs.modal",
+                    function (event) {
+
+                        const botonOrigen = event.relatedTarget;
+
+                        if (!botonOrigen) {
+                            return;
+                        }
+
+                        const habilitar =
+                            botonOrigen.getAttribute("data-habilitar");
+
+                        const titulo =
+                            botonOrigen.getAttribute("data-titulo");
+
+                        const mensaje =
+                            botonOrigen.getAttribute("data-mensaje");
+
+                        const claseBoton =
+                            botonOrigen.getAttribute("data-clase");
+
+                        const icono =
+                            botonOrigen.getAttribute("data-icono");
+
+                        document.getElementById("habilitar").value =
+                            habilitar;
+
+                        document.getElementById(
+                            "modalConfirmacionLabel"
+                        ).textContent = titulo;
+
+                        document.getElementById(
+                            "modalMensaje"
+                        ).textContent = mensaje;
+
+                        const modalIcono =
+                            document.getElementById("modalIcono");
+
+                        modalIcono.className =
+                            "bi " + icono + " fs-3 me-3";
+
+                        const btnConfirmar =
+                            document.getElementById("btnConfirmar");
+
+                        btnConfirmar.className =
+                            "btn " + claseBoton;
+
+                        const btnConfirmarIcono =
+                            document.getElementById(
+                                "btnConfirmarIcono"
+                            );
+
+                        btnConfirmarIcono.className =
+                            "bi " + icono + " me-1";
+                    });
+            }
+
+            // Ejecutar ahora + overlay
+        const formEjecutarAhora =
+            document.getElementById("formEjecutarAhora");
+
+        if (formEjecutarAhora) {
+            formEjecutarAhora.addEventListener(
+                "submit",
+                function () {
+
+                    const boton =
+                        document.getElementById(
+                            "btnConfirmarEjecucion"
+                        );
+
+                    if (boton) {
+                        boton.disabled = true;
+
+                        boton.innerHTML =
+                            '<span class="spinner-border ' +
+                            'spinner-border-sm me-2" ' +
+                            'role="status" aria-hidden="true"></span>' +
+                            'Iniciando...';
+                    }
+
+                    const modalElemento =
+                        document.getElementById(
+                            "modalEjecutarAhora"
+                        );
+
+                    if (modalElemento) {
+                        const instanciaModal =
+                            bootstrap.Modal.getInstance(
+                                modalElemento
+                            );
+
+                        if (instanciaModal) {
+                            instanciaModal.hide();
+                        }
+                    }
+
+                    const overlay =
+                        document.getElementById(
+                            "overlayEjecucionJob"
+                        );
+
+                    const titulo =
+                        document.getElementById(
+                            "tituloOverlayJob"
+                        );
+
+                    const mensaje =
+                        document.getElementById(
+                            "mensajeOverlayJob"
+                        );
+
+                    if (titulo) {
+                        titulo.textContent =
+                            "Ejecutando proceso automático de alertas";
+                    }
+
+                    if (mensaje) {
+                        mensaje.innerHTML =
+                            "Generando alertas, agrupando correos y enviando notificaciones.<br>" +
+                            "Este proceso puede tardar algunos minutos. " +
+                            "No cierre esta ventana ni actualice la página.";
+                    }
+
+                    if (overlay) {
+                        overlay.style.display = "flex";
+                    }
+                });
+            }
         });
     </script>
 }

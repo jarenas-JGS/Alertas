@@ -4,6 +4,7 @@ using Alertas.Services.ConfiguracionOperativa;
 using Alertas.Services.Jobs.Options;
 using Alertas.Services.Notificaciones;
 using Alertas.Services.Notificaciones.DTOs;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -98,7 +99,7 @@ namespace Alertas.Services.Jobs
             return true;
         }
 
-        private async Task EjecutarJobAsync(AlertasJobOptions options, CancellationToken stoppingToken)
+        private async Task EjecutarJobAsync(AlertasJobOptions options, CancellationToken stoppingToken, bool validarHorario = true)
         {
             const string nombreJob = "ALERTAS_CORREO_AUTOMATICO";
 
@@ -124,14 +125,17 @@ namespace Alertas.Services.Jobs
                 return;
             }
 
-            var debeEjecutarPorHorario = await DebeEjecutarPorHorarioAsync(
-                options,
-                context,
-                nombreJob,
-                stoppingToken);
+            if (validarHorario)
+            {
+                var debeEjecutarPorHorario = await DebeEjecutarPorHorarioAsync(
+                    options,
+                    context,
+                    nombreJob,
+                    stoppingToken);
 
-            if (!debeEjecutarPorHorario)
-                return;
+                if (!debeEjecutarPorHorario)
+                    return;
+            }
 
             var tomoLock = await lockService.IntentarTomarLockAsync(
                 nombreJob,
@@ -331,6 +335,17 @@ namespace Alertas.Services.Jobs
             }
 
             return true;
+        }
+
+        public async Task EjecutarAhoraAsync(
+             CancellationToken cancellationToken = default)
+        {
+            var options = _optionsMonitor.CurrentValue;
+
+            await EjecutarJobAsync(
+                options,
+                cancellationToken,
+                validarHorario: false);
         }
     }
 }
