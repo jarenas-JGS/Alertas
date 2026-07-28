@@ -490,40 +490,43 @@ namespace Alertas.Services.Notificaciones
             return resultadoAutomatico;
         }
 
-        private async Task<bool> YaFueEnviadoAutomaticamenteAsync(GrupoAlertasUsuarioDto correo)
+        private async Task<bool> YaFueEnviadoAutomaticamenteAsync(
+            GrupoAlertasUsuarioDto correo,
+            CancellationToken cancellationToken = default)
         {
-            var idsRegObl = correo.Alertas
-                .Select(a => a.IdRegObl)
-                .Distinct()
-                .ToList();
+            var zonaHorariaBogota =
+                TimeZoneInfo.FindSystemTimeZoneById("America/Bogota");
 
-            var idsGrupoAlertaDia = correo.Alertas
-                .Select(a => a.IdGrupoAlertaDia)
-                .Distinct()
-                .ToList();
+            var ahoraBogota = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.UtcNow,
+                zonaHorariaBogota);
 
-            var idsMensaje = correo.Alertas
-                .Select(a => a.IdMensaje)
-                .Distinct()
-                .ToList();
+            var inicioDiaBogota = ahoraBogota.Date;
+            var finDiaBogota = inicioDiaBogota.AddDays(1);
+
+            var inicioDiaUtc = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(inicioDiaBogota, DateTimeKind.Unspecified),
+                zonaHorariaBogota);
+
+            var finDiaUtc = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(finDiaBogota, DateTimeKind.Unspecified),
+                zonaHorariaBogota);
 
             return await _context.NotificacionesEnvios
                 .AsNoTracking()
-                .Where(e =>
+                .AnyAsync(e =>
                     e.tipo_ejecucion == "AUTOMATICO" &&
                     e.estado_envio == EstadoEnvioNotificacion.Enviado &&
                     e.id_proyecto == correo.IdProyecto &&
-                    e.id_usuario == correo.IdUsuario)
-                .AnyAsync(e =>
-                    e.Detalles.Any(d =>
-                        idsRegObl.Contains(d.id_reg_obl) &&
-                        idsGrupoAlertaDia.Contains(d.id_grupo_alerta_dia) &&
-                        idsMensaje.Contains(d.id_mensaje)));
+                    e.id_usuario == correo.IdUsuario &&
+                    e.fecha_envio >= inicioDiaUtc &&
+                    e.fecha_envio < finDiaUtc,
+                    cancellationToken);
         }
 
         private async Task<ResultadoEnvioAutomaticoDto> EnviarAlertasAutomaticasPruebaAsync(
-    SolicitudEnvioAutomaticoDto solicitud,
-    CancellationToken cancellationToken)
+            SolicitudEnvioAutomaticoDto solicitud,
+            CancellationToken cancellationToken)
         {
             var resultadoAutomatico = new ResultadoEnvioAutomaticoDto();
 
