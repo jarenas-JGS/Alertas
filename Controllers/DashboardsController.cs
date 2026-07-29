@@ -2,9 +2,12 @@
 using Alertas.Services;
 using Alertas.Services.Dashboards;
 using Alertas.ViewModels.Dashboards;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 
 namespace Alertas.Controllers
@@ -15,13 +18,16 @@ namespace Alertas.Controllers
         private readonly IDashboardOperativoService _dashboardOperativoService;
         private readonly SeguridadService _seguridadService;
         private readonly ApplicationDbContext _context;
+        private readonly IDashboardHistoricoCumplimientoService _dashboardHistoricoCumplimientoService;
 
         public DashboardsController(
             IDashboardOperativoService dashboardOperativoService,
+            IDashboardHistoricoCumplimientoService dashboardHistoricoCumplimientoService,
             SeguridadService seguridadService,
             ApplicationDbContext context)
         {
             _dashboardOperativoService = dashboardOperativoService;
+            _dashboardHistoricoCumplimientoService = dashboardHistoricoCumplimientoService;
             _seguridadService = seguridadService;
             _context = context;
         }
@@ -480,5 +486,718 @@ namespace Alertas.Controllers
 
             return View(vm);
         }
+
+        public async Task<IActionResult> HistoricoCumplimientoProyecto(
+            DateOnly? fechaDesde,
+            DateOnly? fechaHasta,
+            int? idCliente,
+            int? idEmpresa,
+            int? idCiudad,
+            int? idEstado,
+            int? idTipoObligacion,
+            int? idResponsable,
+            int? idElaborador,
+            int? idAutorizador,
+            int? idAprobador,
+            int? idUsuarioVencimiento,
+            string? clasificacion)
+        {
+            var idProyecto = _seguridadService.ObtenerIdProyectoActivo();
+
+            if (idProyecto == null)
+            {
+                TempData["Error"] = "Debe seleccionar un proyecto.";
+                return RedirectToAction("SeleccionarProyecto", "Login");
+            }
+
+            var esSuperAdmin = User.HasClaim("EsSuperAdmin", "true");
+
+            var tieneAccesoProyecto = await _seguridadService
+                .UsuarioTieneAccesoProyectoAsync(idProyecto.Value, "PROYECTO");
+
+            var tieneAccesoObligacion = await _seguridadService
+                .UsuarioTieneAccesoProyectoAsync(idProyecto.Value, "OBLIGACION");
+
+            if (!esSuperAdmin &&
+                !tieneAccesoProyecto &&
+                !tieneAccesoObligacion)
+            {
+                TempData["Error"] = "No tiene acceso al proyecto seleccionado.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var filtros = new FiltrosDashboardHistoricoCumplimientoVm
+            {
+                FechaDesde = fechaDesde,
+                FechaHasta = fechaHasta,
+
+                IdCliente = idCliente,
+                IdEmpresa = idEmpresa,
+                IdCiudad = idCiudad,
+                IdEstado = idEstado,
+                IdTipoObligacion = idTipoObligacion,
+
+                IdResponsable = idResponsable,
+                IdElaborador = idElaborador,
+                IdAutorizador = idAutorizador,
+                IdAprobador = idAprobador,
+                IdUsuarioVencimiento = idUsuarioVencimiento,
+
+                Clasificacion = clasificacion
+            };
+
+            var vm =
+                await _dashboardHistoricoCumplimientoService
+                    .ObtenerDashboardAsync(
+                        idProyecto.Value,
+                        filtros);
+
+            return View(vm);
+        }
+
+        public async Task<IActionResult> DetalleHistoricoCumplimiento(
+            string? tipo,
+            DateOnly? fechaDesde,
+            DateOnly? fechaHasta,
+            int? idCliente,
+            int? idEmpresa,
+            int? idCiudad,
+            int? idEstado,
+            int? idTipoObligacion,
+            int? idResponsable,
+            int? idElaborador,
+            int? idAutorizador,
+            int? idAprobador,
+            int? idUsuarioVencimiento,
+            string? clasificacion,
+            int? idEmpresaDetalle,
+            int? idAutorizadorDetalle,
+            int? idTipoObligacionDetalle)
+        {
+            var idProyecto =
+                _seguridadService.ObtenerIdProyectoActivo();
+
+            if (idProyecto == null)
+            {
+                TempData["Error"] =
+                    "Debe seleccionar un proyecto.";
+
+                return RedirectToAction(
+                    "SeleccionarProyecto",
+                    "Login");
+            }
+
+            var esSuperAdmin =
+                User.HasClaim("EsSuperAdmin", "true");
+
+            var tieneAccesoProyecto =
+                await _seguridadService
+                    .UsuarioTieneAccesoProyectoAsync(
+                        idProyecto.Value,
+                        "PROYECTO");
+
+            var tieneAccesoObligacion =
+                await _seguridadService
+                    .UsuarioTieneAccesoProyectoAsync(
+                        idProyecto.Value,
+                        "OBLIGACION");
+
+            if (!esSuperAdmin &&
+                !tieneAccesoProyecto &&
+                !tieneAccesoObligacion)
+            {
+                TempData["Error"] =
+                    "No tiene acceso al proyecto seleccionado.";
+
+                return RedirectToAction(
+                    "Index",
+                    "Home");
+            }
+
+            var filtros =
+                new FiltrosDashboardHistoricoCumplimientoVm
+                {
+                    FechaDesde = fechaDesde,
+                    FechaHasta = fechaHasta,
+                    IdCliente = idCliente,
+                    IdEmpresa = idEmpresa,
+                    IdCiudad = idCiudad,
+                    IdEstado = idEstado,
+                    IdTipoObligacion = idTipoObligacion,
+                    IdResponsable = idResponsable,
+                    IdElaborador = idElaborador,
+                    IdAutorizador = idAutorizador,
+                    IdAprobador = idAprobador,
+                    IdUsuarioVencimiento =
+                        idUsuarioVencimiento,
+                    Clasificacion = clasificacion
+                };
+
+            var vm =
+                await _dashboardHistoricoCumplimientoService
+                    .ObtenerDetalleAsync(
+                        idProyecto: idProyecto.Value,
+                        tipo: tipo ?? "total",
+                        filtros: filtros,
+                        idEmpresaDetalle: idEmpresaDetalle,
+                        idAutorizadorDetalle:
+                            idAutorizadorDetalle,
+                        idTipoObligacionDetalle:
+                            idTipoObligacionDetalle);
+
+            return View(vm);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportarHistoricoCumplimientoExcel(
+    DateOnly? fechaDesde,
+    DateOnly? fechaHasta,
+    int? idCliente,
+    int? idEmpresa,
+    int? idCiudad,
+    int? idEstado,
+    int? idTipoObligacion,
+    int? idResponsable,
+    int? idElaborador,
+    int? idAutorizador,
+    int? idAprobador,
+    int? idUsuarioVencimiento,
+    string? clasificacion)
+        {
+            var idProyecto =
+                _seguridadService.ObtenerIdProyectoActivo();
+
+            if (idProyecto == null)
+            {
+                TempData["Error"] =
+                    "Debe seleccionar un proyecto.";
+
+                return RedirectToAction(
+                    "SeleccionarProyecto",
+                    "Login");
+            }
+
+            var esSuperAdmin =
+                User.HasClaim("EsSuperAdmin", "true");
+
+            var tieneAccesoProyecto =
+                await _seguridadService
+                    .UsuarioTieneAccesoProyectoAsync(
+                        idProyecto.Value,
+                        "PROYECTO");
+
+            var tieneAccesoObligacion =
+                await _seguridadService
+                    .UsuarioTieneAccesoProyectoAsync(
+                        idProyecto.Value,
+                        "OBLIGACION");
+
+            if (!esSuperAdmin &&
+                !tieneAccesoProyecto &&
+                !tieneAccesoObligacion)
+            {
+                TempData["Error"] =
+                    "No tiene acceso al proyecto seleccionado.";
+
+                return RedirectToAction(
+                    "Index",
+                    "Home");
+            }
+
+            var filtros =
+                new FiltrosDashboardHistoricoCumplimientoVm
+                {
+                    FechaDesde = fechaDesde,
+                    FechaHasta = fechaHasta,
+
+                    IdCliente = idCliente,
+                    IdEmpresa = idEmpresa,
+                    IdCiudad = idCiudad,
+                    IdEstado = idEstado,
+                    IdTipoObligacion = idTipoObligacion,
+
+                    IdResponsable = idResponsable,
+                    IdElaborador = idElaborador,
+                    IdAutorizador = idAutorizador,
+                    IdAprobador = idAprobador,
+                    IdUsuarioVencimiento =
+                        idUsuarioVencimiento,
+
+                    Clasificacion = clasificacion
+                };
+
+            /*
+             * Usamos el detalle tipo "total" para exportar todas
+             * las obligaciones resultantes de los filtros generales.
+             */
+            var detalle =
+                await _dashboardHistoricoCumplimientoService
+                    .ObtenerDetalleAsync(
+                        idProyecto: idProyecto.Value,
+                        tipo: "total",
+                        filtros: filtros);
+
+            using var workbook = new XLWorkbook();
+
+            var worksheet =
+                workbook.Worksheets.Add(
+                    "Histórico cumplimiento");
+
+            ConstruirExcelHistoricoCumplimiento(
+                worksheet,
+                detalle);
+
+            using var stream = new MemoryStream();
+
+            workbook.SaveAs(stream);
+
+            var fechaArchivo =
+                DateTime.Now.ToString(
+                    "yyyyMMdd_HHmmss",
+                    CultureInfo.InvariantCulture);
+
+            var nombreArchivo =
+                $"Historico_Cumplimiento_{fechaArchivo}.xlsx";
+
+            return File(
+                stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                nombreArchivo);
+        }
+
+        private static void ConstruirExcelHistoricoCumplimiento(
+            IXLWorksheet worksheet,
+            DetalleHistoricoCumplimientoVm detalle)
+        {
+            var filaActual = 1;
+
+            /*
+             * ============================================================
+             * TÍTULO
+             * ============================================================
+             */
+
+            worksheet.Cell(filaActual, 1)
+                .Value =
+                    "Dashboard Histórico de Cumplimiento";
+
+            worksheet.Range(
+                    filaActual,
+                    1,
+                    filaActual,
+                    13)
+                .Merge();
+
+            worksheet.Cell(filaActual, 1)
+                .Style.Font.Bold = true;
+
+            worksheet.Cell(filaActual, 1)
+                .Style.Font.FontSize = 16;
+
+            worksheet.Cell(filaActual, 1)
+                .Style.Alignment.Horizontal =
+                    XLAlignmentHorizontalValues.Center;
+
+            worksheet.Cell(filaActual, 1)
+                .Style.Fill.BackgroundColor =
+                    XLColor.FromHtml("#0D6EFD");
+
+            worksheet.Cell(filaActual, 1)
+                .Style.Font.FontColor =
+                    XLColor.White;
+
+            worksheet.Row(filaActual)
+                .Height = 26;
+
+            filaActual += 2;
+
+            /*
+             * ============================================================
+             * INFORMACIÓN GENERAL
+             * ============================================================
+             */
+
+            worksheet.Cell(filaActual, 1)
+                .Value = "Proyecto:";
+
+            worksheet.Cell(filaActual, 2)
+                .Value = detalle.NombreProyecto;
+
+            worksheet.Cell(filaActual, 4)
+                .Value = "Fecha inicial:";
+
+            if (detalle.FechaDesde.HasValue)
+            {
+                worksheet.Cell(filaActual, 5)
+                    .Value = detalle.FechaDesde.Value.ToDateTime(
+                        TimeOnly.MinValue);
+
+            }
+            else
+            {
+                worksheet.Cell(filaActual, 5)
+                    .Value = "No definida";
+            }
+
+            worksheet.Cell(filaActual, 7)
+                .Value = "Fecha final:";
+
+            if (detalle.FechaHasta.HasValue)
+            {
+                worksheet.Cell(filaActual, 8)
+                    .Value = detalle.FechaHasta.Value.ToDateTime(
+                        TimeOnly.MinValue);
+
+            }
+            else
+            {
+                worksheet.Cell(filaActual, 8)
+                    .Value = "No definida";
+            }
+
+            worksheet.Cell(filaActual, 10)
+                .Value = "Registros:";
+
+            worksheet.Cell(filaActual, 11)
+                .Value = detalle.Obligaciones.Count;
+
+            worksheet.Cell(filaActual, 1)
+                .Style.Font.Bold = true;
+
+            worksheet.Cell(filaActual, 4)
+                .Style.Font.Bold = true;
+
+            worksheet.Cell(filaActual, 7)
+                .Style.Font.Bold = true;
+
+            worksheet.Cell(filaActual, 10)
+                .Style.Font.Bold = true;
+
+            worksheet.Cell(filaActual, 5)
+                .Style.DateFormat.Format =
+                    "dd/MM/yyyy";
+
+            worksheet.Cell(filaActual, 8)
+                .Style.DateFormat.Format =
+                    "dd/MM/yyyy";
+
+            filaActual += 2;
+
+            /*
+             * ============================================================
+             * ENCABEZADOS
+             * ============================================================
+             */
+
+            var encabezados = new[]
+            {
+                "ID obligación",
+                "Obligación",
+                "Código",
+                "Cliente",
+                "Empresa",
+                "Tipo de obligación",
+                "Ciudad",
+                "Estado actual",
+                "Fecha de vencimiento",
+                "Fecha de cumplimiento",
+                "Días de atraso",
+                "Clasificación",
+                "Autorizador(es)"
+            };
+
+            for (var columna = 0;
+                 columna < encabezados.Length;
+                 columna++)
+            {
+                worksheet.Cell(
+                        filaActual,
+                        columna + 1)
+                    .Value =
+                        encabezados[columna];
+            }
+
+            var rangoEncabezados =
+                worksheet.Range(
+                    filaActual,
+                    1,
+                    filaActual,
+                    encabezados.Length);
+
+            rangoEncabezados.Style.Font.Bold = true;
+
+            rangoEncabezados.Style.Font.FontColor =
+                XLColor.White;
+
+            rangoEncabezados.Style.Fill.BackgroundColor =
+                XLColor.FromHtml("#212529");
+
+            rangoEncabezados.Style.Alignment.Horizontal =
+                XLAlignmentHorizontalValues.Center;
+
+            rangoEncabezados.Style.Alignment.Vertical =
+                XLAlignmentVerticalValues.Center;
+
+            rangoEncabezados.Style.Border.BottomBorder =
+                XLBorderStyleValues.Thin;
+
+            worksheet.Row(filaActual)
+                .Height = 28;
+
+            var filaEncabezado = filaActual;
+
+            filaActual++;
+
+            /*
+             * ============================================================
+             * DATOS
+             * ============================================================
+             */
+
+            foreach (var item in detalle.Obligaciones)
+            {
+                worksheet.Cell(filaActual, 1)
+                    .Value = item.IdRegObl;
+
+                worksheet.Cell(filaActual, 2)
+                    .Value = item.Nombre;
+
+                worksheet.Cell(filaActual, 3)
+                    .Value =
+                        string.IsNullOrWhiteSpace(
+                            item.CodigoObligacion)
+                            ? "-"
+                            : item.CodigoObligacion;
+
+                worksheet.Cell(filaActual, 4)
+                    .Value = item.Cliente;
+
+                worksheet.Cell(filaActual, 5)
+                    .Value = item.Empresa;
+
+                worksheet.Cell(filaActual, 6)
+                    .Value = item.TipoObligacion;
+
+                worksheet.Cell(filaActual, 7)
+                    .Value =
+                        string.IsNullOrWhiteSpace(
+                            item.Ciudad)
+                            ? "Sin ciudad"
+                            : item.Ciudad;
+
+                worksheet.Cell(filaActual, 8)
+                    .Value = item.EstadoActual;
+
+                worksheet.Cell(filaActual, 9)
+                    .Value =
+                        item.FechaVencimiento
+                            .ToDateTime(
+                                TimeOnly.MinValue);
+
+                if (item.FechaCumplimiento.HasValue)
+                {
+                    worksheet.Cell(filaActual, 10)
+                        .Value =
+                            item.FechaCumplimiento
+                                .Value
+                                .ToDateTime(
+                                    TimeOnly.MinValue);
+                }
+                else
+                {
+                    worksheet.Cell(filaActual, 10)
+                        .Value =
+                            "Sin cumplimiento";
+                }
+
+                worksheet.Cell(filaActual, 11)
+                    .Value = item.DiasVencida;
+
+                worksheet.Cell(filaActual, 12)
+                    .Value =
+                        ObtenerTextoClasificacionExcel(
+                            item.Clasificacion);
+
+                worksheet.Cell(filaActual, 13)
+                    .Value =
+                        item.AutorizadoresTexto;
+
+                worksheet.Cell(filaActual, 9)
+                    .Style.DateFormat.Format =
+                        "dd/MM/yyyy";
+
+                if (item.FechaCumplimiento.HasValue)
+                {
+                    worksheet.Cell(filaActual, 10)
+                        .Style.DateFormat.Format =
+                            "dd/MM/yyyy";
+                }
+
+                AplicarEstiloClasificacionExcel(
+                    worksheet.Cell(filaActual, 12),
+                    item.Clasificacion);
+
+                filaActual++;
+            }
+
+            /*
+             * ============================================================
+             * TABLA Y FORMATO
+             * ============================================================
+             */
+
+            if (detalle.Obligaciones.Count > 0)
+            {
+                var rangoDatos =
+                    worksheet.Range(
+                        filaEncabezado,
+                        1,
+                        filaActual - 1,
+                        encabezados.Length);
+
+                var tabla =
+                    rangoDatos.CreateTable(
+                        "TablaHistoricoCumplimiento");
+
+                tabla.Theme =
+                    XLTableTheme.TableStyleMedium2;
+
+                tabla.ShowAutoFilter = true;
+
+                worksheet.SheetView
+                    .FreezeRows(filaEncabezado);
+
+                worksheet.SheetView
+                    .FreezeColumns(2);
+            }
+
+            /*
+             * ============================================================
+             * ANCHOS
+             * ============================================================
+             */
+
+            worksheet.Column(1).Width = 13;
+            worksheet.Column(2).Width = 38;
+            worksheet.Column(3).Width = 16;
+            worksheet.Column(4).Width = 28;
+            worksheet.Column(5).Width = 28;
+            worksheet.Column(6).Width = 25;
+            worksheet.Column(7).Width = 18;
+            worksheet.Column(8).Width = 18;
+            worksheet.Column(9).Width = 20;
+            worksheet.Column(10).Width = 21;
+            worksheet.Column(11).Width = 15;
+            worksheet.Column(12).Width = 25;
+            worksheet.Column(13).Width = 35;
+
+            worksheet.Columns(2, 13)
+                .Style.Alignment.WrapText = true;
+
+            worksheet.Columns(1, 13)
+                .Style.Alignment.Vertical =
+                    XLAlignmentVerticalValues.Center;
+
+            worksheet.Column(1)
+                .Style.Alignment.Horizontal =
+                    XLAlignmentHorizontalValues.Center;
+
+            worksheet.Columns(9, 12)
+                .Style.Alignment.Horizontal =
+                    XLAlignmentHorizontalValues.Center;
+
+            var rangoUsado = worksheet.RangeUsed();
+
+            if (rangoUsado != null)
+            {
+                rangoUsado.Style.Border.InsideBorder =
+                    XLBorderStyleValues.Hair;
+
+                rangoUsado.Style.Border.OutsideBorder =
+                    XLBorderStyleValues.Thin;
+            }
+        }
+
+        private static string ObtenerTextoClasificacionExcel(
+            string? clasificacion)
+        {
+            var valor =
+                (clasificacion ?? string.Empty)
+                    .Trim()
+                    .ToUpperInvariant();
+
+            if (valor.Contains("OPORTUN"))
+                return "Cumplida oportunamente";
+
+            if (valor.Contains("ATRAS"))
+                return "Cumplida con atraso";
+
+            if (valor.Contains("VENCID") ||
+                valor.Contains("PENDIENT"))
+            {
+                return "Sigue vencida";
+            }
+
+            return string.IsNullOrWhiteSpace(
+                clasificacion)
+                    ? "Sin clasificación"
+                    : clasificacion;
+        }
+
+        private static void AplicarEstiloClasificacionExcel(
+    IXLCell celda,
+    string? clasificacion)
+        {
+            var valor =
+                (clasificacion ?? string.Empty)
+                    .Trim()
+                    .ToUpperInvariant();
+
+            celda.Style.Font.Bold = true;
+
+            celda.Style.Alignment.Horizontal =
+                XLAlignmentHorizontalValues.Center;
+
+            if (valor.Contains("OPORTUN"))
+            {
+                celda.Style.Fill.BackgroundColor =
+                    XLColor.FromHtml("#D1E7DD");
+
+                celda.Style.Font.FontColor =
+                    XLColor.FromHtml("#0F5132");
+
+                return;
+            }
+
+            if (valor.Contains("ATRAS"))
+            {
+                celda.Style.Fill.BackgroundColor =
+                    XLColor.FromHtml("#FFF3CD");
+
+                celda.Style.Font.FontColor =
+                    XLColor.FromHtml("#664D03");
+
+                return;
+            }
+
+            if (valor.Contains("VENCID") ||
+                valor.Contains("PENDIENT"))
+            {
+                celda.Style.Fill.BackgroundColor =
+                    XLColor.FromHtml("#F8D7DA");
+
+                celda.Style.Font.FontColor =
+                    XLColor.FromHtml("#842029");
+
+                return;
+            }
+
+            celda.Style.Fill.BackgroundColor =
+                XLColor.FromHtml("#E2E3E5");
+
+            celda.Style.Font.FontColor =
+                XLColor.FromHtml("#41464B");
+        }
+
     }
 }

@@ -1,0 +1,1277 @@
+﻿@model Alertas.ViewModels.Dashboards.DashboardHistoricoCumplimientoVm
+
+@{
+    ViewData["Title"] = "Histórico de Cumplimiento";
+}
+
+<div class="container-fluid mt-4">
+
+    @* ============================================================
+       ENCABEZADO
+       ============================================================ *@
+
+    <div class="row align-items-center mb-4 g-3">
+        <div class="col-12 col-lg">
+            <h3 class="mb-1">
+                <i class="bi bi-graph-up-arrow me-2"></i>
+                Dashboard Histórico de Cumplimiento
+            </h3>
+
+            <div class="text-muted">
+                Análisis del desempeño de las obligaciones cuyo vencimiento
+                corresponde al período seleccionado.
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-auto">
+            <div class="d-flex flex-wrap justify-content-lg-end gap-2">
+
+                <a asp-controller="Dashboards"
+                   asp-action="VencimientosProyecto"
+                   class="btn btn-outline-danger">
+                    <i class="bi bi-calendar2-x me-1"></i>
+                    Vencimientos actuales
+                </a>
+
+                <span class="badge rounded-pill bg-primary px-3 py-2 d-flex align-items-center">
+                    @Model.NombreProyecto
+                </span>
+
+            </div>
+        </div>
+    </div>
+
+    @* ============================================================
+       FILTROS
+       ============================================================ *@
+
+    <div class="card shadow-sm border-0 mb-4 dashboard-filter-card">
+        <div class="card-body">
+
+            <form id="formFiltrosHistorico"
+                  asp-controller="Dashboards"
+                  asp-action="HistoricoCumplimientoProyecto"
+                  method="get"
+                  class="row g-3 align-items-end">
+
+                <div class="col-12 col-md-6 col-xl-2">
+                    <label class="form-label small text-muted mb-1">
+                        Fecha desde
+                    </label>
+
+                    <input type="date"
+                           name="fechaDesde"
+                           value="@(Model.Filtros.FechaDesde?.ToString("yyyy-MM-dd"))"
+                           max="@DateTime.Today.ToString("yyyy-MM-dd")"
+                           class="form-control" />
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-2">
+                    <label class="form-label small text-muted mb-1">
+                        Fecha hasta
+                    </label>
+
+                    <input type="date"
+                           name="fechaHasta"
+                           value="@(Model.Filtros.FechaHasta?.ToString("yyyy-MM-dd"))"
+                           max="@DateTime.Today.ToString("yyyy-MM-dd")"
+                           class="form-control" />
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-2">
+                    <label class="form-label small text-muted mb-1">
+                        Clasificación
+                    </label>
+
+                    <select name="clasificacion"
+                            class="form-select">
+                        <option value="">Todas</option>
+
+                        @foreach (var item in Model.Filtros.Clasificaciones)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(Model.Filtros.Clasificacion == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">
+                        Cliente
+                    </label>
+
+                    <select name="idCliente"
+                            class="form-select">
+                        <option value="">Todos</option>
+
+                        @foreach (var item in Model.Filtros.Clientes)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(Model.Filtros.IdCliente?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">
+                        Empresa
+                    </label>
+
+                    <select name="idEmpresa"
+                            class="form-select">
+                        <option value="">Todas</option>
+
+                        @foreach (var item in Model.Filtros.Empresas)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(Model.Filtros.IdEmpresa?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">
+                        Ciudad
+                    </label>
+
+                    <select name="idCiudad"
+                            class="form-select">
+                        <option value="">Todas</option>
+
+                        @foreach (var item in Model.Filtros.Ciudades)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(Model.Filtros.IdCiudad?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">
+                        Estado actual
+                    </label>
+
+                    <select name="idEstado"
+                            class="form-select">
+                        <option value="">Todos</option>
+
+                        @foreach (var item in Model.Filtros.Estados)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(Model.Filtros.IdEstado?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">
+                        Tipo de obligación
+                    </label>
+
+                    <select name="idTipoObligacion"
+                            class="form-select">
+                        <option value="">Todos</option>
+
+                        @foreach (var item in Model.Filtros.TiposObligacion)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(Model.Filtros.IdTipoObligacion?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">
+                        Responsable
+                    </label>
+
+                    <select name="idResponsable"
+                            class="form-select">
+                        <option value="">Todos</option>
+
+                        @foreach (var item in Model.Filtros.Responsables)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(Model.Filtros.IdResponsable?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">
+                        Elaborador
+                    </label>
+
+                    <select name="idElaborador"
+                            class="form-select">
+                        <option value="">Todos</option>
+
+                        @foreach (var item in Model.Filtros.Elaboradores)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(Model.Filtros.IdElaborador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">
+                        Autorizador
+                    </label>
+
+                    <select name="idAutorizador"
+                            class="form-select">
+                        <option value="">Todos</option>
+
+                        @foreach (var item in Model.Filtros.Autorizadores)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(Model.Filtros.IdAutorizador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">
+                        Aprobador
+                    </label>
+
+                    <select name="idAprobador"
+                            class="form-select">
+                        <option value="">Todos</option>
+
+                        @foreach (var item in Model.Filtros.Aprobadores)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(Model.Filtros.IdAprobador?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label small text-muted mb-1">
+                        Usuario de vencimiento
+                    </label>
+
+                    <select name="idUsuarioVencimiento"
+                            class="form-select">
+                        <option value="">Todos</option>
+
+                        @foreach (var item in Model.Filtros.UsuariosVencimiento)
+                        {
+                            <option value="@item.Value"
+                                    selected="@(Model.Filtros.IdUsuarioVencimiento?.ToString() == item.Value)">
+                                @item.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+
+
+                <div class="col-12">
+                    <div class="d-flex flex-wrap gap-2 justify-content-end">
+
+                        <button type="submit"
+                                class="btn btn-primary btn-dashboard-accion">
+                            <i class="bi bi-funnel"></i>
+                            <span>Aplicar filtros</span>
+                        </button>
+
+                        <a asp-controller="Dashboards"
+                           asp-action="ExportarHistoricoCumplimientoExcel"
+                           asp-route-fechaDesde="@(Model.Filtros.FechaDesde?.ToString("yyyy-MM-dd"))"
+                           asp-route-fechaHasta="@(Model.Filtros.FechaHasta?.ToString("yyyy-MM-dd"))"
+                           asp-route-idCliente="@Model.Filtros.IdCliente"
+                           asp-route-idEmpresa="@Model.Filtros.IdEmpresa"
+                           asp-route-idCiudad="@Model.Filtros.IdCiudad"
+                           asp-route-idEstado="@Model.Filtros.IdEstado"
+                           asp-route-idTipoObligacion="@Model.Filtros.IdTipoObligacion"
+                           asp-route-idResponsable="@Model.Filtros.IdResponsable"
+                           asp-route-idElaborador="@Model.Filtros.IdElaborador"
+                           asp-route-idAutorizador="@Model.Filtros.IdAutorizador"
+                           asp-route-idAprobador="@Model.Filtros.IdAprobador"
+                           asp-route-idUsuarioVencimiento="@Model.Filtros.IdUsuarioVencimiento"
+                           asp-route-clasificacion="@Model.Filtros.Clasificacion"
+                           class="btn btn-success btn-dashboard-accion
+          @(Model.TotalObligacionesPeriodo == 0 ? "disabled" : "")"
+                           aria-disabled="@(Model.TotalObligacionesPeriodo == 0
+                                   ? "true"
+                                   : "false")"
+                           tabindex="@(Model.TotalObligacionesPeriodo == 0
+                                   ? "-1"
+                                   : "0")"
+                           title="@(Model.TotalObligacionesPeriodo == 0
+                                   ? "No hay registros para exportar"
+                                   : "Exportar la información filtrada")"
+                           id="btnExportarHistorico">
+
+                            <i class="bi bi-file-earmark-excel"></i>
+                            <span>Exportar a Excel</span>
+                        </a>
+
+                        <a asp-controller="Dashboards"
+                           asp-action="HistoricoCumplimientoProyecto"
+                           class="btn btn-outline-secondary btn-dashboard-accion">
+
+                            <i class="bi bi-x-circle"></i>
+                            <span>Limpiar</span>
+                        </a>
+
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    @* ============================================================
+       INFORMACIÓN DEL PERÍODO
+       ============================================================ *@
+
+    <div class="alert alert-light border shadow-sm mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+
+            <div>
+                <i class="bi bi-calendar-range me-2 text-primary"></i>
+                <span class="fw-semibold">Período analizado:</span>
+
+                @if (Model.FechaDesde.HasValue && Model.FechaHasta.HasValue)
+                {
+                    <span>
+                        @Model.FechaDesde.Value.ToString("dd/MM/yyyy")
+                        al
+                        @Model.FechaHasta.Value.ToString("dd/MM/yyyy")
+                    </span>
+                }
+                else
+                {
+                    <span>No definido</span>
+                }
+            </div>
+
+            <div class="small text-muted">
+                El período se determina por la fecha de vencimiento de la obligación.
+            </div>
+
+        </div>
+    </div>
+
+    @if (Model.TotalObligacionesPeriodo == 0)
+    {
+        <div class="alert alert-info border-0 shadow-sm mb-4"
+             role="alert">
+
+            <div class="d-flex align-items-start gap-3">
+
+                <i class="bi bi-info-circle fs-4"></i>
+
+                <div>
+                    <div class="fw-semibold">
+                        No se encontraron obligaciones
+                    </div>
+
+                    <div class="small">
+                        No existen obligaciones con fecha de vencimiento dentro
+                        del período y los filtros seleccionados.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    }
+
+
+    @* ============================================================
+       KPIs
+       ============================================================ *@
+
+    <div class="row g-3 mb-4">
+
+        @* Total del período *@
+        <div class="col-12 col-sm-6 col-xl">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card
+                    @(Model.TotalObligacionesPeriodo > 0
+                                         ? "dashboard-detail-card"
+                                         : "dashboard-detail-card-disabled")"
+                 role="@(Model.TotalObligacionesPeriodo > 0 ? "button" : null)"
+                 tabindex="@(Model.TotalObligacionesPeriodo > 0 ? "0" : "-1")"
+                 data-tipo="@(Model.TotalObligacionesPeriodo > 0
+                                  ? "total"
+                                  : null)">
+
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Obligaciones del período
+                    </div>
+
+                    <h3 class="fw-bold mb-0">
+                        @Model.TotalObligacionesPeriodo
+                    </h3>
+
+                    <div class="small text-muted mt-3">
+                        Con vencimiento dentro del período.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Cumplidas oportunamente *@
+        <div class="col-12 col-sm-6 col-xl">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card
+                    @(Model.CumplidasOportunamente > 0
+                                         ? "dashboard-detail-card"
+                                         : "dashboard-detail-card-disabled")"
+                 role="@(Model.CumplidasOportunamente > 0 ? "button" : null)"
+                 tabindex="@(Model.CumplidasOportunamente > 0 ? "0" : "-1")"
+                 data-tipo="@(Model.CumplidasOportunamente > 0
+                                  ? "oportunas"
+                                  : null)">
+
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Cumplidas oportunamente
+                    </div>
+
+                    <h3 class="fw-bold mb-0 text-success">
+                        @Model.CumplidasOportunamente
+                    </h3>
+
+                    <div class="small text-muted mt-3">
+                        Cumplidas dentro del plazo.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Cumplidas con atraso *@
+        <div class="col-12 col-sm-6 col-xl">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card
+                    @(Model.CumplidasConAtraso > 0
+                                         ? "dashboard-detail-card"
+                                         : "dashboard-detail-card-disabled")"
+                 role="@(Model.CumplidasConAtraso > 0 ? "button" : null)"
+                 tabindex="@(Model.CumplidasConAtraso > 0 ? "0" : "-1")"
+                 data-tipo="@(Model.CumplidasConAtraso > 0
+                                  ? "atraso"
+                                  : null)">
+
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Cumplidas con atraso
+                    </div>
+
+                    <h3 class="fw-bold mb-0 text-warning">
+                        @Model.CumplidasConAtraso
+                    </h3>
+
+                    <div class="small text-muted mt-3">
+                        Cumplidas después del vencimiento.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Siguen vencidas *@
+        <div class="col-12 col-sm-6 col-xl">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card
+                    @(Model.SiguenVencidas > 0
+                                         ? "dashboard-detail-card"
+                                         : "dashboard-detail-card-disabled")"
+                 role="@(Model.SiguenVencidas > 0 ? "button" : null)"
+                 tabindex="@(Model.SiguenVencidas > 0 ? "0" : "-1")"
+                 data-tipo="@(Model.SiguenVencidas > 0
+                                  ? "pendientes"
+                                  : null)">
+
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Siguen vencidas
+                    </div>
+
+                    <h3 class="fw-bold mb-0 text-danger">
+                        @Model.SiguenVencidas
+                    </h3>
+
+                    <div class="small text-muted mt-3">
+                        No tienen cumplimiento registrado.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Cumplimiento oportuno
+                    </div>
+
+                    <h3 class="fw-bold mb-0 text-success">
+                        @Model.PorcentajeCumplimientoOportuno.ToString("N2")%
+                    </h3>
+
+                    <div class="small text-muted mt-3">
+                        Porcentaje de obligaciones cumplidas dentro del plazo.
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Promedio de atraso
+                    </div>
+
+                    <h3 class="fw-bold mb-0 text-danger">
+                        @Model.PromedioDiasAtraso.ToString("N2")
+                    </h3>
+
+                    <div class="small text-muted mt-3">
+                        Días promedio entre obligaciones con atraso.
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                <div class="card-body">
+
+                    <div class="text-muted small">
+                        Mayor atraso
+                    </div>
+
+                    <h3 class="fw-bold mb-0 text-danger">
+                        @Model.MayorAtrasoDias
+                    </h3>
+
+                    <div class="small text-muted mt-3">
+                        Máximo número de días de atraso detectado.
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @* ============================================================
+       GRÁFICOS PRINCIPALES
+       ============================================================ *@
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-xl-5">
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">
+                        Distribución del cumplimiento
+                    </h6>
+
+                    <small class="text-muted">
+                        Resultado general de las obligaciones del período.
+                    </small>
+                </div>
+
+                <div class="card-body">
+                    <div id="chartDistribucionCumplimiento"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-7">
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">
+                        Rangos de atraso
+                    </h6>
+
+                    <small class="text-muted">
+                        Distribución según la cantidad de días de atraso.
+                    </small>
+                </div>
+
+                <div class="card-body">
+                    <div id="chartRangosAtraso"></div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    @* ============================================================
+       GRÁFICOS DE ANÁLISIS
+       ============================================================ *@
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">
+                        Obligaciones con atraso por empresa
+                    </h6>
+
+                    <small class="text-muted">
+                        Empresas con mayor cantidad de incumplimientos.
+                    </small>
+                </div>
+
+                <div class="card-body">
+                    <div id="chartEmpresas"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">
+                        Obligaciones con atraso por autorizador
+                    </h6>
+
+                    <small class="text-muted">
+                        Autorizadores asociados a obligaciones vencidas.
+                    </small>
+                </div>
+
+                <div class="card-body">
+                    <div id="chartAutorizadores"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white border-0 pb-0">
+                    <h6 class="fw-bold mb-0">
+                        Obligaciones con atraso por tipo
+                    </h6>
+
+                    <small class="text-muted">
+                        Tipos de obligación con mayor incidencia de atraso.
+                    </small>
+                </div>
+
+                <div class="card-body">
+                    <div id="chartTipos"></div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+@* ==============================================================
+   OVERLAY
+   ============================================================== *@
+
+<div id="dashboardHistoricoOverlay"
+     class="dashboard-overlay d-none">
+
+    <div class="dashboard-overlay-content">
+
+        <div class="spinner-border text-primary mb-3"
+             role="status">
+            <span class="visually-hidden">
+                Procesando...
+            </span>
+        </div>
+
+        <h5 class="fw-semibold mb-1">
+            Cargando histórico de cumplimiento...
+        </h5>
+
+        <div class="text-muted">
+            Procesando obligaciones, cumplimientos y atrasos.
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script>
+        const historicoData = {
+            distribucion:
+                @Html.Raw(
+                    System.Text.Json.JsonSerializer.Serialize(
+                            Model.DistribucionCumplimiento)),
+
+        empresas:
+            @Html.Raw(
+                                System.Text.Json.JsonSerializer.Serialize(
+                                        Model.VencidasPorEmpresa)),
+
+        autorizadores:
+            @Html.Raw(
+                                System.Text.Json.JsonSerializer.Serialize(
+                                        Model.VencidasPorAutorizador)),
+
+        tipos:
+            @Html.Raw(
+                                System.Text.Json.JsonSerializer.Serialize(
+                                        Model.VencidasPorTipoObligacion)),
+
+        rangos:
+            @Html.Raw(
+                                System.Text.Json.JsonSerializer.Serialize(
+                                        Model.RangosAtraso))
+    };
+
+    const detalleHistoricoUrl =
+        '@Url.Action(
+                        "DetalleHistoricoCumplimiento",
+                        "Dashboards")';
+
+    $('#formFiltrosHistorico').on('submit', function () {
+
+            const fechaDesde =
+                document.querySelector(
+                    '[name="fechaDesde"]'
+                ).value;
+
+            const fechaHasta =
+                document.querySelector(
+                    '[name="fechaHasta"]'
+                ).value;
+
+            if (fechaDesde &&
+                fechaHasta &&
+                fechaDesde > fechaHasta) {
+
+                alert(
+                    'La fecha inicial no puede ser posterior ' +
+                    'a la fecha final.'
+                );
+
+                return false;
+            }
+
+            $('#dashboardHistoricoOverlay')
+                .removeClass('d-none');
+
+            return true;
+        });
+
+        function labels(data) {
+            return data.map(x => x.Label);
+        }
+
+        function values(data) {
+            return data.map(x => x.Valor);
+        }
+
+        function mostrarSinInformacion(elementId) {
+
+            const elemento =
+                document.querySelector(elementId);
+
+            if (!elemento)
+                return;
+
+            elemento.innerHTML =
+                '<div class="text-muted text-center py-5">' +
+                    '<i class="bi bi-info-circle me-1"></i>' +
+                    'No hay información disponible.' +
+                '</div>';
+        }
+
+        function buildQueryString(extraParams = {}) {
+
+            const params = new URLSearchParams();
+
+            const currentFilters = {
+                fechaDesde:
+                    '@(Model.Filtros.FechaDesde?.ToString("yyyy-MM-dd"))',
+
+                fechaHasta:
+                    '@(Model.Filtros.FechaHasta?.ToString("yyyy-MM-dd"))',
+
+                idCliente:
+                    '@Model.Filtros.IdCliente',
+
+                idEmpresa:
+                    '@Model.Filtros.IdEmpresa',
+
+                idCiudad:
+                    '@Model.Filtros.IdCiudad',
+
+                idEstado:
+                    '@Model.Filtros.IdEstado',
+
+                idTipoObligacion:
+                    '@Model.Filtros.IdTipoObligacion',
+
+                idResponsable:
+                    '@Model.Filtros.IdResponsable',
+
+                idElaborador:
+                    '@Model.Filtros.IdElaborador',
+
+                idAutorizador:
+                    '@Model.Filtros.IdAutorizador',
+
+                idAprobador:
+                    '@Model.Filtros.IdAprobador',
+
+                idUsuarioVencimiento:
+                    '@Model.Filtros.IdUsuarioVencimiento',
+
+                clasificacion:
+                    '@Html.Raw(
+                                        System.Text.Encodings.Web
+                                                .JavaScriptEncoder.Default
+                                                .Encode(
+                                                        Model.Filtros.Clasificacion
+                                                        ?? string.Empty))'
+        };
+
+            Object.keys(currentFilters)
+                .forEach(key => {
+
+                    const value =
+                        currentFilters[key];
+
+                    if (value !== null &&
+                        value !== undefined &&
+                        value !== '') {
+
+                        params.set(
+                            key,
+                            value
+                        );
+                    }
+                });
+
+            Object.keys(extraParams)
+                .forEach(key => {
+
+                    const value =
+                        extraParams[key];
+
+                    if (value !== null &&
+                        value !== undefined &&
+                        value !== '') {
+
+                        params.set(
+                            key,
+                            value
+                        );
+                    }
+                });
+
+            return params.toString();
+        }
+
+        function abrirDetalle(extraParams) {
+
+            const query =
+                buildQueryString(extraParams);
+
+            $('#dashboardHistoricoOverlay')
+                .removeClass('d-none');
+
+            window.location.href =
+                `${detalleHistoricoUrl}?${query}`;
+        }
+
+        function renderDistribucion() {
+
+            const data =
+                historicoData.distribucion;
+
+            if (!data ||
+                data.length === 0 ||
+                values(data).every(x => x === 0)) {
+
+                mostrarSinInformacion(
+                    '#chartDistribucionCumplimiento'
+                );
+
+                return;
+            }
+
+            const options = {
+                chart: {
+                    type: 'donut',
+                    height: 340,
+                    toolbar: {
+                        show: false
+                    },
+                    events: {
+                        dataPointSelection:
+                            function (
+                                event,
+                                chartContext,
+                                config) {
+
+                                const item =
+                                    data[
+                                        config.dataPointIndex
+                                    ];
+
+                                let tipo = 'total';
+
+                                if (
+                                    item.Label ===
+                                    'Cumplida oportunamente'
+                                ) {
+                                    tipo = 'oportunas';
+                                }
+                                else if (
+                                    item.Label ===
+                                    'Cumplida con atraso'
+                                ) {
+                                    tipo = 'atraso';
+                                }
+                                else if (
+                                    item.Label ===
+                                    'Sigue vencida'
+                                ) {
+                                    tipo = 'pendientes';
+                                }
+
+                                abrirDetalle({
+                                    tipo: tipo
+                                });
+                            }
+                    }
+                },
+
+                series: values(data),
+                labels: labels(data),
+
+                colors: [
+                    '#198754',
+                    '#ffc107',
+                    '#dc3545'
+                ],
+
+                legend: {
+                    position: 'bottom'
+                },
+
+                dataLabels: {
+                    enabled: true
+                },
+
+                tooltip: {
+                    y: {
+                        formatter:
+                            function (val) {
+                                return val +
+                                    ' obligaciones - ' +
+                                    'clic para ver detalle';
+                            }
+                    }
+                },
+
+                noData: {
+                    text:
+                        'No hay información disponible.'
+                }
+            };
+
+            new ApexCharts(
+                document.querySelector(
+                    '#chartDistribucionCumplimiento'
+                ),
+                options
+            ).render();
+        }
+
+        function renderBar(
+            elementId,
+            data,
+            color,
+            horizontal = true) {
+
+            if (!data ||
+                data.length === 0) {
+
+                mostrarSinInformacion(elementId);
+                return;
+            }
+
+            new ApexCharts(
+                document.querySelector(elementId),
+                {
+                    chart: {
+                        type: 'bar',
+                        height: 340,
+                        toolbar: {
+                            show: false
+                        }
+                    },
+
+                    colors: [color],
+
+                    series: [
+                        {
+                            name: 'Obligaciones',
+                            data: values(data)
+                        }
+                    ],
+
+                    xaxis: {
+                        categories: labels(data),
+                        labels: {
+                            rotate:
+                                horizontal
+                                    ? 0
+                                    : -45,
+                            trim: true
+                        }
+                    },
+
+                    plotOptions: {
+                        bar: {
+                            horizontal: horizontal,
+                            borderRadius: 6,
+                            columnWidth: '45%'
+                        }
+                    },
+
+                    dataLabels: {
+                        enabled: false
+                    },
+
+                    tooltip: {
+                        y: {
+                            formatter:
+                                function (val) {
+                                    return val +
+                                        ' obligaciones';
+                                }
+                        }
+                    }
+                }
+            ).render();
+        }
+
+        function renderBarClickable(
+            elementId,
+            data,
+            tipo,
+            detailParamName,
+            color = '#dc3545') {
+
+            if (!data ||
+                data.length === 0) {
+
+                mostrarSinInformacion(elementId);
+                return;
+            }
+
+            new ApexCharts(
+                document.querySelector(elementId),
+                {
+                    chart: {
+                        type: 'bar',
+                        height: 340,
+                        toolbar: {
+                            show: false
+                        },
+
+                        events: {
+                            dataPointSelection:
+                                function (
+                                    event,
+                                    chartContext,
+                                    config) {
+
+                                    const item =
+                                        data[
+                                            config.dataPointIndex
+                                        ];
+
+                                    const extraParams = {
+                                        tipo: tipo
+                                    };
+
+                                    extraParams[
+                                        detailParamName
+                                    ] = item.Id;
+
+                                    abrirDetalle(
+                                        extraParams
+                                    );
+                                }
+                        }
+                    },
+
+                    colors: [color],
+
+                    series: [
+                        {
+                            name: 'Obligaciones',
+                            data: values(data)
+                        }
+                    ],
+
+                    xaxis: {
+                        categories: labels(data)
+                    },
+
+                    plotOptions: {
+                        bar: {
+                            horizontal: true,
+                            borderRadius: 6
+                        }
+                    },
+
+                    dataLabels: {
+                        enabled: false
+                    },
+
+                    tooltip: {
+                        y: {
+                            formatter:
+                                function (val) {
+                                    return val +
+                                        ' obligaciones - ' +
+                                        'clic para ver detalle';
+                                }
+                        }
+                    }
+                }
+            ).render();
+        }
+
+        renderDistribucion();
+
+        renderBar(
+            '#chartRangosAtraso',
+            historicoData.rangos,
+            '#2563eb',
+            false
+        );
+
+        renderBarClickable(
+            '#chartEmpresas',
+            historicoData.empresas,
+            'empresa',
+            'idEmpresaDetalle',
+            '#dc3545'
+        );
+
+        renderBarClickable(
+            '#chartAutorizadores',
+            historicoData.autorizadores,
+            'autorizador',
+            'idAutorizadorDetalle',
+            '#dc3545'
+        );
+
+        renderBarClickable(
+            '#chartTipos',
+            historicoData.tipos,
+            'tipo',
+            'idTipoObligacionDetalle',
+            '#dc3545'
+        );
+
+        document
+            .querySelectorAll('.dashboard-detail-card')
+            .forEach(card => {
+
+                const abrir = function () {
+
+                    const tipo = card.dataset.tipo;
+
+                    if (!tipo) {
+                        return;
+                    }
+
+                    abrirDetalle({
+                        tipo: tipo
+                    });
+                };
+
+                card.addEventListener(
+                    'click',
+                    abrir
+                );
+
+                card.addEventListener(
+                    'keydown',
+                    function (event) {
+
+                        if (
+                            event.key === 'Enter' ||
+                            event.key === ' '
+                        ) {
+                            event.preventDefault();
+                            abrir();
+                        }
+                    }
+                );
+            });
+
+        document
+            .getElementById('btnExportarHistorico')
+            ?.addEventListener('click', function () {
+
+            const boton = this;
+            const contenidoOriginal =
+                boton.innerHTML;
+
+            boton.classList.add('disabled');
+
+            boton.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-2" ' +
+                'role="status" aria-hidden="true"></span>' +
+                'Generando Excel...';
+
+            setTimeout(function () {
+                boton.classList.remove('disabled');
+                boton.innerHTML =
+                    contenidoOriginal;
+            }, 4000);
+        });
+    </script>
+}

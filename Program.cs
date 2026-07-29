@@ -28,6 +28,10 @@ builder.Services.AddScoped<
 
 builder.Services.AddScoped<IDashboardOperativoService, DashboardOperativoService>();
 
+builder.Services.AddScoped<
+    IDashboardHistoricoCumplimientoService,
+    DashboardHistoricoCumplimientoService>();
+
 builder.Services.AddSingleton<AlertasBackgroundService>();
 
 builder.Services.AddHostedService(sp =>

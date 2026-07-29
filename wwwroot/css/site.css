@@ -162,3 +162,32 @@ body {
     text-align: center;
     min-width: 320px;
 }
+
+.dashboard-detail-card {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+    .dashboard-detail-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12) !important;
+    }
+
+    .dashboard-detail-card:focus {
+        outline: 3px solid rgba(13, 110, 253, 0.25);
+        outline-offset: 2px;
+    }
+
+.btn-dashboard-accion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 42px;
+    line-height: 1;
+}
+
+.dashboard-detail-card-disabled {
+    cursor: default;
+    opacity: 0.85;
+}

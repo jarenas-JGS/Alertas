@@ -1,0 +1,473 @@
+﻿@using Alertas.ViewModels.Dashboards
+@model DetalleHistoricoCumplimientoVm
+
+@{
+    ViewData["Title"] = Model.Titulo;
+
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+
+    string ObtenerClaseClasificacion(string? clasificacion)
+    {
+        var valor = (clasificacion ?? string.Empty)
+            .Trim()
+            .ToUpperInvariant();
+
+        if (valor.Contains("OPORTUN"))
+            return "bg-success";
+
+        if (valor.Contains("ATRAS"))
+            return "bg-warning text-dark";
+
+        if (valor.Contains("VENCID") ||
+            valor.Contains("PENDIENT"))
+            return "bg-danger";
+
+        return "bg-secondary";
+    }
+
+    string ObtenerTextoClasificacion(string? clasificacion)
+    {
+        var valor = (clasificacion ?? string.Empty)
+            .Trim()
+            .ToUpperInvariant();
+
+        if (valor.Contains("OPORTUN"))
+            return "Cumplida oportunamente";
+
+        if (valor.Contains("ATRAS"))
+            return "Cumplida con atraso";
+
+        if (valor.Contains("VENCID") ||
+            valor.Contains("PENDIENT"))
+            return "Sigue vencida";
+
+        return string.IsNullOrWhiteSpace(clasificacion)
+            ? "Sin clasificación"
+            : clasificacion;
+    }
+
+    string ObtenerClaseDias(HistoricoCumplimientoItemVm item)
+    {
+        if (item.DiasVencida <= 0)
+            return "text-success";
+
+        if (item.FechaCumplimiento.HasValue)
+            return "text-warning";
+
+        return "text-danger";
+    }
+}
+
+<div class="container-fluid mt-4">
+
+    @* ============================================================
+       ENCABEZADO
+       ============================================================ *@
+
+    <div class="row align-items-center mb-4 g-3">
+        <div class="col-12 col-lg">
+
+            <h3 class="mb-1">
+                <i class="bi bi-list-check me-2"></i>
+                @Model.Titulo
+            </h3>
+
+            <div class="text-muted">
+                Consulta detallada de las obligaciones incluidas en el análisis
+                histórico de cumplimiento.
+            </div>
+
+        </div>
+
+        <div class="col-12 col-lg-auto">
+            <div class="d-flex flex-wrap justify-content-lg-end gap-2">
+
+                <a asp-controller="Dashboards"
+                   asp-action="HistoricoCumplimientoProyecto"
+                   asp-route-fechaDesde="@(Model.Filtros.FechaDesde?.ToString("yyyy-MM-dd"))"
+                   asp-route-fechaHasta="@(Model.Filtros.FechaHasta?.ToString("yyyy-MM-dd"))"
+                   asp-route-idCliente="@Model.Filtros.IdCliente"
+                   asp-route-idEmpresa="@Model.Filtros.IdEmpresa"
+                   asp-route-idCiudad="@Model.Filtros.IdCiudad"
+                   asp-route-idEstado="@Model.Filtros.IdEstado"
+                   asp-route-idTipoObligacion="@Model.Filtros.IdTipoObligacion"
+                   asp-route-idResponsable="@Model.Filtros.IdResponsable"
+                   asp-route-idElaborador="@Model.Filtros.IdElaborador"
+                   asp-route-idAutorizador="@Model.Filtros.IdAutorizador"
+                   asp-route-idAprobador="@Model.Filtros.IdAprobador"
+                   asp-route-idUsuarioVencimiento="@Model.Filtros.IdUsuarioVencimiento"
+                   asp-route-clasificacion="@Model.Filtros.Clasificacion"
+                   class="btn btn-outline-primary btn-regresar-historico">
+
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Volver al dashboard
+                </a>
+
+                <span class="badge rounded-pill bg-primary px-3 py-2 d-flex align-items-center">
+                    @Model.NombreProyecto
+                </span>
+
+            </div>
+        </div>
+    </div>
+
+    @* ============================================================
+       RESUMEN DEL DETALLE
+       ============================================================ *@
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+
+                    <div class="small text-muted mb-1">
+                        Obligaciones encontradas
+                    </div>
+
+                    <div class="fs-3 fw-bold">
+                        @Model.Obligaciones.Count
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+
+                    <div class="small text-muted mb-1">
+                        Fecha inicial
+                    </div>
+
+                    <div class="fs-5 fw-semibold">
+                        @(Model.FechaDesde?.ToString("dd/MM/yyyy") ?? "No definida")
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+
+                    <div class="small text-muted mb-1">
+                        Fecha final
+                    </div>
+
+                    <div class="fs-5 fw-semibold">
+                        @(Model.FechaHasta?.ToString("dd/MM/yyyy") ?? "No definida")
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @* ============================================================
+       TABLA
+       ============================================================ *@
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white border-0 pt-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+
+                <div>
+                    <h6 class="fw-bold mb-1">
+                        Obligaciones
+                    </h6>
+
+                    <small class="text-muted">
+                        Puedes buscar, ordenar y consultar cada obligación.
+                    </small>
+                </div>
+
+                <span class="badge bg-light text-dark border px-3 py-2">
+                    @Model.Obligaciones.Count registro(s)
+                </span>
+
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            @if (Model.Obligaciones.Count == 0)
+            {
+                <div class="text-center py-5">
+
+                    <i class="bi bi-inbox fs-1 text-muted"></i>
+
+                    <h5 class="mt-3 mb-1">
+                        No se encontraron obligaciones
+                    </h5>
+
+                    <div class="text-muted">
+                        No existen registros que coincidan con el criterio
+                        seleccionado.
+                    </div>
+
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table id="tablaDetalleHistorico"
+                           class="table table-hover table-striped align-middle w-100">
+
+                        <thead>
+                            <tr>
+                                <th>Obligación</th>
+                                <th>Código</th>
+                                <th>Cliente</th>
+                                <th>Empresa</th>
+                                <th>Tipo de obligación</th>
+                                <th>Ciudad</th>
+                                <th>Estado actual</th>
+                                <th>Fecha de vencimiento</th>
+                                <th>Fecha de cumplimiento</th>
+                                <th>Días de atraso</th>
+                                <th>Clasificación</th>
+                                <th>Autorizador(es)</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model.Obligaciones)
+                            {
+                                <tr>
+
+                                    <td>
+                                        <div class="fw-semibold">
+                                            @item.Nombre
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        @if (string.IsNullOrWhiteSpace(item.CodigoObligacion))
+                                        {
+                                            <span class="text-muted">
+                                                Sin código
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            @item.CodigoObligacion
+                                        }
+                                </td>
+
+                                <td>
+                                    @item.Cliente
+                                </td>
+
+                                <td>
+                                    @item.Empresa
+                                </td>
+
+                                <td>
+                                    @item.TipoObligacion
+                                </td>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(item.Ciudad)
+                                                                    ? "Sin ciudad"
+                                                                    : item.Ciudad)
+                            </td>
+
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            @item.EstadoActual
+                                        </span>
+                                    </td>
+
+                                    <td data-order="@item.FechaVencimiento.ToString("yyyyMMdd")">
+                                        @item.FechaVencimiento.ToString("dd/MM/yyyy")
+                                    </td>
+
+                                    <td data-order="@(item.FechaCumplimiento?.ToString("yyyyMMdd") ?? string.Empty)">
+                                @if (item.FechaCumplimiento.HasValue)
+                                        {
+                                            @item.FechaCumplimiento.Value.ToString("dd/MM/yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger fw-semibold">
+                                                Sin cumplimiento
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td data-order="@item.DiasVencida">
+                                        <span class="fw-semibold @ObtenerClaseDias(item)">
+                                            @item.DiasVencida
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge @ObtenerClaseClasificacion(item.Clasificacion)">
+                                            @ObtenerTextoClasificacion(item.Clasificacion)
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span title="@item.AutorizadoresTexto">
+                                            @item.AutorizadoresTexto
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center text-nowrap">
+
+                                        <a asp-controller="Dashboards"
+                                           asp-action="ConsultaObligacion"
+                                           asp-route-id="@item.IdRegObl"
+                                           asp-route-returnUrl="@returnUrl"
+                                           class="btn btn-sm btn-outline-primary btn-consultar-obligacion"
+                                           title="Consultar obligación">
+
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+    </div>
+
+</div>
+
+@* ==============================================================
+   OVERLAY
+   ============================================================== *@
+
+<div id="overlayDetalleHistorico"
+     style="display:none;
+            position:fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,0.45);
+            z-index:9999;
+            align-items:center;
+            justify-content:center;">
+
+    <div class="bg-white rounded shadow p-4 text-center"
+         style="max-width:420px;">
+
+        <div class="spinner-border text-primary mb-3"
+             role="status">
+
+            <span class="visually-hidden">
+                Procesando...
+            </span>
+
+        </div>
+
+        <h5 class="mb-1">
+            Cargando información
+        </h5>
+
+        <p class="mb-0 text-muted">
+            Por favor espera mientras se procesa la solicitud.
+        </p>
+
+    </div>
+</div>
+
+@section Scripts {
+
+    <script>
+        $(document).ready(function () {
+
+            const tabla = $('#tablaDetalleHistorico');
+
+            if (tabla.length) {
+
+                tabla.DataTable({
+                    pageLength: 25,
+
+                    lengthMenu: [
+                        [10, 25, 50, 100, -1],
+                        [10, 25, 50, 100, 'Todos']
+                    ],
+
+                    order: [
+                        [7, 'asc']
+                    ],
+
+                    scrollX: true,
+
+                    autoWidth: false,
+
+                    language: {
+                        decimal: '',
+                        emptyTable:
+                            'No hay información disponible.',
+                        info:
+                            'Mostrando _START_ a _END_ de _TOTAL_ registros',
+                        infoEmpty:
+                            'Mostrando 0 a 0 de 0 registros',
+                        infoFiltered:
+                            '(filtrado de _MAX_ registros totales)',
+                        lengthMenu:
+                            'Mostrar _MENU_ registros',
+                        loadingRecords:
+                            'Cargando...',
+                        processing:
+                            'Procesando...',
+                        search:
+                            'Buscar:',
+                        zeroRecords:
+                            'No se encontraron registros coincidentes.',
+                        paginate: {
+                            first:
+                                'Primero',
+                            last:
+                                'Último',
+                            next:
+                                'Siguiente',
+                            previous:
+                                'Anterior'
+                        }
+                    },
+
+                    columnDefs: [
+                        {
+                            targets: 12,
+                            orderable: false,
+                            searchable: false
+                        }
+                    ]
+                });
+            }
+
+            function mostrarOverlay() {
+                $('#overlayDetalleHistorico')
+                    .css('display', 'flex');
+            }
+
+            $('.btn-regresar-historico')
+                .on('click', function () {
+                    mostrarOverlay();
+                });
+
+            $('.btn-consultar-obligacion')
+                .on('click', function () {
+                    mostrarOverlay();
+                });
+        });
+    </script>
+}
