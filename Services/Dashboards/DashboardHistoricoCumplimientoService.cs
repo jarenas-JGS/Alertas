@@ -284,8 +284,7 @@ namespace Alertas.Services.Dashboards
             var obligaciones = _context.RegObls
                 .AsNoTracking()
                 .Where(o =>
-                    o.id_proyecto == idProyecto &&
-                    o.fecha_venc_obl <= hoy);
+                    o.id_proyecto == idProyecto);
 
             /*
              * El período del histórico siempre se filtra
@@ -302,6 +301,17 @@ namespace Alertas.Services.Dashboards
                 obligaciones = obligaciones.Where(o =>
                     o.fecha_venc_obl <= filtros.FechaHasta.Value);
             }
+
+            /*
+             * Una obligación sin cumplimiento solo se considera
+             * histórica cuando su vencimiento ya pasó.
+             *
+             * Las obligaciones que vencen hoy se incluyen únicamente
+             * si ya tienen fecha de cumplimiento.
+                */
+            obligaciones = obligaciones.Where(o =>
+                o.fecha_venc_obl < hoy ||
+                o.fecha_vencimiento_ejecutada.HasValue);
 
             if (filtros.IdCliente.HasValue)
             {
@@ -542,13 +552,25 @@ namespace Alertas.Services.Dashboards
                     return;
                 }
 
-                item.Clasificacion =
-                    ClasificacionesCumplimiento
-                        .CumplidaConAtraso;
+                if (item.FechaVencimiento < hoy)
+                {
+                    item.Clasificacion =
+                        ClasificacionesCumplimiento.SigueVencida;
 
-                item.DiasVencida =
-                    item.FechaCumplimiento.Value.DayNumber -
-                    item.FechaVencimiento.DayNumber;
+                    item.DiasVencida =
+                        hoy.DayNumber -
+                        item.FechaVencimiento.DayNumber;
+                }
+                else
+                {
+                    /*
+                     * Esta obligación todavía no está vencida.
+                     * Normalmente no llegará aquí porque se excluye
+                     * desde la consulta base.
+                     */
+                    item.Clasificacion = string.Empty;
+                    item.DiasVencida = 0;
+                }
 
                 return;
             }
