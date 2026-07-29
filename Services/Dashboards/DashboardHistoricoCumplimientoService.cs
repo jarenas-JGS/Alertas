@@ -539,49 +539,60 @@ namespace Alertas.Services.Dashboards
             HistoricoCumplimientoItemVm item,
             DateOnly hoy)
         {
+            /*
+             * 1. Si existe fecha de cumplimiento, la obligación
+             * ya no puede clasificarse como "Sigue vencida".
+             */
             if (item.FechaCumplimiento.HasValue)
             {
-                if (item.FechaCumplimiento.Value <=
-                    item.FechaVencimiento)
+                var fechaCumplimiento =
+                    item.FechaCumplimiento.Value;
+
+                if (fechaCumplimiento <= item.FechaVencimiento)
                 {
                     item.Clasificacion =
-                        ClasificacionesCumplimiento
-                            .CumplidaOportunamente;
+                        ClasificacionesCumplimiento.CumplidaOportunamente;
 
                     item.DiasVencida = 0;
-                    return;
-                }
-
-                if (item.FechaVencimiento < hoy)
-                {
-                    item.Clasificacion =
-                        ClasificacionesCumplimiento.SigueVencida;
-
-                    item.DiasVencida =
-                        hoy.DayNumber -
-                        item.FechaVencimiento.DayNumber;
                 }
                 else
                 {
-                    /*
-                     * Esta obligación todavía no está vencida.
-                     * Normalmente no llegará aquí porque se excluye
-                     * desde la consulta base.
-                     */
-                    item.Clasificacion = string.Empty;
-                    item.DiasVencida = 0;
+                    item.Clasificacion =
+                        ClasificacionesCumplimiento.CumplidaConAtraso;
+
+                    item.DiasVencida =
+                        fechaCumplimiento.DayNumber -
+                        item.FechaVencimiento.DayNumber;
                 }
 
                 return;
             }
 
-            item.Clasificacion =
-                ClasificacionesCumplimiento.SigueVencida;
+            /*
+             * 2. Solo puede seguir vencida si no tiene cumplimiento
+             * y la fecha de vencimiento ya pasó.
+             */
+            if (item.FechaVencimiento < hoy)
+            {
+                item.Clasificacion =
+                    ClasificacionesCumplimiento.SigueVencida;
 
-            item.DiasVencida = Math.Max(
-                0,
-                hoy.DayNumber -
-                item.FechaVencimiento.DayNumber);
+                item.DiasVencida =
+                    hoy.DayNumber -
+                    item.FechaVencimiento.DayNumber;
+
+                return;
+            }
+
+            /*
+             * 3. Si vence hoy o en una fecha futura y no tiene
+             * cumplimiento, todavía no está vencida.
+             *
+             * Normalmente estos registros se excluyen desde
+             * ObtenerItemsAsync.
+             */
+            item.Clasificacion = string.Empty;
+            item.DiasVencida = 0;
         }
 
         private static List<SerieDashboardVm>
