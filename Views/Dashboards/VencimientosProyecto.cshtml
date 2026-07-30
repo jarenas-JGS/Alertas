@@ -197,44 +197,158 @@
 
     <div class="row g-3 mb-4">
 
-        <div class="col-12 col-sm-6 col-xl-2">
-            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
-                <div class="card-body">
-                    <div class="text-muted small">Pendientes</div>
-                    <h3 class="fw-bold mb-0">@Model.TotalPendientes</h3>
-                    <div class="small text-muted mt-3">Sin control de vencimiento ejecutado.</div>
-                </div>
-            </div>
-        </div>
+        <div class="row g-3 mb-4">
 
-        <div class="col-12 col-sm-6 col-xl-2">
-            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
-                <div class="card-body">
-                    <div class="text-muted small">Vencidas</div>
-                    <h3 class="fw-bold mb-0 text-danger">@Model.Vencidas</h3>
-                    <div class="small text-muted mt-3">Fecha vencida y pendiente.</div>
-                </div>
-            </div>
-        </div>
+            @* Pendientes *@
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card shadow-sm border-0 h-100 dashboard-kpi-card
+                    @(Model.TotalPendientes > 0
+                                             ? "dashboard-detail-card"
+                                             : "dashboard-detail-card-disabled")"
+                     role="@(Model.TotalPendientes > 0 ? "button" : null)"
+                     tabindex="@(Model.TotalPendientes > 0 ? "0" : "-1")"
+                     data-tipo="@(Model.TotalPendientes > 0
+                                      ? "pendientes"
+                                      : null)">
 
-        <div class="col-12 col-sm-6 col-xl-2">
-            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
-                <div class="card-body">
-                    <div class="text-muted small">Vencen 7 días</div>
-                    <h3 class="fw-bold mb-0 text-warning">@Model.Vencen7Dias</h3>
-                    <div class="small text-muted mt-3">Próxima semana.</div>
-                </div>
-            </div>
-        </div>
+                    <div class="card-body">
+                        <div class="text-muted small">
+                            Pendientes
+                        </div>
 
-        <div class="col-12 col-sm-6 col-xl-2">
-            <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
-                <div class="card-body">
-                    <div class="text-muted small">Vencen 30 días</div>
-                    <h3 class="fw-bold mb-0 text-primary">@Model.Vencen30Dias</h3>
-                    <div class="small text-muted mt-3">Próximos 30 días.</div>
+                        <h3 class="fw-bold mb-0">
+                            @Model.TotalPendientes
+                        </h3>
+
+                        <div class="small text-muted mt-3">
+                            Sin control de vencimiento ejecutado.
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            @* Vencidas *@
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card shadow-sm border-0 h-100 dashboard-kpi-card
+                    @(Model.Vencidas > 0
+                                             ? "dashboard-detail-card"
+                                             : "dashboard-detail-card-disabled")"
+                     role="@(Model.Vencidas > 0 ? "button" : null)"
+                     tabindex="@(Model.Vencidas > 0 ? "0" : "-1")"
+                     data-tipo="@(Model.Vencidas > 0
+                                      ? "vencidas"
+                                      : null)">
+
+                    <div class="card-body">
+                        <div class="text-muted small">
+                            Vencidas
+                        </div>
+
+                        <h3 class="fw-bold mb-0 text-danger">
+                            @Model.Vencidas
+                        </h3>
+
+                        <div class="small text-muted mt-3">
+                            Fecha vencida y pendiente.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Vencen en 7 días *@
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card shadow-sm border-0 h-100 dashboard-kpi-card
+                    @(Model.Vencen7Dias > 0
+                                             ? "dashboard-detail-card"
+                                             : "dashboard-detail-card-disabled")"
+                     role="@(Model.Vencen7Dias > 0 ? "button" : null)"
+                     tabindex="@(Model.Vencen7Dias > 0 ? "0" : "-1")"
+                     data-tipo="@(Model.Vencen7Dias > 0
+                                      ? "vencen7"
+                                      : null)">
+
+                    <div class="card-body">
+                        <div class="text-muted small">
+                            Vencen 7 días
+                        </div>
+
+                        <h3 class="fw-bold mb-0 text-warning">
+                            @Model.Vencen7Dias
+                        </h3>
+
+                        <div class="small text-muted mt-3">
+                            Próxima semana.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Vencen en 30 días *@
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card shadow-sm border-0 h-100 dashboard-kpi-card
+                    @(Model.Vencen30Dias > 0
+                                             ? "dashboard-detail-card"
+                                             : "dashboard-detail-card-disabled")"
+                     role="@(Model.Vencen30Dias > 0 ? "button" : null)"
+                     tabindex="@(Model.Vencen30Dias > 0 ? "0" : "-1")"
+                     data-tipo="@(Model.Vencen30Dias > 0
+                                      ? "vencen30"
+                                      : null)">
+
+                    <div class="card-body">
+                        <div class="text-muted small">
+                            Vencen 30 días
+                        </div>
+
+                        <h3 class="fw-bold mb-0 text-primary">
+                            @Model.Vencen30Dias
+                        </h3>
+
+                        <div class="small text-muted mt-3">
+                            Próximos 30 días.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Atraso promedio: informativo *@
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                    <div class="card-body">
+                        <div class="text-muted small">
+                            Atraso promedio
+                        </div>
+
+                        <h3 class="fw-bold mb-0 text-danger">
+                            @Model.AtrasoPromedioDias
+                        </h3>
+
+                        <div class="small text-muted mt-3">
+                            Días promedio de atraso.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Mayor atraso: informativo *@
+            <div class="col-12 col-sm-6 col-xl-2">
+                <div class="card shadow-sm border-0 h-100 dashboard-kpi-card">
+                    <div class="card-body">
+                        <div class="text-muted small">
+                            Mayor atraso
+                        </div>
+
+                        <h3 class="fw-bold mb-0 text-danger">
+                            @Model.MayorAtrasoDias
+                        </h3>
+
+                        <div class="small text-muted mt-3">
+                            Máximo atraso detectado.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div class="col-12 col-sm-6 col-xl-2">
@@ -535,5 +649,51 @@
         renderBarClickable('#chartAutorizadores', vencimientosData.autorizadores, 'idAutorizador', '#dc3545', true);
         renderBarClickable('#chartEmpresas', vencimientosData.empresas, 'idEmpresa', '#dc3545', true);
         renderBarClickable('#chartTipos', vencimientosData.tipos, 'idTipoObligacion', '#dc3545', true);
+
+        document
+            .querySelectorAll('.dashboard-detail-card')
+            .forEach(card => {
+
+                const abrir = function () {
+
+                    const tipo = card.dataset.tipo;
+
+                    if (!tipo) {
+                        return;
+                    }
+
+                    const query = buildQueryString({
+                        tipo: tipo,
+                        returnUrl:
+                            window.location.pathname +
+                            window.location.search
+                    });
+
+                    $('#dashboardOverlay')
+                        .removeClass('d-none');
+
+                    window.location.href =
+                        `/Dashboards/DetalleOperativo?${query}`;
+                };
+
+                card.addEventListener(
+                    'click',
+                    abrir
+                );
+
+                card.addEventListener(
+                    'keydown',
+                    function (event) {
+
+                        if (
+                            event.key === 'Enter' ||
+                            event.key === ' '
+                        ) {
+                            event.preventDefault();
+                            abrir();
+                        }
+                    }
+                );
+            });
     </script>
 }

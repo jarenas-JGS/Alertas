@@ -413,6 +413,8 @@ namespace Alertas.Services.Dashboards
             int? idEstadoDetalle)
         {
             var hoy = DateOnly.FromDateTime(DateTime.Today);
+            var limite7 = hoy.AddDays(7);
+            var limite30 = hoy.AddDays(30);
             var fechaLimiteProximas = hoy.AddDays(30);
 
             var proyecto = await _context.Proyectos
@@ -482,12 +484,32 @@ namespace Alertas.Services.Dashboards
                         uo.Rol.nombre == RolesSistema.Vencimiento &&
                         uo.activo));
 
+            var idsEstadosFinales = await _context.Estados
+                .AsNoTracking()
+                .Where(e =>
+                    e.id_proyecto == idProyecto &&
+                    e.activo &&
+                    (
+                        e.nombre.ToLower().Contains("cerrad") ||
+                        e.nombre.ToLower().Contains("anulad") ||
+                        e.nombre.ToLower().Contains("anulac")
+                    ))
+                .Select(e => e.id_estado)
+                .ToListAsync();
+
+            var obligacionesPendientes = obligaciones.Where(o =>
+                o.fecha_vencimiento_ejecutada == null &&
+                !idsEstadosFinales.Contains(o.id_estado));
+
             tipo = (tipo ?? string.Empty).Trim().ToLower();
 
             string titulo = tipo switch
             {
                 "total" => "Total de obligaciones",
+                "pendientes" => "Obligaciones pendientes",
                 "vencidas" => "Obligaciones vencidas",
+                "vencen7" => "Obligaciones que vencen en los próximos 7 días",
+                "vencen30" => "Obligaciones que vencen en los próximos 30 días",
                 "proximas" => "Obligaciones próximas a vencer",
                 "estado" => "Obligaciones por estado",
                 _ => "Detalle de obligaciones"
@@ -495,14 +517,26 @@ namespace Alertas.Services.Dashboards
 
             obligaciones = tipo switch
             {
-                "vencidas" => obligaciones.Where(o =>
+                "pendientes" => obligacionesPendientes,
+
+                "vencidas" => obligacionesPendientes.Where(o =>
                     o.fecha_venc_obl < hoy &&
-                    o.fecha_vencimiento_ejecutada == null &&
                     !o.Estado.control_vencimiento),
 
+                "vencen7" => obligacionesPendientes.Where(o =>
+                    o.fecha_venc_obl >= hoy &&
+                    o.fecha_venc_obl <= limite7),
+
+                "vencen30" => obligacionesPendientes.Where(o =>
+                    o.fecha_venc_obl >= hoy &&
+                    o.fecha_venc_obl <= limite30),
+
+                /*
+                 * Se conserva para el dashboard operativo.
+                 */
                 "proximas" => obligaciones.Where(o =>
                     o.fecha_venc_obl >= hoy &&
-                    o.fecha_venc_obl <= fechaLimiteProximas &&
+                    o.fecha_venc_obl <= limite30 &&
                     (o.aprobado == null || o.aprobado == false)),
 
                 "estado" when idEstadoDetalle.HasValue => obligaciones.Where(o =>
