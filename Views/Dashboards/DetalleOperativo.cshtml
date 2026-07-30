@@ -2,6 +2,24 @@
 
 @{
     ViewData["Title"] = Model.Titulo;
+
+    string ObtenerOrdenFecha(string? fecha)
+    {
+        if (string.IsNullOrWhiteSpace(fecha))
+            return string.Empty;
+
+        if (DateOnly.TryParseExact(
+            fecha,
+            "dd/MM/yyyy",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None,
+            out var fechaConvertida))
+        {
+            return fechaConvertida.ToString("yyyyMMdd");
+        }
+
+        return string.Empty;
+    }
 }
 
 
@@ -116,18 +134,27 @@
                                             @item.Estado
                                         </span>
                                     </td>
-                                    <td>
-                                        <div>@item.FechaVencimiento</div>
-                                        @if (item.DiasAtrasoVencimiento.HasValue && item.DiasAtrasoVencimiento.Value > 0)
+                                    <td data-order="@ObtenerOrdenFecha(item.FechaVencimiento)">
+                                        <div>
+                                            @item.FechaVencimiento
+                                        </div>
+
+                                        @if (item.DiasAtrasoVencimiento.HasValue &&
+                                                                        item.DiasAtrasoVencimiento.Value > 0)
                                         {
                                             <small class="text-danger">
                                                 @item.DiasAtrasoVencimiento días atraso
                                             </small>
                                         }
                                     </td>
-                                    <td>
-                                        <div>@item.FechaSeguimiento</div>
-                                        @if (item.DiasAtrasoSeguimiento.HasValue && item.DiasAtrasoSeguimiento.Value > 0)
+
+                                    <td data-order="@ObtenerOrdenFecha(item.FechaSeguimiento)">
+                                        <div>
+                                            @item.FechaSeguimiento
+                                        </div>
+
+                                        @if (item.DiasAtrasoSeguimiento.HasValue &&
+                                                                        item.DiasAtrasoSeguimiento.Value > 0)
                                         {
                                             <small class="text-danger">
                                                 @item.DiasAtrasoSeguimiento días atraso
