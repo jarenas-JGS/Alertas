@@ -91,9 +91,21 @@
                                         </span>
                                     }
                                 </td>
-                                <td>@item.FechaVencObl?.ToString("dd/MM/yyyy")</td>
+                                <td data-order="@(item.FechaVencObl.HasValue
+                                                        ? item.FechaVencObl.Value.ToString("yyyy-MM-dd")
+                                                    : "")">
+                                @(item.FechaVencObl.HasValue
+                                                                ? item.FechaVencObl.Value.ToString("dd/MM/yyyy")
+                                                                : "-")
+                            </td>
                                 <td>@item.DiasVencimientoObl</td>
-                                <td>@item.FechaVencSeguimiento?.ToString("dd/MM/yyyy")</td>
+                            <td data-order="@(item.FechaVencSeguimiento.HasValue
+                                                    ? item.FechaVencSeguimiento.Value.ToString("yyyy-MM-dd")
+                                                    : "")">
+                                @(item.FechaVencSeguimiento.HasValue
+                                                                ? item.FechaVencSeguimiento.Value.ToString("dd/MM/yyyy")
+                                                                : "-")
+                            </td>
                                 <td>@item.DiasVencimientoSeguimiento</td>
                             </tr>
                         }

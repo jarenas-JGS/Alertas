@@ -148,6 +148,8 @@
     <script>
         $(document).ready(function () {
             var tabla = $('#tablaRegObl').DataTable({
+                stateSave: true,
+                stateDuration: -1,
                 pageLength: 10,
                 lengthMenu: [10, 20, 50, 100],
                 orderCellsTop: true,
@@ -173,6 +175,18 @@
                     { orderable: false, targets: 7 }
                 ]
             });
+
+            var estadoGuardado = tabla.state.loaded();
+
+            if (estadoGuardado && estadoGuardado.columns) {
+                $('#tablaRegObl thead tr.filtros-columnas th').each(function (i) {
+                    const input = $('input', this);
+
+                    if (input.length && estadoGuardado.columns[i]) {
+                        input.val(estadoGuardado.columns[i].search.search);
+                    }
+                });
+            }
 
             $('#tablaRegObl thead tr.filtros-columnas th').each(function (i) {
                 var input = $('input', this);

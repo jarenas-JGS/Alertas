@@ -57,7 +57,9 @@
                             };
 
                             <tr>
-                                <td>@item.FechaEnvio.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                <td data-order="@item.FechaEnvio.ToString("yyyy-MM-ddTHH:mm:ss")">
+                                    @item.FechaEnvio.ToString("dd/MM/yyyy HH:mm:ss")
+                                </td>
                                 <td>@item.TipoEjecucion</td>
                                 <td><span class="@estadoClass">@estadoTexto</span></td>
                                 <td>@item.NombreProyecto</td>
