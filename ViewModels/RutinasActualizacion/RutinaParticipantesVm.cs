@@ -21,6 +21,11 @@ namespace Alertas.ViewModels.RutinasActualizacion
 
         public int? IdUsuarioDestino { get; set; }
 
+        [Display(Name = "Tipo de obligación")]
+        public int? IdTipoObligacion { get; set; }
+
+        public List<SelectListItem> TiposObligacion { get; set; } = new();
+
         public List<SelectListItem> Proyectos { get; set; } = new();
 
         public List<SelectListItem> Empresas { get; set; } = new();

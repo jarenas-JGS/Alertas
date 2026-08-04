@@ -70,12 +70,53 @@ namespace Alertas.Controllers
                 if (model.IdProyecto.HasValue)
                     model.Empresas = await CargarEmpresasProyectoAsync(model.IdProyecto.Value);
 
+                if (model.IdProyecto.HasValue && model.IdEmpresa.HasValue)
+                {
+                    model.TiposObligacion =
+                        await CargarTiposObligacionAsync(
+                            model.IdProyecto.Value,
+                            model.IdEmpresa.Value);
+                }
+
                 return View("Index", model);
             }
+
+
 
             var preview = await _service.GenerarPreviewAsync(model);
 
             return View(preview);
+        }
+
+        private async Task<List<SelectListItem>> CargarTiposObligacionAsync(
+            int idProyecto,
+            int idEmpresa)
+        {
+            return await _context.RegObls
+                .Where(ro =>
+                    ro.id_proyecto == idProyecto &&
+                    ro.id_empresa == idEmpresa)
+                .Join(
+                    _context.Estados,
+                    ro => ro.id_estado,
+                    e => e.id_estado,
+                    (ro, e) => new { ro, e })
+                .Where(x =>
+                    x.e.nombre != "Cerrada" &&
+                    x.e.nombre != "Anulada")
+                .Join(
+                    _context.TipoObligaciones,
+                    x => x.ro.id_tipo_obligacion,
+                    t => t.id_tipo_obligacion,
+                    (x, t) => t)
+                .Distinct()
+                .OrderBy(t => t.nombre)
+                .Select(t => new SelectListItem
+                {
+                    Value = t.id_tipo_obligacion.ToString(),
+                    Text = t.nombre
+                })
+                .ToListAsync();
         }
 
         [HttpPost]
@@ -154,21 +195,39 @@ namespace Alertas.Controllers
         public async Task<IActionResult> ObtenerUsuariosRol(
             int idProyecto,
             int idEmpresa,
-            int idRol)
+            int idRol,
+            int? idTipoObligacion)
         {
             if (!await _seguridad.UsuarioPuedeAdministrarProyectoAsync(idProyecto))
                 return Forbid();
 
-            var usuarios = await _context.UsuariosObligaciones
+            var consulta = _context.UsuariosObligaciones
                 .Where(uo => uo.activo && uo.id_rol == idRol)
-                .Join(_context.RegObls,
+                .Join(
+                    _context.RegObls,
                     uo => uo.id_reg_obl,
                     ro => ro.id_reg_obl,
                     (uo, ro) => new { uo, ro })
+                .Join(
+                    _context.Estados,
+                    x => x.ro.id_estado,
+                    e => e.id_estado,
+                    (x, e) => new { x.uo, x.ro, e })
                 .Where(x =>
                     x.ro.id_proyecto == idProyecto &&
-                    x.ro.id_empresa == idEmpresa)
-                .Join(_context.Usuarios,
+                    x.ro.id_empresa == idEmpresa &&
+                    x.e.nombre != "Cerrada" &&
+                    x.e.nombre != "Anulada");
+
+            if (idTipoObligacion.HasValue)
+            {
+                consulta = consulta.Where(x =>
+                    x.ro.id_tipo_obligacion == idTipoObligacion.Value);
+            }
+
+            var usuarios = await consulta
+                .Join(
+                    _context.Usuarios,
                     x => x.uo.id_usuario,
                     u => u.id_usuario,
                     (x, u) => u)
@@ -258,6 +317,43 @@ namespace Alertas.Controllers
                     ModelState.AddModelError(nameof(model.IdUsuarioDestino), "El usuario nuevo debe ser diferente al usuario actual.");
                 }
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerTiposObligacion(
+            int idProyecto,
+            int idEmpresa)
+        {
+            if (!await _seguridad.UsuarioPuedeAdministrarProyectoAsync(idProyecto))
+                return Forbid();
+
+            var tipos = await _context.RegObls
+                .Where(ro =>
+                    ro.id_proyecto == idProyecto &&
+                    ro.id_empresa == idEmpresa)
+                .Join(
+                    _context.Estados,
+                    ro => ro.id_estado,
+                    e => e.id_estado,
+                    (ro, e) => new { ro, e })
+                .Where(x =>
+                    x.e.nombre != "Cerrada" &&
+                    x.e.nombre != "Anulada")
+                .Join(
+                    _context.TipoObligaciones,
+                    x => x.ro.id_tipo_obligacion,
+                    t => t.id_tipo_obligacion,
+                    (x, t) => t)
+                .Distinct()
+                .OrderBy(t => t.nombre)
+                .Select(t => new
+                {
+                    id = t.id_tipo_obligacion,
+                    nombre = t.nombre
+                })
+                .ToListAsync();
+
+            return Json(tipos);
         }
     }
 }

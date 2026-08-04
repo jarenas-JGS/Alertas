@@ -71,6 +71,18 @@
                 </div>
 
                 <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="IdTipoObligacion" class="form-label"></label>
+
+                        <select asp-for="IdTipoObligacion"
+                                class="form-select"
+                                id="IdTipoObligacion">
+                            <option value="">Todos los tipos</option>
+                        </select>
+
+                        <span asp-validation-for="IdTipoObligacion"
+                              class="text-danger"></span>
+                    </div>
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Rol</label>
@@ -85,7 +97,10 @@
                         <span asp-validation-for="IdRol"
                               class="text-danger"></span>
                     </div>
+                </div>
 
+
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Acción</label>
 
@@ -179,6 +194,10 @@
                 limpiarEmpresas();
                 limpiarUsuarios();
 
+                $('#IdTipoObligacion')
+                    .empty()
+                    .append('<option value="">Todos los tipos</option>');
+
                 let proyecto = $(this).val();
 
                 if (!proyecto)
@@ -196,7 +215,17 @@
                     });
             });
 
-            $('#IdEmpresa, #IdRol, #Accion').change(function () {
+            $('#IdEmpresa').change(function () {
+
+                limpiarUsuarios();
+
+                cargarTiposObligacion();
+
+                refrescarUsuariosSegunAccion();
+
+            });
+
+            $('#IdRol, #Accion, #IdTipoObligacion').change(function () {
                 refrescarUsuariosSegunAccion();
             });
 
@@ -253,15 +282,18 @@
                 let proyecto = $('#IdProyecto').val();
                 let empresa = $('#IdEmpresa').val();
                 let rol = $('#IdRol').val();
+                let tipoObligacion = $('#IdTipoObligacion').val();
 
                 if (!proyecto || !empresa || !rol)
                     return;
 
-                $.get('/RutinasActualizacion/ObtenerUsuariosRol',
+                $.get(
+                    '/RutinasActualizacion/ObtenerUsuariosRol',
                     {
                         idProyecto: proyecto,
                         idEmpresa: empresa,
-                        idRol: rol
+                        idRol: rol,
+                        idTipoObligacion: tipoObligacion || null
                     },
                     function (data) {
                         $('#IdUsuarioOrigen')
@@ -289,6 +321,31 @@
                 $('#IdUsuarioDestino')
                     .empty()
                     .append('<option value="">Seleccione...</option>');
+            }
+
+            function cargarTiposObligacion() {
+                let proyecto = $('#IdProyecto').val();
+                let empresa = $('#IdEmpresa').val();
+
+                $('#IdTipoObligacion')
+                    .empty()
+                    .append('<option value="">Todos los tipos</option>');
+
+                if (!proyecto || !empresa)
+                    return;
+
+                $.get(
+                    '/RutinasActualizacion/ObtenerTiposObligacion',
+                    {
+                        idProyecto: proyecto,
+                        idEmpresa: empresa
+                    },
+                    function (data) {
+                        $.each(data, function (i, item) {
+                            $('#IdTipoObligacion').append(
+                                `<option value="${item.id}">${item.nombre}</option>`);
+                        });
+                    });
             }
         });
     </script>
