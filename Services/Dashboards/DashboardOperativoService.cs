@@ -92,6 +92,19 @@ namespace Alertas.Services.Dashboards
 
             var total = await obligaciones.CountAsync();
 
+            var idsEstadosCerrados = await _context.Estados
+                .AsNoTracking()
+                .Where(e =>
+                    e.id_proyecto == idProyecto &&
+                    e.activo &&
+                    e.nombre.ToLower() == "cerrada")
+                .Select(e => e.id_estado)
+                .ToListAsync();
+
+            var cerradas = await obligaciones
+                .CountAsync(o =>
+                    idsEstadosCerrados.Contains(o.id_estado));
+
             var vencidas = await obligaciones
                 .CountAsync(o =>
                     o.fecha_venc_obl < hoy &&
@@ -337,7 +350,7 @@ namespace Alertas.Services.Dashboards
 
                 PorcentajeCumplimiento = total == 0
                 ? 0
-                : Math.Round((decimal)cumplidas * 100 / total, 2),
+                : Math.Round((decimal)cerradas * 100 / total, 2),
 
                 PorcentajeAprobadas = cumplidas == 0
                 ? 0
