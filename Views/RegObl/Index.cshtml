@@ -71,6 +71,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>Id</th>
+                            <th>Cod Obligación</th>
                             <th>Nombre</th>
                             <th>Cliente</th>
                             <th>Empresa</th>
@@ -81,6 +82,7 @@
                         </tr>
                         <tr class="filtros-columnas">
                             <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Id" /></th>
+                            <th><input type="text" class="form-control form-control-sm" placeholder="Cod Obligac" /></th>
                             <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Nombre" /></th>
                             <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Cliente" /></th>
                             <th><input type="text" class="form-control form-control-sm" placeholder="Buscar Empresa" /></th>
@@ -95,6 +97,7 @@
                         {
                             <tr>
                                 <td>@item.id_reg_obl</td>
+                                <td>@item.cod_obligacion</td>
                                 <td>@item.nombre</td>
                                 <td>@item.Cliente?.nombre</td>
                                 <td>@item.Empresa?.nombre</td>

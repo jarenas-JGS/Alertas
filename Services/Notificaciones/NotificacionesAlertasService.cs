@@ -275,6 +275,7 @@ namespace Alertas.Services.Notificaciones
 
                                 IdRegObl = obligacion.id_reg_obl,
                                 NombreObligacion = obligacion.nombre,
+                                CodObligacion = obligacion.cod_obligacion,
 
                                 IdEmpresa = obligacion.id_empresa,
                                 NombreEmpresa = obligacion.Empresa.nombre,

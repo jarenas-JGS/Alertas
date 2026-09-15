@@ -56,6 +56,7 @@ namespace Alertas.Services.Notificaciones
                        style='border-collapse:collapse; font-size:13px; border-color:#ddd; margin-top:10px;'>
                     <thead>
                         <tr style='background:#f2f2f2;'>
+                            <th align='left'>Cod Obligación</th>
                             <th align='left'>Obligación</th>
                             <th align='left'>Empresa</th>
                             <th align='left'>Autorizador(es)</th>
@@ -78,6 +79,11 @@ namespace Alertas.Services.Notificaciones
 
                     html += $@"
                     <tr style='{estiloFila}'>
+                        <td>{WebUtility.HtmlEncode(
+                            string.IsNullOrWhiteSpace(item.CodObligacion)
+                                ? "-"
+                                : item.CodObligacion)}
+                        </td>
                         <td>{WebUtility.HtmlEncode(item.NombreObligacion)}</td>
                         <td>{WebUtility.HtmlEncode(item.NombreEmpresa)}</td>
                         <td>{WebUtility.HtmlEncode(item.Autorizadores)}</td>

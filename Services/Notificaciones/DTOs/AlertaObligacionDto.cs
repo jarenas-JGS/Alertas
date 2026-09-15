@@ -3,6 +3,7 @@
     public class AlertaObligacionDto
     {
         public int IdProyecto { get; set; }
+        public string? CodObligacion { get; set; }
         public string NombreProyecto { get; set; } = string.Empty;
 
         public int IdUsuario { get; set; }

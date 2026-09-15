@@ -9,7 +9,7 @@ namespace Alertas.ViewModels
         public int? id_proyecto { get; set; }
 
         [Required(ErrorMessage = "Debe seleccionar el cliente.")]
-        [Display(Name = "Cliente")]
+        [Display(Name = "Cliente/Proveedor")]
         public int? id_cliente { get; set; }
 
         [Required(ErrorMessage = "Debe seleccionar la empresa.")]
